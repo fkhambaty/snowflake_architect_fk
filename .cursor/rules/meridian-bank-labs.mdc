@@ -1,0 +1,55 @@
+---
+description: Meridian Bank Snowflake course — naming, lab pattern, Snowsight gotchas that MUST stay fixed
+alwaysApply: true
+---
+
+# Meridian Bank course — do not regress
+
+This repo is interview prep: **Meridian Bank**, student plays **Elena Vasquez**. Live site: `docs/` on GitHub Pages.
+
+## Naming (never reintroduce SnowShop)
+
+| Object | Name |
+|--------|------|
+| Database | `MERIDIAN_BANK` |
+| Warehouse | `WH_BANK_XS` |
+| Architect role | `ROLE_BANK_LAB_ADMIN` |
+| Landing schema | `LANDING` (not `RAW`) |
+| Access roles | `AR_LANDING_READ`, `AR_CURATED_READ`, `AR_PII_READ` |
+
+See `docs/BANK_NAMING.md`. Cleanup: `sql/cleanup_lab00_lab01.sql`.
+
+## Every lab HTML pattern
+
+1. Business problem (`callout bad`)
+2. Solution (`callout ok`)
+3. Steps: explain → Copy SQL matching `sql/*.sql`
+4. Elena wrap-up (`.soundbite`: what she did + outcome)
+
+## HARD RULE — role proofs (student already burned tokens on this)
+
+Snowsight keeps **secondary roles** (e.g. `ROLE_BANK_LAB_ADMIN`, `ACCOUNTADMIN`) active. UI can show `FR_ANALYST` while vault still opens.
+
+**Whenever** SQL switches to `FR_ANALYST`, `FR_DATA_ENGINEER`, or `FR_COMPLIANCE` for a privilege / masking / RAP proof:
+
+```sql
+USE ROLE FR_ANALYST;
+USE SECONDARY ROLES NONE;
+```
+
+Also:
+
+- Show `SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();` once in Lab 01
+- Tell students: run **setup** as `ROLE_BANK_LAB_ADMIN`; run **proof** statements separately (not “Run All” past the role switch)
+- Keep Lab 01 callout + `docs/SNOWSIGHT_GOTCHAS.md` + `sql/smoke_role_proofs.sql` in sync
+- Lab 03 masking/RAP proofs need the same `NONE` line (policies use `CURRENT_ROLE()` = primary role; table access still unions secondaries)
+
+## Privilege contract
+
+Account grants live in `sql/00_bootstrap.sql` **and** `sql/00_privilege_repair.sql` **and** lab Step 0 when needed. See `docs/privilege_contract.md`.
+
+## Before shipping lab edits
+
+1. Grep for `USE ROLE FR_` — every hit must be followed by `USE SECONDARY ROLES NONE` in the same copy block (or next line).
+2. Grep for `ARCH_INTERVIEW`, `WH_ARCH`, `ROLE_ARCH`, `AR_RAW`, `SnowShop` — must not appear in student-facing lab steps (cleanup SQL may mention old names).
+3. HTML SQL must match `sql/*.sql`.

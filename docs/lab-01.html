@@ -251,6 +251,15 @@ SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
       <p class="hint">When you go back to building objects: <code>USE ROLE ROLE_BANK_LAB_ADMIN;</code></p>
     </article>
 
+    <article class="step">
+      <div class="step-head"><div class="step-num">11</div><div><h3>Smoke test (don’t skip)</h3></div></div>
+      <div class="explain">
+        <p>Copy <code>sql/smoke_role_proofs.sql</code> and run <strong>one statement at a time</strong>.
+        The analyst → <code>LANDING.CLIENTS</code> step <em>must</em> error. If it returns rows, secondary roles are still on.</p>
+      </div>
+      <div class="badge-ok">✓ Smoke green → continue to Lab 02</div>
+    </article>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s problem was open access to client PII. I separated functional roles (jobs) from access roles (key-rings):

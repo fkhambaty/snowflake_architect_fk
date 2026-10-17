@@ -27,6 +27,23 @@
 
 Error mentions privileges / CREATE ROLE / APPLY / EXECUTE TASK / SHARE → Step 0 as `ACCOUNTADMIN` (`sql/00_privilege_repair.sql`).
 
+Privilege proof “succeeds when it should fail” → `USE SECONDARY ROLES NONE` — see `docs/SNOWSIGHT_GOTCHAS.md`.
+
+## Smoke tests (run statement-by-statement)
+
+| After | Script | Critical expect |
+|-------|--------|-----------------|
+| Lab 01 | `sql/smoke_role_proofs.sql` | `FR_ANALYST` + `NONE` → landing SELECT **errors** |
+| Lab 03 | `sql/smoke_lab03_policies.sql` | Alex masked/US-only; Sam plain/more countries |
+
+## Author invariant check
+
+```powershell
+powershell -File scripts/check_lab_invariants.ps1
+```
+
+Fails if any `USE ROLE FR_*` in labs/SQL is missing a nearby `USE SECONDARY ROLES NONE`, or if lab HTML reintroduces SnowShop names.
+
 ## Cleanup Labs 00–01
 
 `sql/cleanup_lab00_lab01.sql` as `ACCOUNTADMIN` (drops Meridian Bank objects and old SnowShop names if present).

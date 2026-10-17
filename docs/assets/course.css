@@ -849,6 +849,26 @@ html {
   }
 }
 
+/* Persistent Snowsight reminder (injected by course.js) */
+.gotcha-strip {
+  margin: 0;
+  padding: 0.65rem 1.1rem;
+  background: rgba(201, 164, 92, 0.14);
+  border-bottom: 1px solid rgba(201, 164, 92, 0.35);
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+.gotcha-strip strong { color: var(--warn); }
+.gotcha-strip code {
+  font-family: var(--mono);
+  font-size: 0.82em;
+  background: var(--code-inline-bg);
+  color: var(--code-inline-text);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
 /* Prevent accidental horizontal page scroll */
 body {
   overflow-x: hidden;

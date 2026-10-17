@@ -176,6 +176,12 @@ SELECT * FROM CLIENTS ORDER BY CLIENT_ID;</code></pre>
       <em>Outcome:</em> one owned playground, near-zero idle cost, ready for RBAC.”
     </div>
 
+    <div class="callout tip">
+      <strong>Tomorrow’s Lab 01 proof</strong>
+      When Alex’s vault query “should fail” but returns rows, you forgot
+      <code>USE SECONDARY ROLES NONE</code> — see <a href="SNOWSIGHT_GOTCHAS.md">Gotchas</a>.
+    </div>
+
     <div class="pager">
       <a class="btn ghost" href="story.html">← Story</a>
       <a class="btn primary" href="lab-01.html">Lab 01 — lock the vault →</a>

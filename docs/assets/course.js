@@ -116,9 +116,36 @@
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", enhanceCodeBlocks);
-  } else {
+  function injectGotchaStrip() {
+    var page = (location.pathname.split("/").pop() || "").toLowerCase();
+    if (!/^lab-\d+\.html$/.test(page) && page !== "story.html" && page !== "index.html") return;
+    if (document.getElementById("snowsight-gotcha-strip")) return;
+
+    var strip = document.createElement("aside");
+    strip.id = "snowsight-gotcha-strip";
+    strip.className = "gotcha-strip";
+    strip.innerHTML =
+      "<strong>Snowsight:</strong> Role proofs need " +
+      "<code>USE SECONDARY ROLES NONE;</code> after <code>USE ROLE FR_*</code> — " +
+      "or the vault still opens. Details: <a href=\"SNOWSIGHT_GOTCHAS.md\">Gotchas</a> · " +
+      "Smoke: <code>sql/smoke_role_proofs.sql</code>";
+
+    var top = document.querySelector(".topbar");
+    if (top && top.parentNode) {
+      top.parentNode.insertBefore(strip, top.nextSibling);
+    } else {
+      document.body.insertBefore(strip, document.body.firstChild);
+    }
+  }
+
+  function boot() {
+    injectGotchaStrip();
     enhanceCodeBlocks();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
   }
 })();

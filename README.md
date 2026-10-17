@@ -45,9 +45,11 @@ Full map: [`docs/BANK_NAMING.md`](docs/BANK_NAMING.md)
 
 ~**18 hours** · schedule: [`docs/COURSE_18H.md`](docs/COURSE_18H.md)
 
-## Privileges / cleanup
+## Privileges / cleanup / smoke
 
 - Repair: [`sql/00_privilege_repair.sql`](sql/00_privilege_repair.sql) as `ACCOUNTADMIN`
 - Drop Labs 00–01 (and old SnowShop names): [`sql/cleanup_lab00_lab01.sql`](sql/cleanup_lab00_lab01.sql)
+- Role proofs: [`docs/SNOWSIGHT_GOTCHAS.md`](docs/SNOWSIGHT_GOTCHAS.md) · [`sql/smoke_role_proofs.sql`](sql/smoke_role_proofs.sql)
+- Author check (FR_ proofs must use `SECONDARY ROLES NONE`): `powershell -File scripts/check_lab_invariants.ps1`
 
 Keep `SnowProArchitectStudyGuide.pdf` local only (gitignored).

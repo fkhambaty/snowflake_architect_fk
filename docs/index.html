@@ -61,8 +61,14 @@
 
       <div class="callout warn">
         <strong>Already ran old SnowShop labs?</strong>
-        Drop them first with <code>sql/cleanup_lab00_lab01.sql</code> (also pasted at the end of chat when you ask),
-        then start Lab 00 fresh as Meridian Bank.
+        Drop them first with <code>sql/cleanup_lab00_lab01.sql</code>, then start Lab 00 fresh as Meridian Bank.
+      </div>
+
+      <div class="callout tip">
+        <strong>Before any “should fail” privilege proof</strong>
+        Read <a href="SNOWSIGHT_GOTCHAS.md">Snowsight gotchas</a>.
+        After Lab 01, run <code>sql/smoke_role_proofs.sql</code> statement-by-statement
+        (<code>USE SECONDARY ROLES NONE</code> is required or Alex still sees the vault).
       </div>
     </section>
 

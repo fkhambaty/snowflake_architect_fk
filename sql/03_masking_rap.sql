@@ -51,3 +51,6 @@ GRANT SELECT ON TABLE CURATED.CLIENTS_GOV TO ROLE AR_CURATED_READ;
 GRANT SELECT ON TABLE CURATED.CLIENTS_GOV TO ROLE AR_PII_READ;
 
 SELECT 'Lab 03 policies on CURATED.CLIENTS_GOV' AS status;
+
+-- Proofs: run sql/smoke_lab03_policies.sql statement-by-statement.
+-- Must include USE SECONDARY ROLES NONE after each USE ROLE FR_*.
