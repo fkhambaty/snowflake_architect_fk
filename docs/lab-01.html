@@ -42,6 +42,15 @@
       (no email/phone/SSN). Prove Alex is blocked from <code>LANDING.CLIENTS</code>.
     </div>
 
+    <figure class="viz-panel">
+      <img src="assets/lab01-rbac-map.jpg" alt="Meridian Bank: Alex, Jordan, and Sam with FR_ badges, AR_ keyrings, vault LANDING.CLIENTS and glass window V_CLIENT_DIRECTORY" width="1600" height="900" loading="eager" />
+      <figcaption>
+        <strong>Picture 1 · Burn this in</strong>
+        Humans wear only <em>job badges</em> (FR_). Badges clip onto <em>key-rings</em> (AR_).
+        Alex’s ring opens the glass window — never the SSN vault.
+      </figcaption>
+    </figure>
+
     <div class="story">
       <div class="story-label">FR_ vs AR_ — say until it sticks</div>
       <table class="gloss">
@@ -51,6 +60,57 @@
       </table>
       <p>Elena hangs doors on AR_, clips AR_ onto FR_, gives humans only FR_.</p>
     </div>
+
+    <figure class="viz-panel">
+      <svg class="viz-svg" viewBox="0 0 720 220" role="img" aria-label="Job badge FR_ clips onto key-ring AR_ which opens doors">
+        <defs>
+          <linearGradient id="gSky" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#6bb8e0"/>
+            <stop offset="100%" stop-color="#3d7a9c"/>
+          </linearGradient>
+          <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#e0c078"/>
+            <stop offset="100%" stop-color="#c9a45c"/>
+          </linearGradient>
+        </defs>
+        <!-- Badge -->
+        <rect x="36" y="48" width="150" height="110" rx="14" fill="#2a3342" stroke="url(#gSky)" stroke-width="3"/>
+        <rect x="52" y="64" width="118" height="28" rx="6" fill="url(#gSky)"/>
+        <text x="111" y="84" text-anchor="middle" fill="#151b24" font-family="DM Sans,Segoe UI,sans-serif" font-size="13" font-weight="700">FR_ANALYST</text>
+        <text x="111" y="118" text-anchor="middle" fill="#d5dee8" font-family="DM Sans,Segoe UI,sans-serif" font-size="14" font-weight="600">Job badge</text>
+        <text x="111" y="138" text-anchor="middle" fill="#8f9eb2" font-family="DM Sans,Segoe UI,sans-serif" font-size="11">who you are</text>
+        <!-- Arrow -->
+        <path d="M200 103 H250" stroke="#6bb8e0" stroke-width="3" fill="none"/>
+        <polygon points="250,96 268,103 250,110" fill="#6bb8e0"/>
+        <text x="234" y="88" text-anchor="middle" fill="#c9a45c" font-family="DM Sans,Segoe UI,sans-serif" font-size="11">GRANT ROLE</text>
+        <!-- Keyring -->
+        <circle cx="340" cy="103" r="52" fill="#232b38" stroke="url(#gGold)" stroke-width="3"/>
+        <circle cx="340" cy="103" r="14" fill="none" stroke="#e0c078" stroke-width="3"/>
+        <path d="M354 90 q28 -8 40 18" stroke="#e0c078" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M358 112 q24 10 36 -6" stroke="#8f9eb2" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <text x="340" y="175" text-anchor="middle" fill="#d5dee8" font-family="DM Sans,Segoe UI,sans-serif" font-size="13" font-weight="600">AR_CURATED_READ</text>
+        <text x="340" y="194" text-anchor="middle" fill="#8f9eb2" font-family="DM Sans,Segoe UI,sans-serif" font-size="11">key-ring · what you can open</text>
+        <!-- Arrow 2 -->
+        <path d="M404 103 H454" stroke="#6bb8e0" stroke-width="3" fill="none"/>
+        <polygon points="454,96 472,103 454,110" fill="#6bb8e0"/>
+        <!-- Window vs vault -->
+        <rect x="490" y="40" width="100" height="130" rx="10" fill="#1e2530" stroke="#5bbf96" stroke-width="3"/>
+        <rect x="508" y="58" width="64" height="70" rx="4" fill="#2a4050" stroke="#6bb8e0" stroke-width="2"/>
+        <text x="540" y="130" text-anchor="middle" fill="#5bbf96" font-family="DM Sans,Segoe UI,sans-serif" font-size="11" font-weight="700">WINDOW</text>
+        <text x="540" y="148" text-anchor="middle" fill="#8f9eb2" font-family="IBM Plex Mono,monospace" font-size="9">V_CLIENT…</text>
+        <rect x="608" y="40" width="88" height="130" rx="10" fill="#2a2228" stroke="#e08086" stroke-width="3"/>
+        <circle cx="652" cy="100" r="18" fill="#3a2a30" stroke="#e08086" stroke-width="2"/>
+        <text x="652" y="148" text-anchor="middle" fill="#e08086" font-family="DM Sans,Segoe UI,sans-serif" font-size="11" font-weight="700">VAULT</text>
+        <text x="652" y="166" text-anchor="middle" fill="#8f9eb2" font-family="IBM Plex Mono,monospace" font-size="9">CLIENTS</text>
+        <line x1="600" y1="70" x2="618" y2="95" stroke="#e08086" stroke-width="3"/>
+        <line x1="618" y1="70" x2="600" y2="95" stroke="#e08086" stroke-width="3"/>
+      </svg>
+      <figcaption>
+        <strong>Picture 2 · The clip rule</strong>
+        Elena hangs doors on AR_, clips AR_ onto FR_, gives humans only FR_.
+        Alex never holds the vault key-ring.
+      </figcaption>
+    </figure>
 
     <!-- STEP 0 -->
     <article class="step">
@@ -202,6 +262,14 @@ SELECT 'Safe view ready' AS status;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">9</div><div><h3>Proof: wear Alex — window yes, vault no</h3></div></div>
+      <figure class="viz-panel">
+        <img src="assets/lab01-secondary-roles.jpg" alt="Wrong: FR_ANALYST still wearing ROLE_BANK_LAB_ADMIN coat walks into vault. Right: USE SECONDARY ROLES NONE hangs the coat; vault locked; window open." width="1600" height="900" loading="lazy" />
+        <figcaption>
+          <strong>Picture 3 · Why your vault query “worked”</strong>
+          UI can say FR_ANALYST while a second coat (lab-admin) is still on.
+          <code>USE SECONDARY ROLES NONE</code> hangs that coat — then the vault stays shut.
+        </figcaption>
+      </figure>
       <div class="callout warn">
         <strong>Snowsight gotcha — secondary roles</strong>
         Your user also has <code>ROLE_BANK_LAB_ADMIN</code> (and maybe <code>ACCOUNTADMIN</code>).

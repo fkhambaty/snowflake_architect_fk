@@ -849,6 +849,52 @@ html {
   }
 }
 
+/* Visual memory panels (lab art) */
+.viz-panel {
+  margin: 1.25rem 0 1.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(107, 184, 224, 0.08), transparent 55%),
+    var(--panel);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.viz-panel figcaption {
+  padding: 0.75rem 1.1rem 1rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  border-top: 1px solid var(--line);
+}
+.viz-panel figcaption strong {
+  color: var(--accent-2);
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+.viz-panel img {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+.viz-row {
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 820px) {
+  .viz-row.two { grid-template-columns: 1fr 1fr; }
+}
+.viz-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  padding: 0.75rem 0.5rem 0.25rem;
+}
+
 /* Persistent Snowsight reminder (injected by course.js) */
 .gotcha-strip {
   margin: 0;
