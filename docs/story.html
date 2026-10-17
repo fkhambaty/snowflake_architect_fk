@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The SnowShop story — Labs 00 to 14</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a class="active" href="story.html">Story</a>
+        <a href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-14.html">14</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">One company · One story · All labs</p>
+    <h1>SnowShop: the story of your course</h1>
+    <p class="lede">
+      Read this when labs feel abstract. You are the architect for a tiny shop called <strong>SnowShop</strong>.
+      Each lab is the next chapter. SQL lives in the lab pages — this page is only the story.
+    </p>
+
+    <div class="story">
+      <div class="story-label">Chapter 00 — Build the workshop</div>
+      <p>
+        You open a private workshop building (<code>ARCH_INTERVIEW</code>), buy a small generator
+        (<code>WH_ARCH_XS</code>, and become workshop manager <code>ROLE_ARCH_LAB_ADMIN</code>.
+        Rooms: RAW (loading dock), CURATED (clean shelves), SECURE (policy office), MART (report wall), etc.
+      </p>
+      <p><a href="lab-00.html">Open Lab 00 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 01 — Keys for three jobs</div>
+      <p>
+        Five customers sit in the vault with emails and SSN. You invent <strong>job badges</strong> (Analyst, Engineer, Compliance)
+        and <strong>key-rings</strong> (safe window / vault / PII). Analysts look through a glass window — vault stays locked.
+        Red “Insufficient privileges” = happy ending.
+      </p>
+      <p><a href="lab-01.html">Open Lab 01 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 02 — The night clerk who only files new papers</div>
+      <p>
+        Orders arrive every day. Instead of rewriting the whole order book each night, the clerk (dbt incremental merge)
+        only adds new orders and updates changed ones. Day 1 five orders. Day 2 two new + one status change → seven clean rows.
+      </p>
+      <p><a href="lab-02.html">Open Lab 02 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 03 — Magic ink and velvet ropes</div>
+      <p>
+        Even at the safe table, email is written in magic ink: Analysts see <code>***@…</code>, Compliance sees the real address.
+        Velvet ropes (row access) hide non-US rows from Analysts. Same SELECT, different costume → different reality.
+      </p>
+      <p><a href="lab-03.html">Open Lab 03 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 04 — Dock → kitchen → dining room</div>
+      <p>
+        Bronze = messy dock (RAW). Silver = cleaned kitchen (CURATED). Gold = plated dishes for guests (MART).
+        Data Vault is another kitchen layout for huge history — you learn when to choose it, not build a cathedral.
+      </p>
+      <p><a href="lab-04.html">Open Lab 04 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 05 — The conveyor belt vs the sous-chef vs the recipe book</div>
+      <p>
+        <strong>Stream + task</strong> = conveyor belt that moves new dock boxes into the kitchen on a schedule.
+        <strong>Dynamic table</strong> = sous-chef who keeps a dish fresh with a promised lag.
+        <strong>dbt</strong> = recipe book the kitchen team versions in Git. You pick the tool for the job.
+      </p>
+      <p><a href="lab-05.html">Open Lab 05 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 06 — Trucks unload at the dock</div>
+      <p>
+        Files land on a stage (truck bay). COPY INTO pours them into a landing table.
+        Snowpipe is the same pour — automated when the truck beeps at the cloud door.
+      </p>
+      <p><a href="lab-06.html">Open Lab 06 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 07 — X-ray the slow order</div>
+      <p>
+        Query Profile is the X-ray: where did time go? Spilling to disk? Waiting for a bigger generator?
+        Scale up = bigger engine. Scale out = more engines in parallel for many users.
+      </p>
+      <p><a href="lab-07.html">Open Lab 07 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 08 — Sort the warehouse aisles</div>
+      <p>
+        Clustering is labeling aisles by date so you don’t walk every shelf for “last 7 days.”
+        Search optimization is a special index for “find this one needle” lookups — costs money, use on purpose.
+      </p>
+      <p><a href="lab-08.html">Open Lab 08 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 09 — Undo and photocopy without photocopy paper</div>
+      <p>
+        Time Travel / UNDROP = rewind a mistake. Zero-copy clone = instant practice copy of the shop for QA —
+        no full data copy bill for the first second of existence.
+      </p>
+      <p><a href="lab-09.html">Open Lab 09 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 10 — Share a window with a partner store</div>
+      <p>
+        You don’t mail them a USB stick. You share a secure view — they see what you allow, live.
+        Marketplace is the mall of such listings.
+      </p>
+      <p><a href="lab-10.html">Open Lab 10 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 11 — Second city backup</div>
+      <p>
+        Clone = practice twin. Share = let them read. Replication / failover = second city keeps selling if HQ burns.
+        Architects choose on purpose — not by panic.
+      </p>
+      <p><a href="lab-11.html">Open Lab 11 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 12 — Kitchen rules in writing</div>
+      <p>
+        dbt contracts and CI: recipes must keep promised columns; pull requests only cook what changed (Slim CI).
+        Grown-up team habits.
+      </p>
+      <p><a href="lab-12.html">Open Lab 12 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 13 — The electric meter</div>
+      <p>
+        ACCOUNT_USAGE and resource monitors: who burned credits? Cap the generator before the bill explodes.
+      </p>
+      <p><a href="lab-13.html">Open Lab 13 →</a></p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Chapter 14 — Tell the stories out loud</div>
+      <p>
+        Interview day: no Snowsight. Just you retelling SnowShop chapters when they ask about RBAC, pipes, cost, DR…
+      </p>
+      <p><a href="lab-14.html">Open Lab 14 →</a></p>
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="index.html">← Home</a>
+      <a class="btn primary" href="lab-01.html">Back into Lab 01 story →</a>
+    </div>
+  </div>
+
+  <footer class="footer">Story only — run SQL inside each lab page.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

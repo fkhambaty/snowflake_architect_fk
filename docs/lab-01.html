@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 01 — RBAC like an architect</title>
+  <title>Lab 01 — The SnowShop security story (RBAC)</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,6 +12,7 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
+        <a href="story.html">Story</a>
         <a href="lab-00.html">00</a>
         <a class="active" href="lab-01.html">01</a>
         <a href="lab-02.html">02</a>
@@ -32,73 +33,89 @@
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 01 · Domain 1.2 · Understand first, then run</p>
-    <h1>RBAC like an architect</h1>
+    <p class="eyebrow">Lab 01 · A story first · Then the same SQL as before</p>
+    <h1>The SnowShop vault</h1>
     <p class="lede">
-      Rule for this lab: <strong>read the blue “Understand this” box → then copy the small SQL under it</strong>.
-      Do not paste a giant script blindly. Interviewers ask <em>why</em>, not “can you paste?”
+      Forget “RBAC” for a minute. We’re running a tiny online shop called <strong>SnowShop</strong>.
+      Customer secrets sit in a vault. You will hire three kinds of workers and hand out the right keys —
+      using the SQL below (unchanged). Read the orange story boxes. Then copy.
     </p>
 
-    <div class="callout tip">
-      <strong>What you will be able to explain after this lab</strong>
-      <ul>
-        <li>What a <em>role</em> is (a badge of permissions — not a person)</li>
-        <li>Why we use <strong>functional</strong> roles vs <strong>access</strong> roles</li>
-        <li>Why analysts get a <strong>view</strong> instead of the raw table</li>
-        <li>Why “Insufficient privileges” on RAW is a <em>good</em> demo</li>
+    <div class="story">
+      <div class="story-label">Previously (Lab 00) — in one paragraph</div>
+      <p>
+        You built SnowShop’s private workshop: a building named <code>ARCH_INTERVIEW</code>,
+        a small engine <code>WH_ARCH_XS</code>, and a workshop manager badge
+        <code>ROLE_ARCH_LAB_ADMIN</code>. Inside the building you put rooms (schemas) and
+        locked five fake customers into the back room <code>RAW.CUSTOMERS</code> —
+        including emails and SSN last-4. That back room is the vault.
+      </p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Today’s story — the whole lab in 60 seconds</div>
+      <p>
+        The boss says: “Analysts need customer <em>names</em> for charts.
+        Engineers need the messy vault to build pipelines.
+        Compliance needs SSN for audits.
+        Nobody else should wander the vault.”
+      </p>
+      <p>
+        You will not give each person random keys forever. You invent two kinds of plastic badges:
+      </p>
+      <ul class="cast">
+        <li><strong>Job badges (FR_*)</strong> — “I am an Analyst / Engineer / Compliance”</li>
+        <li><strong>Key-rings (AR_*)</strong> — “This ring opens the safe window / the vault / the PII drawer”</li>
       </ul>
+      <p>
+        Then you clip key-rings onto job badges. When you wear “Analyst”, you only get the safe key-ring.
+        When Snowflake says <em>Insufficient privileges</em> on the vault — the story worked. Celebrate.
+      </p>
     </div>
 
     <div class="callout warn">
-      <strong>Need Lab 00 first</strong>
-      Database <code>ARCH_INTERVIEW</code> + table <code>RAW.CUSTOMERS</code> (5 rows).
-      Missing that? → <a href="lab-00.html">Lab 00</a>
+      <strong>Need Lab 00 done</strong>
+      <code>ARCH_INTERVIEW</code> + <code>RAW.CUSTOMERS</code> with 5 rows. Missing? → <a href="lab-00.html">Lab 00</a>
     </div>
 
-    <!-- ========== BIG PICTURE ========== -->
-    <h2>Big picture (30 seconds)</h2>
-    <p class="hint">
-      Snowflake does not check “who is Faizan?” for every table.
-      It checks: <strong>which role is active right now</strong>, and <strong>what that role is allowed to do</strong>.
-    </p>
     <div class="flow">
-      <div class="node">You (person)</div>
+      <div class="node">You (one person)</div>
       <div class="arrow">→</div>
-      <div class="node accent">FR_ANALYST<br /><small>job badge</small></div>
+      <div class="node accent">Put on job badge</div>
       <div class="arrow">→</div>
-      <div class="node">AR_CURATED_READ<br /><small>permission pack</small></div>
+      <div class="node">Key-ring comes with it</div>
       <div class="arrow">→</div>
-      <div class="node">safe view</div>
+      <div class="node">Safe window or vault</div>
     </div>
-    <p class="hint">
-      Naming cheat sheet: <code>FR_*</code> = Functional Role (job). <code>AR_*</code> = Access Role (permissions only).
-    </p>
 
-    <!-- ========== STEP 0 ========== -->
+    <!-- STEP 0 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">0</div>
         <div>
-          <h3>Privilege repair (only if CREATE ROLE failed earlier)</h3>
-          <p>Skip this if Lab 00 already showed “CREATE ROLE smoke test passed”.</p>
+          <h3>Story: permission to make new badges</h3>
+          <p>Skip if Lab 00 already said CREATE ROLE smoke test passed.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
+      <div class="story">
+        <div class="story-label">Story</div>
         <p>
-          Creating roles is an <strong>account-level</strong> power. Your lab role can own a database,
-          but it cannot create new roles until ACCOUNTADMIN says:
-          “I allow <code>ROLE_ARCH_LAB_ADMIN</code> to create roles.”
+          Only the city mayor (<code>ACCOUNTADMIN</code>) can say:
+          “Workshop manager is allowed to print new badges.”
+          Without that stamp, you cannot invent Analyst / Engineer badges — that’s the error you saw before.
         </p>
+      </div>
+
+      <div class="explain">
+        <h4>SQL meaning (same as before)</h4>
         <table class="gloss">
-          <tr><th>SQL idea</th><th>Plain English</th></tr>
-          <tr><td><code>USE ROLE ACCOUNTADMIN</code></td><td>Put on the “super admin” badge for this step only</td></tr>
-          <tr><td><code>GRANT CREATE ROLE ON ACCOUNT …</code></td><td>Allow lab admin to invent new roles</td></tr>
-          <tr><td><code>… WITH GRANT OPTION</code></td><td>Lab admin can also <em>give warehouse access to others</em> (FR_* roles)</td></tr>
-          <tr><td><code>CREATE ROLE … SMOKE_TMP</code> then <code>DROP</code></td><td>Quick test: if this fails, stop — privileges still wrong</td></tr>
+          <tr><th>SQL idea</th><th>In the story</th></tr>
+          <tr><td><code>USE ROLE ACCOUNTADMIN</code></td><td>Wear the mayor badge for one minute</td></tr>
+          <tr><td><code>GRANT CREATE ROLE …</code></td><td>Allow printing new badges</td></tr>
+          <tr><td><code>WITH GRANT OPTION</code></td><td>Manager can also lend the workshop engine to others</td></tr>
+          <tr><td>Smoke create+drop</td><td>Print a junk badge and throw it away — proves the stamp works</td></tr>
         </table>
-        <span class="why">Why it matters: Without this, Step 2 dies with the error you already saw on account QQ00022.</span>
       </div>
 
       <div class="ui-mock">
@@ -128,27 +145,22 @@ SELECT 'Privilege repair OK — CREATE ROLE works for ROLE_ARCH_LAB_ADMIN' AS st
       <div class="badge-ok">✓ Must see “Privilege repair OK…” before continuing.</div>
     </article>
 
-    <!-- ========== STEP 1 ========== -->
+    <!-- STEP 1 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">1</div>
         <div>
-          <h3>Confirm the customer table exists</h3>
-          <p>We only protect data that is actually there.</p>
+          <h3>Story: count the customers in the vault</h3>
+          <p>Make sure the vault isn’t empty before we put locks on it.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>USE ROLE …</code></td><td>Which badge am I wearing?</td></tr>
-          <tr><td><code>USE WAREHOUSE …</code></td><td>Which engine runs my SQL?</td></tr>
-          <tr><td><code>USE DATABASE …</code></td><td>Which “folder” of objects?</td></tr>
-          <tr><td><code>COUNT(*)</code></td><td>How many customer rows?</td></tr>
-          <tr><td><code>COUNT(SSN_LAST4)</code></td><td>How many rows have that PII column filled?</td></tr>
-        </table>
-        <span class="why">Why: If n ≠ 5, later “analyst blocked” demos mean nothing — you’re testing an empty table.</span>
+      <div class="story">
+        <div class="story-label">Story</div>
+        <p>
+          You walk into the vault as workshop manager and count: five customers.
+          If the count is zero, you’re securing an empty room — pointless. Go finish Lab 00 sample data.
+        </p>
       </div>
 
       <div class="code-block">
@@ -158,31 +170,28 @@ USE WAREHOUSE WH_ARCH_XS;
 USE DATABASE ARCH_INTERVIEW;
 SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM RAW.CUSTOMERS;</code></pre>
       </div>
-      <div class="badge-ok">✓ Expect n = 5. If 0 → Lab 00 Step 4 (sample data).</div>
+      <div class="badge-ok">✓ Expect n = 5</div>
     </article>
 
-    <!-- ========== STEP 2A ========== -->
+    <!-- STEP 2 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">2</div>
         <div>
-          <h3>Create empty roles (name tags only — no powers yet)</h3>
-          <p>Creating a role does <em>not</em> give access by itself. It’s just an empty badge.</p>
+          <h3>Story: print blank badges (no powers yet)</h3>
+          <p>Empty plastic cards with names on them.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p><code>CREATE ROLE</code> = “Invent a new badge name.” Nothing can read tables yet.</p>
-        <ul>
-          <li><code>AR_*</code> = Access roles → we will hang <em>permissions</em> on these</li>
-          <li><code>FR_*</code> = Functional roles → we will hang these on <em>people/jobs</em></li>
-          <li><code>IF NOT EXISTS</code> = safe to re-run; won’t crash if the role is already there</li>
-        </ul>
-        <span class="why">Interview line: “Roles are empty until you GRANT something to them.”</span>
+      <div class="story">
+        <div class="story-label">Story</div>
+        <p>
+          You print six blank badges. Three are <strong>key-rings</strong> (AR_*): “vault reader”, “safe-window reader”, “PII reader”.
+          Three are <strong>job titles</strong> (FR_*): Analyst, Engineer, Compliance.
+          Right now none of them open anything. They’re just labeled plastic.
+        </p>
       </div>
 
-      <p class="chunk-label">Chunk A — create roles</p>
       <div class="code-block">
         <div class="code-head"><span>SQL · create AR_* and FR_*</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
@@ -201,27 +210,23 @@ CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;</code></pre>
       </div>
     </article>
 
-    <!-- ========== STEP 2B ========== -->
+    <!-- STEP 3 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">3</div>
         <div>
-          <h3>Give warehouse power to job roles</h3>
-          <p>Even SELECT needs a warehouse (compute). No warehouse usage → query can’t run.</p>
+          <h3>Story: let job badges start the workshop engine</h3>
+          <p>No electricity → no work, even with the right door key.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
+      <div class="story">
+        <div class="story-label">Story</div>
         <p>
-          <code>GRANT USAGE ON WAREHOUSE … TO ROLE FR_ANALYST</code> means:
-          “The Analyst badge is allowed to <em>use</em> this tiny warehouse engine.”
+          The warehouse is the little generator that powers SQL.
+          Analysts, engineers, and compliance each get a sticker:
+          “You may press the green button on <code>WH_ARCH_XS</code>.”
         </p>
-        <p>
-          We grant this to <strong>FR_*</strong> (people/jobs), not only to access roles,
-          because the person switches into <code>FR_ANALYST</code> and needs compute immediately.
-        </p>
-        <span class="why">This is why Lab 00 gave lab admin <code>WITH GRANT OPTION</code> — so it can pass warehouse usage along.</span>
       </div>
 
       <div class="code-block">
@@ -232,25 +237,30 @@ GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
     </article>
 
-    <!-- ========== STEP 2C ========== -->
+    <!-- STEP 4 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">4</div>
         <div>
-          <h3>Unlock the “doors” (database + schema USAGE)</h3>
-          <p>Snowflake is like a building: you need keys for the building, then the floor, then the room.</p>
+          <h3>Story: building door + floor door (USAGE)</h3>
+          <p>Keys for the building and the floor — not yet for a specific filing cabinet.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <ul>
-          <li><strong>Database USAGE</strong> = enter the building (<code>ARCH_INTERVIEW</code>)</li>
-          <li><strong>Schema USAGE</strong> = enter the floor (<code>RAW</code> / <code>CURATED</code>)</li>
-          <li><strong>SELECT on table/view</strong> = open a specific room (next step)</li>
+      <div class="story">
+        <div class="story-label">Story</div>
+        <p>
+          SnowShop HQ has layers:
+        </p>
+        <ul class="cast">
+          <li><strong>Building</strong> = database <code>ARCH_INTERVIEW</code></li>
+          <li><strong>Floor</strong> = schema <code>RAW</code> or <code>CURATED</code></li>
+          <li><strong>Cabinet</strong> = table or view (next chapter)</li>
         </ul>
-        <p>If you only GRANT SELECT on a table but forget schema USAGE, Snowflake still blocks you. Beginners get burned by this constantly.</p>
-        <span class="why">Interview line: “Privileges are hierarchical — USAGE on container objects, then object privileges.”</span>
+        <p>
+          We hang building+floor keys on the <em>key-rings</em> (AR_*), not on every human.
+          Humans will get key-rings later by job.
+        </p>
       </div>
 
       <div class="code-block">
@@ -264,41 +274,28 @@ GRANT USAGE ON SCHEMA CURATED TO ROLE AR_CURATED_READ;
 GRANT USAGE ON SCHEMA SECURE TO ROLE AR_PII_READ;
 GRANT USAGE ON SCHEMA RAW TO ROLE AR_PII_READ;</code></pre>
       </div>
-      <div class="callout tip">
-        <strong>Notice</strong>
-        We put USAGE on <code>AR_*</code> (access packs), not directly on every human.
-        Humans inherit these packs in a later step.
-      </div>
     </article>
 
-    <!-- ========== STEP 2D ========== -->
+    <!-- STEP 5 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">5</div>
         <div>
-          <h3>Grant SELECT on tables (the actual data permission)</h3>
-          <p>Now the access roles can read data — still not given to humans yet.</p>
+          <h3>Story: open the cabinets (SELECT)</h3>
+          <p>Now the key-rings can open filing cabinets on those floors.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr>
-            <td><code>GRANT SELECT ON ALL TABLES IN SCHEMA RAW …</code></td>
-            <td>Read every table that exists <em>today</em> in RAW</td>
-          </tr>
-          <tr>
-            <td><code>GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW …</code></td>
-            <td>Also auto-allow tables created <em>later</em> — so you don’t forget tomorrow</td>
-          </tr>
-        </table>
+      <div class="story">
+        <div class="story-label">Story</div>
         <p>
-          <code>AR_CURATED_READ</code> gets curated schema tables.
-          <code>AR_RAW_READ</code> / <code>AR_PII_READ</code> get RAW (PII lives there in this lab).
+          <code>AR_RAW_READ</code> / <code>AR_PII_READ</code> → can open cabinets on the RAW vault floor.<br />
+          <code>AR_CURATED_READ</code> → can open cabinets on the CURATED floor.<br />
+          “FUTURE TABLES” means: if someone adds a new cabinet tomorrow, the same key-ring still works — you don’t reprint keys every week.
         </p>
-        <span class="why">Interview gold: “I use future grants so new tables don’t silently become invisible — or accidentally open — without a plan.”</span>
+        <p>
+          Still nobody <em>human</em> has a job badge clipped to these rings. That’s next.
+        </p>
       </div>
 
       <div class="code-block">
@@ -314,35 +311,33 @@ GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;</code></pre>
       </div>
     </article>
 
-    <!-- ========== STEP 2E ========== -->
+    <!-- STEP 6 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">6</div>
         <div>
-          <h3>Wire job badges → permission packs (the architect graph)</h3>
-          <p>This is the most important mental model in the whole lab.</p>
+          <h3>Story: clip key-rings onto job badges</h3>
+          <p>This is the heart of the whole SnowShop security story.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p><code>GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST</code> means:</p>
-        <p><strong>“Whoever wears Analyst also wears the curated-read pack.”</strong></p>
-        <ul>
-          <li>Analyst → curated only (safe)</li>
-          <li>Engineer → raw + curated (pipelines)</li>
-          <li>Compliance → PII + curated</li>
-        </ul>
-        <p>We do <em>not</em> grant table SELECT directly to <code>FR_ANALYST</code>. That keeps the design clean when 50 analysts join.</p>
-        <span class="why">Interview line: “Functional roles for people/groups; access roles for privileges; grant access→functional, not tables→every human.”</span>
+      <div class="story">
+        <div class="story-label">Story — remember this picture</div>
+        <p><strong>Analyst</strong> only gets the safe-window key-ring. Not the vault. Not PII.</p>
+        <p><strong>Engineer</strong> gets vault + safe-window (they build pipes from messy data).</p>
+        <p><strong>Compliance</strong> gets PII + safe-window (audits).</p>
+        <p>
+          We do <em>not</em> walk up to every analyst and hand them a table key.
+          We say: “Analyst job includes the safe-window ring.” Hire 50 analysts tomorrow — same rule.
+        </p>
       </div>
 
       <div class="flow">
         <div class="node accent">FR_ANALYST</div>
-        <div class="arrow">inherits</div>
+        <div class="arrow">gets</div>
         <div class="node">AR_CURATED_READ</div>
         <div class="arrow">↛</div>
-        <div class="node" style="border-color:var(--bad);color:var(--bad)">AR_PII_READ</div>
+        <div class="node" style="border-color:var(--bad);color:var(--bad)">vault / PII rings</div>
       </div>
 
       <div class="code-block">
@@ -357,26 +352,22 @@ GRANT ROLE AR_CURATED_READ TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
     </article>
 
-    <!-- ========== STEP 2F ========== -->
+    <!-- STEP 7 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">7</div>
         <div>
-          <h3>Give those job badges to YOU (so you can test)</h3>
-          <p>Roles exist in the account, but your user must be allowed to wear them.</p>
+          <h3>Story: you play all three jobs</h3>
+          <p>One login. Three costumes. You’re the whole cast for testing.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>SET uname = (SELECT CURRENT_USER());</code></td><td>Store my login name in a variable</td></tr>
-          <tr><td><code>GRANT ROLE FR_ANALYST TO USER …</code></td><td>Allow Faizan (you) to switch into Analyst</td></tr>
-          <tr><td><code>IDENTIFIER($uname)</code></td><td>Use that variable as the real username safely</td></tr>
-        </table>
-        <p>In real companies, an IdP group (Okta/Azure AD) often maps to <code>FR_ANALYST</code> automatically. Here we grant to your user so the dropdown shows the roles.</p>
-        <span class="why">If the role is missing from the Snowsight dropdown, this step didn’t stick (or UI needs a refresh).</span>
+      <div class="story">
+        <div class="story-label">Story</div>
+        <p>
+          HR files a form: “This person (you) is allowed to wear Analyst, Engineer, and Compliance badges
+          for training day.” In real companies, Okta/Azure AD groups do this. Here, SQL does it.
+        </p>
       </div>
 
       <div class="code-block">
@@ -388,26 +379,24 @@ GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);</code></pre>
       </div>
     </article>
 
-    <!-- ========== STEP 2G ========== -->
+    <!-- STEP 8 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">8</div>
         <div>
-          <h3>Create the “safe window” view (no PII columns)</h3>
-          <p>A view is a saved SELECT. Analysts look through the window — not into the whole room.</p>
+          <h3>Story: build the “reception window”</h3>
+          <p>Analysts never enter the vault — they look through a window.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>Raw table has: name, email, phone, SSN last-4, …</p>
-        <p>View keeps only: <code>CUSTOMER_ID, FULL_NAME, COUNTRY, CREATED_AT</code></p>
-        <p>Then we grant SELECT on the <strong>view</strong> to <code>AR_CURATED_READ</code>.</p>
+      <div class="story">
+        <div class="story-label">Story</div>
         <p>
-          Important: even if someone somehow reached the view definition, they still need privileges.
-          The main win here is <strong>column exclusion</strong> + RBAC so analysts never get RAW.
+          In the CURATED room you install a glass window named <code>V_CUSTOMERS_PUBLIC</code>.
+          Through the glass you only see: id, name, country, created date.
+          Email, phone, SSN stay in the vault behind the wall.
+          Then you hang “look through this window” on the safe-window key-ring.
         </p>
-        <span class="why">Later labs add masking policies (hide SSN even for roles that can SELECT the table). RBAC + views is the first layer.</span>
       </div>
 
       <div class="code-block">
@@ -428,25 +417,24 @@ SELECT 'Safe view ready' AS status;</code></pre>
       </div>
     </article>
 
-    <!-- ========== STEP 3 PROVE ========== -->
+    <!-- STEP 9 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">9</div>
         <div>
-          <h3>Prove it: Analyst can see safe data, not PII</h3>
-          <p>This is the interview demo. Change the Role chip or it’s fake.</p>
+          <h3>Story climax: put on Analyst — window yes, vault no</h3>
+          <p>Change the Role chip or you’re still the workshop manager.</p>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p><code>USE ROLE FR_ANALYST</code> = “I am now wearing only the Analyst badge.”</p>
-        <p>Snowflake re-checks every permission from that badge’s inheritance chain.</p>
-        <ul>
-          <li>View query → should work (inherits AR_CURATED_READ → SELECT on view)</li>
-          <li>RAW table → should fail (never inherited AR_RAW_READ / AR_PII_READ)</li>
-        </ul>
-        <span class="why">Saying “we secured it” is weak. Showing a failed SELECT on RAW is strong.</span>
+      <div class="story">
+        <div class="story-label">Story</div>
+        <p>
+          You take off the manager badge. You clip on <strong>Analyst</strong>.
+          Walk to the reception window → you see five names. Good.
+          Try the vault door (<code>RAW.CUSTOMERS</code>) → locked. Red error.
+          That red error is the hero moment of the story. It means SnowShop is safe.
+        </p>
       </div>
 
       <div class="ui-mock">
@@ -457,7 +445,7 @@ SELECT 'Safe view ready' AS status;</code></pre>
         </div>
       </div>
 
-      <p class="chunk-label">A — should work</p>
+      <p class="chunk-label">A — window works</p>
       <div class="code-block">
         <div class="code-head"><span>SQL · analyst safe</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_ANALYST;
@@ -465,30 +453,32 @@ USE WAREHOUSE WH_ARCH_XS;
 USE DATABASE ARCH_INTERVIEW;
 SELECT * FROM CURATED.V_CUSTOMERS_PUBLIC;</code></pre>
       </div>
-      <div class="badge-ok">✓ Columns: id, name, country, created — no email/phone/SSN</div>
+      <div class="badge-ok">✓ Names/countries only — no email/phone/SSN</div>
 
-      <p class="chunk-label">B — should fail (red error = you did it right)</p>
+      <p class="chunk-label">B — vault locked (celebrate the error)</p>
       <div class="code-block">
         <div class="code-head"><span>SQL · analyst blocked</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT * FROM RAW.CUSTOMERS;</code></pre>
       </div>
-      <div class="badge-fail">✗ Insufficient privileges — celebrate this error</div>
+      <div class="badge-fail">✗ Insufficient privileges — this means you win</div>
     </article>
 
-    <!-- ========== STEP 4 ========== -->
+    <!-- STEP 10 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">10</div>
         <div>
-          <h3>Prove Engineer and Compliance paths</h3>
-          <p>Same person (you), different badges → different powers. That’s RBAC.</p>
+          <h3>Story: same you, Engineer then Compliance costumes</h3>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>You are not creating three Snowflake users. You are switching roles.</p>
-        <p>That’s normal in Snowflake: one human, many roles; primary role decides the privilege set (unless secondary roles are enabled — advanced topic for later).</p>
+      <div class="story">
+        <div class="story-label">Story</div>
+        <p>
+          Swap to Engineer — vault opens (you need mess to build pipes).<br />
+          Swap to Compliance — SSN drawer opens (audit day).<br />
+          Still one human login. Different badges. That’s RBAC in real life.
+        </p>
       </div>
 
       <div class="code-block">
@@ -496,35 +486,32 @@ SELECT * FROM CURATED.V_CUSTOMERS_PUBLIC;</code></pre>
 <pre><code>USE ROLE FR_DATA_ENGINEER;
 SELECT CUSTOMER_ID, EMAIL FROM RAW.CUSTOMERS LIMIT 5;</code></pre>
       </div>
-      <div class="badge-ok">✓ Engineer can read RAW (pipeline work).</div>
+      <div class="badge-ok">✓ Engineer can read RAW</div>
 
       <div class="code-block">
         <div class="code-head"><span>SQL · compliance</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_COMPLIANCE;
 SELECT CUSTOMER_ID, SSN_LAST4 FROM RAW.CUSTOMERS;</code></pre>
       </div>
-      <div class="badge-ok">✓ Compliance can read PII.</div>
+      <div class="badge-ok">✓ Compliance can read PII</div>
     </article>
 
-    <!-- ========== STEP 5 ========== -->
+    <!-- STEP 11 -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">11</div>
         <div>
-          <h3>Read the wiring with SHOW GRANTS</h3>
-          <p>Architects can explain the graph from Snowflake itself — not from memory alone.</p>
+          <h3>Story: read the security logbook</h3>
         </div>
       </div>
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>Command</th><th>Question it answers</th></tr>
-          <tr><td><code>SHOW GRANTS TO ROLE FR_ANALYST</code></td><td>What did Analyst receive? (should include role AR_CURATED_READ)</td></tr>
-          <tr><td><code>SHOW GRANTS TO ROLE AR_CURATED_READ</code></td><td>What can the curated pack do? (USAGE/SELECT…)</td></tr>
-          <tr><td><code>SHOW GRANTS OF ROLE AR_CURATED_READ</code></td><td>Who/what was given this pack? (FR_ANALYST, etc.)</td></tr>
-        </table>
-        <span class="why">In interviews: “I’d verify with SHOW GRANTS / ACCESS_HISTORY — not assume.”</span>
+      <div class="story">
+        <div class="story-label">Story</div>
+        <p>
+          Architects don’t only build locks — they can read the logbook:
+          “Which rings does Analyst have?” “What does the safe-window ring open?”
+          That’s <code>SHOW GRANTS</code>.
+        </p>
       </div>
 
       <div class="code-block">
@@ -536,48 +523,48 @@ SHOW GRANTS OF ROLE AR_CURATED_READ;</code></pre>
       </div>
     </article>
 
-    <!-- ========== QUIZ ========== -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">✓</div>
         <div>
-          <h3>Quick self-check (no Snowflake needed)</h3>
-          <p>If you can answer these, you understood — not just pasted.</p>
+          <h3>Can you retell the story? (no SQL)</h3>
         </div>
       </div>
       <ol>
-        <li>Why create <code>AR_CURATED_READ</code> instead of granting the view straight to every analyst user?</li>
-        <li>Why does Analyst need schema USAGE <em>and</em> SELECT?</li>
-        <li>What does <code>GRANT ROLE A TO ROLE B</code> mean in one sentence?</li>
-        <li>Why is a failed <code>SELECT</code> on <code>RAW.CUSTOMERS</code> as Analyst a success?</li>
+        <li>What is a job badge vs a key-ring in one sentence each?</li>
+        <li>Why does Analyst look through a window instead of entering the vault?</li>
+        <li>Why is a red “Insufficient privileges” on RAW a happy ending?</li>
       </ol>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Click for short answers</strong></summary>
         <ol>
-          <li>One permission pack → many people/jobs; easier to audit and change once.</li>
-          <li>Snowflake checks container access (db/schema) before object access (table/view).</li>
-          <li>B inherits A’s privileges (role hierarchy).</li>
-          <li>It proves least privilege: analyst path cannot reach PII tables.</li>
+          <li>Job badge = who you are at work; key-ring = which doors that job may open.</li>
+          <li>So they get useful columns without email/phone/SSN.</li>
+          <li>It proves the Analyst path cannot open the vault — least privilege works.</li>
         </ol>
       </details>
     </article>
 
     <div class="soundbite">
-      <strong>60-second interview answer (now you know why each piece exists)</strong><br />
+      <strong>Interview soundbite (tell the SnowShop story in grown-up words)</strong><br />
       “I separate functional roles from access roles. Table privileges go on access roles.
-      Analysts inherit curated-read and query a view without PII columns.
+      Analysts inherit curated-read and query a view without PII.
       Engineers inherit raw for pipelines; compliance inherits PII.
-      I prove it by switching to FR_ANALYST — curated view works, RAW select fails.
-      Future grants keep new tables under the same model.”
+      I prove it — FR_ANALYST can select the view; RAW select fails.”
+    </div>
+
+    <div class="callout tip">
+      <strong>Want the whole course as one story?</strong>
+      Read <a href="story.html">The SnowShop story (Labs 00–14)</a> anytime — SQL stays in each lab.
     </div>
 
     <div class="pager">
       <a class="btn ghost" href="lab-00.html">← Lab 00</a>
-      <a class="btn primary" href="lab-02.html">Next: Lab 02 dbt →</a>
+      <a class="btn primary" href="lab-02.html">Next: Lab 02 (story continues) →</a>
     </div>
   </div>
 
-  <footer class="footer">Stuck on a line? Copy the SQL line + the error + which Step number into chat.</footer>
+  <footer class="footer">If the story clicks but SQL fails, paste Step number + error text.</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>
