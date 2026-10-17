@@ -1,9 +1,9 @@
 {{ config(materialized='view') }}
 
 select
-    order_id,
-    customer_id,
+    txn_id as order_id,
+    client_id as customer_id,
     status,
-    order_total,
+    amount as order_total,
     updated_at
-from {{ source('raw', 'orders_events') }}
+from {{ source('landing', 'txn_events') }}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 01 — The SnowShop security story (RBAC)</title>
+  <title>Lab 01 — Meridian Bank RBAC</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -16,345 +16,153 @@
         <a href="lab-00.html">00</a>
         <a class="active" href="lab-01.html">01</a>
         <a href="lab-02.html">02</a>
-        <a href="lab-03.html">03</a>
-        <a href="lab-04.html">04</a>
-        <a href="lab-05.html">05</a>
-        <a href="lab-06.html">06</a>
-        <a href="lab-07.html">07</a>
-        <a href="lab-08.html">08</a>
-        <a href="lab-09.html">09</a>
-        <a href="lab-10.html">10</a>
-        <a href="lab-11.html">11</a>
-        <a href="lab-12.html">12</a>
-        <a href="lab-13.html">13</a>
-        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 01 · Monday afternoon · You are Maya</p>
-    <h1>Keys for Alex, Jordan, and Sam</h1>
+    <p class="eyebrow">Lab 01 · Monday afternoon · You are Elena</p>
+    <h1>Stop analysts from seeing SSN</h1>
     <p class="lede">
-      Same SQL as before. New frame: you are <strong>Maya</strong> at SnowShop.
-      Full cast and week: <a href="story.html">read the story</a> if you haven’t.
+      Same pattern: problem → SQL solution → Elena’s wrap-up.
+      Need Lab 00 first (<code>MERIDIAN_BANK</code> + <code>LANDING.CLIENTS</code>).
     </p>
 
-    <div class="story">
-      <div class="story-label">Previously — Monday morning (Lab 00)</div>
-      <p>
-        Maya built workshop <code>ARCH_INTERVIEW</code>, generator <code>WH_ARCH_XS</code>,
-        and pinned on manager badge <code>ROLE_ARCH_LAB_ADMIN</code>.
-        Five customers (with emails + SSN last-4) sit in the vault <code>RAW.CUSTOMERS</code>.
-      </p>
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Alex (Analyst) needs client names for a board deck.
+      Jordan (Engineer) needs the landing vault for pipelines.
+      Sam (Compliance) needs SSN last-4 for an audit.
+      Marcus: “If Alex ever selects SSN, Meridian fails the exam with the regulator.”
+    </div>
+
+    <div class="callout ok">
+      <strong>Solution</strong>
+      Job badges <code>FR_*</code> + key-rings <code>AR_*</code> + safe view <code>CURATED.V_CLIENT_DIRECTORY</code>
+      (no email/phone/SSN). Prove Alex is blocked from <code>LANDING.CLIENTS</code>.
     </div>
 
     <div class="story">
-      <div class="story-label">Why FR_ and AR_ — say this until it sticks</div>
+      <div class="story-label">FR_ vs AR_ — say until it sticks</div>
       <table class="gloss">
-        <tr><th>Prefix</th><th>Full name</th><th>Who wears it?</th></tr>
-        <tr>
-          <td><code>FR_</code></td>
-          <td><strong>F</strong>unctional <strong>R</strong>ole</td>
-          <td>People / jobs — Alex=<code>FR_ANALYST</code>, Jordan=<code>FR_DATA_ENGINEER</code>, Sam=<code>FR_COMPLIANCE</code></td>
-        </tr>
-        <tr>
-          <td><code>AR_</code></td>
-          <td><strong>A</strong>ccess <strong>R</strong>ole</td>
-          <td>Key-rings only — never “Alex’s personal keys.” Example: <code>AR_CURATED_READ</code> = clean-shelf key-ring</td>
-        </tr>
+        <tr><th>Prefix</th><th>Full name</th><th>In Meridian Bank</th></tr>
+        <tr><td><code>FR_</code></td><td>Functional Role</td><td>Job badge — Alex=<code>FR_ANALYST</code>, Jordan=<code>FR_DATA_ENGINEER</code>, Sam=<code>FR_COMPLIANCE</code></td></tr>
+        <tr><td><code>AR_</code></td><td>Access Role</td><td>Key-ring — <code>AR_CURATED_READ</code>, <code>AR_LANDING_READ</code>, <code>AR_PII_READ</code></td></tr>
       </table>
-      <p>
-        Maya’s rule: hang doors on <code>AR_</code>, clip <code>AR_</code> onto <code>FR_</code>, give humans only <code>FR_</code>.
-        The letters are not random — they shout the purpose in every role list.
-      </p>
-    </div>
-
-    <div class="story">
-      <div class="story-label">Today — Priya’s order</div>
-      <p>
-        Priya: “Alex needs names for charts. Jordan needs the vault for pipes. Sam needs SSN for audit.
-        If Alex sees SSN, we’re done.”
-      </p>
-      <p>
-        Maya prints job badges (<code>FR_*</code>) and key-rings (<code>AR_*</code>), builds a glass window
-        <code>V_CUSTOMERS_PUBLIC</code>, clips rings to jobs, then wears Alex’s badge and tries the vault.
-        It refuses. She smiles.
-      </p>
-    </div>
-
-    <div class="callout warn">
-      <strong>Need Lab 00 done</strong>
-      <code>ARCH_INTERVIEW</code> + <code>RAW.CUSTOMERS</code> with 5 rows. Missing? → <a href="lab-00.html">Lab 00</a>
-    </div>
-
-    <div class="flow">
-      <div class="node">You (one person)</div>
-      <div class="arrow">→</div>
-      <div class="node accent">Put on job badge</div>
-      <div class="arrow">→</div>
-      <div class="node">Key-ring comes with it</div>
-      <div class="arrow">→</div>
-      <div class="node">Safe window or vault</div>
+      <p>Elena hangs doors on AR_, clips AR_ onto FR_, gives humans only FR_.</p>
     </div>
 
     <!-- STEP 0 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">0</div>
-        <div>
-          <h3>Story: permission to make new badges</h3>
-          <p>Skip if Lab 00 already said CREATE ROLE smoke test passed.</p>
-        </div>
-      </div>
-
-      <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          Only the city mayor (<code>ACCOUNTADMIN</code>) can say:
-          “Workshop manager is allowed to print new badges.”
-          Without that stamp, you cannot invent Analyst / Engineer badges — that’s the error you saw before.
-        </p>
-      </div>
-
+      <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if CREATE ROLE failed)</h3></div></div>
       <div class="explain">
-        <h4>SQL meaning (same as before)</h4>
-        <table class="gloss">
-          <tr><th>SQL idea</th><th>In the story</th></tr>
-          <tr><td><code>USE ROLE ACCOUNTADMIN</code></td><td>Wear the mayor badge for one minute</td></tr>
-          <tr><td><code>GRANT CREATE ROLE …</code></td><td>Allow printing new badges</td></tr>
-          <tr><td><code>WITH GRANT OPTION</code></td><td>Manager can also lend the workshop engine to others</td></tr>
-          <tr><td>Smoke create+drop</td><td>Print a junk badge and throw it away — proves the stamp works</td></tr>
-        </table>
+        <h4>Story</h4>
+        <p>Only ACCOUNTADMIN can stamp Elena’s role with “may print new badges.” Skip if Lab 00 smoke test already passed.</p>
       </div>
-
-      <div class="ui-mock">
-        <div class="ui-mock-bar">
-          <div class="ui-chip glow"><span class="dot"></span> Role: ACCOUNTADMIN ▾</div>
-        </div>
-      </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · Step 0</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · privilege repair</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
 
-GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
-
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
-GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
 
 SET uname = (SELECT CURRENT_USER());
-GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
+GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);
 
-USE ROLE ROLE_ARCH_LAB_ADMIN;
-CREATE ROLE IF NOT EXISTS ROLE_ARCH_SMOKE_TMP COMMENT = 'temp smoke test - safe to drop';
-DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;
-
-SELECT 'Privilege repair OK — CREATE ROLE works for ROLE_ARCH_LAB_ADMIN' AS status;</code></pre>
+USE ROLE ROLE_BANK_LAB_ADMIN;
+CREATE ROLE IF NOT EXISTS ROLE_BANK_SMOKE_TMP COMMENT = 'temp';
+DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;
+SELECT 'Privilege repair OK' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ Must see “Privilege repair OK…” before continuing.</div>
     </article>
 
-    <!-- STEP 1 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Story: count the customers in the vault</h3>
-          <p>Make sure the vault isn’t empty before we put locks on it.</p>
-        </div>
-      </div>
-
-      <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          You walk into the vault as workshop manager and count: five customers.
-          If the count is zero, you’re securing an empty room — pointless. Go finish Lab 00 sample data.
-        </p>
-      </div>
-
+      <div class="step-head"><div class="step-num">1</div><div><h3>Confirm the vault has clients</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Step 1</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
-SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM RAW.CUSTOMERS;</code></pre>
+        <div class="code-head"><span>SQL · count clients</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
+SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM LANDING.CLIENTS;</code></pre>
       </div>
-      <div class="badge-ok">✓ Expect n = 5</div>
+      <div class="badge-ok">✓ n = 5</div>
     </article>
 
-    <!-- STEP 2 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Story: print blank badges (no powers yet)</h3>
-          <p>Empty plastic cards with names on them.</p>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">2</div><div><h3>Print blank badges (FR_ and AR_)</h3></div></div>
       <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          You print six blank badges. Three are <strong>key-rings</strong> (AR_*): “vault reader”, “safe-window reader”, “PII reader”.
-          Three are <strong>job titles</strong> (FR_*): Analyst, Engineer, Compliance.
-          Right now none of them open anything. They’re just labeled plastic.
-        </p>
+        <p>Empty plastic first — no powers yet. Three job badges, three key-rings.</p>
       </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · create AR_* and FR_*</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
+        <div class="code-head"><span>SQL · create roles</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
 
--- Access roles = permission packs
-CREATE ROLE IF NOT EXISTS AR_RAW_READ;
+CREATE ROLE IF NOT EXISTS AR_LANDING_READ;
 CREATE ROLE IF NOT EXISTS AR_CURATED_READ;
 CREATE ROLE IF NOT EXISTS AR_PII_READ;
 
--- Functional roles = job badges
 CREATE ROLE IF NOT EXISTS FR_ANALYST;
 CREATE ROLE IF NOT EXISTS FR_DATA_ENGINEER;
 CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;</code></pre>
       </div>
     </article>
 
-    <!-- STEP 3 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div>
-          <h3>Story: let job badges start the workshop engine</h3>
-          <p>No electricity → no work, even with the right door key.</p>
-        </div>
-      </div>
-
-      <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          The warehouse is the little generator that powers SQL.
-          Analysts, engineers, and compliance each get a sticker:
-          “You may press the green button on <code>WH_ARCH_XS</code>.”
-        </p>
-      </div>
-
+      <div class="step-head"><div class="step-num">3</div><div><h3>Let job badges use the bank engine</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · warehouse to FR_*</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_ANALYST;
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_DATA_ENGINEER;
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_COMPLIANCE;</code></pre>
+        <div class="code-head"><span>SQL · warehouse</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_ANALYST;
+GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_DATA_ENGINEER;
+GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
     </article>
 
-    <!-- STEP 4 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">4</div>
-        <div>
-          <h3>Story: building door + floor door (USAGE)</h3>
-          <p>Keys for the building and the floor — not yet for a specific filing cabinet.</p>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">4</div><div><h3>Building + floor keys on key-rings</h3></div></div>
       <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          SnowShop HQ has layers:
-        </p>
-        <ul class="cast">
-          <li><strong>Building</strong> = database <code>ARCH_INTERVIEW</code></li>
-          <li><strong>Floor</strong> = schema <code>RAW</code> or <code>CURATED</code></li>
-          <li><strong>Cabinet</strong> = table or view (next chapter)</li>
-        </ul>
-        <p>
-          We hang building+floor keys on the <em>key-rings</em> (AR_*), not on every human.
-          Humans will get key-rings later by job.
-        </p>
+        <p>Database = building. Schema = floor. Table = cabinet (next).</p>
       </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · database + schema USAGE</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_RAW_READ;
-GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_CURATED_READ;
-GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_PII_READ;
+        <div class="code-head"><span>SQL · USAGE</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_LANDING_READ;
+GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_CURATED_READ;
+GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_PII_READ;
 
-GRANT USAGE ON SCHEMA RAW TO ROLE AR_RAW_READ;
+GRANT USAGE ON SCHEMA LANDING TO ROLE AR_LANDING_READ;
 GRANT USAGE ON SCHEMA CURATED TO ROLE AR_CURATED_READ;
-GRANT USAGE ON SCHEMA SECURE TO ROLE AR_PII_READ;
-GRANT USAGE ON SCHEMA RAW TO ROLE AR_PII_READ;</code></pre>
+GRANT USAGE ON SCHEMA RISK_CTRL TO ROLE AR_PII_READ;
+GRANT USAGE ON SCHEMA LANDING TO ROLE AR_PII_READ;</code></pre>
       </div>
     </article>
 
-    <!-- STEP 5 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">5</div>
-        <div>
-          <h3>Story: open the cabinets (SELECT)</h3>
-          <p>Now the key-rings can open filing cabinets on those floors.</p>
-        </div>
-      </div>
-
-      <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          <code>AR_RAW_READ</code> / <code>AR_PII_READ</code> → can open cabinets on the RAW vault floor.<br />
-          <code>AR_CURATED_READ</code> → can open cabinets on the CURATED floor.<br />
-          “FUTURE TABLES” means: if someone adds a new cabinet tomorrow, the same key-ring still works — you don’t reprint keys every week.
-        </p>
-        <p>
-          Still nobody <em>human</em> has a job badge clipped to these rings. That’s next.
-        </p>
-      </div>
-
+      <div class="step-head"><div class="step-num">5</div><div><h3>Cabinet keys (SELECT) on key-rings</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · SELECT + future grants</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_RAW_READ;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_RAW_READ;
+        <div class="code-head"><span>SQL · SELECT + future</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA LANDING TO ROLE AR_LANDING_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA LANDING TO ROLE AR_LANDING_READ;
 
 GRANT SELECT ON ALL TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
 
-GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;</code></pre>
+GRANT SELECT ON ALL TABLES IN SCHEMA LANDING TO ROLE AR_PII_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA LANDING TO ROLE AR_PII_READ;</code></pre>
       </div>
     </article>
 
-    <!-- STEP 6 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">6</div>
-        <div>
-          <h3>Story: clip key-rings onto job badges</h3>
-          <p>This is the heart of the whole SnowShop security story.</p>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">6</div><div><h3>Clip key-rings onto job badges</h3></div></div>
       <div class="story">
-        <div class="story-label">Story — remember this picture</div>
-        <p><strong>Analyst</strong> only gets the safe-window key-ring. Not the vault. Not PII.</p>
-        <p><strong>Engineer</strong> gets vault + safe-window (they build pipes from messy data).</p>
-        <p><strong>Compliance</strong> gets PII + safe-window (audits).</p>
-        <p>
-          We do <em>not</em> walk up to every analyst and hand them a table key.
-          We say: “Analyst job includes the safe-window ring.” Hire 50 analysts tomorrow — same rule.
-        </p>
+        <p>Alex → curated only. Jordan → landing + curated. Sam → PII + curated.</p>
       </div>
-
-      <div class="flow">
-        <div class="node accent">FR_ANALYST</div>
-        <div class="arrow">gets</div>
-        <div class="node">AR_CURATED_READ</div>
-        <div class="arrow">↛</div>
-        <div class="node" style="border-color:var(--bad);color:var(--bad)">vault / PII rings</div>
-      </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · grant access roles to functional roles</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · FR inherits AR</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST;
 
-GRANT ROLE AR_RAW_READ TO ROLE FR_DATA_ENGINEER;
+GRANT ROLE AR_LANDING_READ TO ROLE FR_DATA_ENGINEER;
 GRANT ROLE AR_CURATED_READ TO ROLE FR_DATA_ENGINEER;
 
 GRANT ROLE AR_PII_READ TO ROLE FR_COMPLIANCE;
@@ -362,26 +170,10 @@ GRANT ROLE AR_CURATED_READ TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
     </article>
 
-    <!-- STEP 7 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">7</div>
-        <div>
-          <h3>Story: you play all three jobs</h3>
-          <p>One login. Three costumes. You’re the whole cast for testing.</p>
-        </div>
-      </div>
-
-      <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          HR files a form: “This person (you) is allowed to wear Analyst, Engineer, and Compliance badges
-          for training day.” In real companies, Okta/Azure AD groups do this. Here, SQL does it.
-        </p>
-      </div>
-
+      <div class="step-head"><div class="step-num">7</div><div><h3>Let your user wear all three jobs (for testing)</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · grant FR_* to your user</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · grant to you</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SET uname = (SELECT CURRENT_USER());
 GRANT ROLE FR_ANALYST TO USER IDENTIFIER($uname);
 GRANT ROLE FR_DATA_ENGINEER TO USER IDENTIFIER($uname);
@@ -389,192 +181,80 @@ GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);</code></pre>
       </div>
     </article>
 
-    <!-- STEP 8 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">8</div>
-        <div>
-          <h3>Story: build the “reception window”</h3>
-          <p>Analysts never enter the vault — they look through a window.</p>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">8</div><div><h3>Build the safe client directory window</h3></div></div>
       <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          In the CURATED room you install a glass window named <code>V_CUSTOMERS_PUBLIC</code>.
-          Through the glass you only see: id, name, country, created date.
-          Email, phone, SSN stay in the vault behind the wall.
-          Then you hang “look through this window” on the safe-window key-ring.
-        </p>
+        <p>No email, phone, or SSN — only what Alex needs for charts.</p>
       </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · curated view</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · safe view</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE SCHEMA CURATED;
 
-CREATE OR REPLACE VIEW V_CUSTOMERS_PUBLIC AS
-SELECT
-  CUSTOMER_ID,
-  FULL_NAME,
-  COUNTRY,
-  CREATED_AT
-FROM RAW.CUSTOMERS;
+CREATE OR REPLACE VIEW V_CLIENT_DIRECTORY AS
+SELECT CLIENT_ID, FULL_NAME, COUNTRY, CREATED_AT
+FROM LANDING.CLIENTS;
 
-GRANT SELECT ON VIEW V_CUSTOMERS_PUBLIC TO ROLE AR_CURATED_READ;
+GRANT SELECT ON VIEW V_CLIENT_DIRECTORY TO ROLE AR_CURATED_READ;
 
 SELECT 'Safe view ready' AS status;</code></pre>
       </div>
     </article>
 
-    <!-- STEP 9 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">9</div>
-        <div>
-          <h3>Story climax: put on Analyst — window yes, vault no</h3>
-          <p>Change the Role chip or you’re still the workshop manager.</p>
-        </div>
-      </div>
-
-      <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          You take off the manager badge. You clip on <strong>Analyst</strong>.
-          Walk to the reception window → you see five names. Good.
-          Try the vault door (<code>RAW.CUSTOMERS</code>) → locked. Red error.
-          That red error is the hero moment of the story. It means SnowShop is safe.
-        </p>
-      </div>
-
+      <div class="step-head"><div class="step-num">9</div><div><h3>Proof: wear Alex — window yes, vault no</h3></div></div>
       <div class="ui-mock">
         <div class="ui-mock-bar">
           <div class="ui-chip glow"><span class="dot"></span> Role: FR_ANALYST ▾</div>
-          <div class="ui-chip">WH: WH_ARCH_XS ▾</div>
-          <div class="ui-chip">DB: ARCH_INTERVIEW ▾</div>
+          <div class="ui-chip">WH: WH_BANK_XS ▾</div>
+          <div class="ui-chip">DB: MERIDIAN_BANK ▾</div>
         </div>
       </div>
-
-      <p class="chunk-label">A — window works</p>
       <div class="code-block">
-        <div class="code-head"><span>SQL · analyst safe</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Alex safe</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_ANALYST;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
-SELECT * FROM CURATED.V_CUSTOMERS_PUBLIC;</code></pre>
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
+SELECT * FROM CURATED.V_CLIENT_DIRECTORY;</code></pre>
       </div>
-      <div class="badge-ok">✓ Names/countries only — no email/phone/SSN</div>
-
-      <p class="chunk-label">B — vault locked (celebrate the error)</p>
+      <div class="badge-ok">✓ Names/countries only</div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · analyst blocked</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT * FROM RAW.CUSTOMERS;</code></pre>
+        <div class="code-head"><span>SQL · Alex blocked (celebrate)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM LANDING.CLIENTS;</code></pre>
       </div>
-      <div class="badge-fail">✗ Insufficient privileges — this means you win</div>
+      <div class="badge-fail">✗ Insufficient privileges — regulator would smile</div>
     </article>
 
-    <!-- STEP 10 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">10</div>
-        <div>
-          <h3>Story: same you, Engineer then Compliance costumes</h3>
-        </div>
-      </div>
-
-      <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          Swap to Engineer — vault opens (you need mess to build pipes).<br />
-          Swap to Compliance — SSN drawer opens (audit day).<br />
-          Still one human login. Different badges. That’s RBAC in real life.
-        </p>
-      </div>
-
+      <div class="step-head"><div class="step-num">10</div><div><h3>Proof: Jordan and Sam paths</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · engineer</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Jordan</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_DATA_ENGINEER;
-SELECT CUSTOMER_ID, EMAIL FROM RAW.CUSTOMERS LIMIT 5;</code></pre>
+SELECT CLIENT_ID, EMAIL FROM LANDING.CLIENTS LIMIT 5;</code></pre>
       </div>
-      <div class="badge-ok">✓ Engineer can read RAW</div>
-
+      <div class="badge-ok">✓ Engineer can read landing</div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · compliance</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Sam</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_COMPLIANCE;
-SELECT CUSTOMER_ID, SSN_LAST4 FROM RAW.CUSTOMERS;</code></pre>
+SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
       </div>
       <div class="badge-ok">✓ Compliance can read PII</div>
     </article>
 
-    <!-- STEP 11 -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">11</div>
-        <div>
-          <h3>Story: read the security logbook</h3>
-        </div>
-      </div>
-
-      <div class="story">
-        <div class="story-label">Story</div>
-        <p>
-          Architects don’t only build locks — they can read the logbook:
-          “Which rings does Analyst have?” “What does the safe-window ring open?”
-          That’s <code>SHOW GRANTS</code>.
-        </p>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · inspect grants</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-SHOW GRANTS TO ROLE FR_ANALYST;
-SHOW GRANTS TO ROLE AR_CURATED_READ;
-SHOW GRANTS OF ROLE AR_CURATED_READ;</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">✓</div>
-        <div>
-          <h3>Can you retell the story? (no SQL)</h3>
-        </div>
-      </div>
-      <ol>
-        <li>What is a job badge vs a key-ring in one sentence each?</li>
-        <li>Why does Analyst look through a window instead of entering the vault?</li>
-        <li>Why is a red “Insufficient privileges” on RAW a happy ending?</li>
-      </ol>
-      <details class="callout tip" style="cursor:pointer">
-        <summary><strong>Click for short answers</strong></summary>
-        <ol>
-          <li>Job badge = who you are at work; key-ring = which doors that job may open.</li>
-          <li>So they get useful columns without email/phone/SSN.</li>
-          <li>It proves the Analyst path cannot open the vault — least privilege works.</li>
-        </ol>
-      </details>
-    </article>
-
     <div class="soundbite">
-      <strong>Interview soundbite (tell the SnowShop story in grown-up words)</strong><br />
-      “I separate functional roles from access roles. Table privileges go on access roles.
-      Analysts inherit curated-read and query a view without PII.
-      Engineers inherit raw for pipelines; compliance inherits PII.
-      I prove it — FR_ANALYST can select the view; RAW select fails.”
-    </div>
-
-    <div class="callout tip">
-      <strong>Want the whole course as one story?</strong>
-      Read <a href="story.html">The SnowShop story (Labs 00–14)</a> anytime — SQL stays in each lab.
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Meridian’s problem was open access to client PII. I separated functional roles (jobs) from access roles (key-rings):
+      FR_ANALYST, FR_DATA_ENGINEER, FR_COMPLIANCE and AR_CURATED_READ, AR_LANDING_READ, AR_PII_READ.
+      Analysts only inherit curated-read and query V_CLIENT_DIRECTORY — no email or SSN.
+      I proved it: as FR_ANALYST, landing select fails.
+      <em>Outcome:</em> Alex can ship the board deck; Sam can audit; the regulator’s nightmare path is closed.”
     </div>
 
     <div class="pager">
       <a class="btn ghost" href="lab-00.html">← Lab 00</a>
-      <a class="btn primary" href="lab-02.html">Next: Lab 02 (story continues) →</a>
+      <a class="btn primary" href="lab-02.html">Lab 02 →</a>
     </div>
   </div>
-
-  <footer class="footer">If the story clicks but SQL fails, paste Step number + error text.</footer>
+  <footer class="footer">To wipe Labs 00+01: sql/cleanup_lab00_lab01.sql</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

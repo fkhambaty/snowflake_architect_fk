@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 08 — Clustering &amp; search optimization</title>
+  <title>Lab 08 — Clustering</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,259 +12,80 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
-        <a href="lab-00.html">Lab 00</a>
-        <a href="lab-01.html">Lab 01</a>
-        <a href="lab-02.html">Lab 02</a>
-        <a href="lab-03.html">Lab 03</a>
-        <a href="lab-04.html">Lab 04</a>
-        <a href="lab-05.html">Lab 05</a>
-        <a href="lab-06.html">Lab 06</a>
-        <a href="lab-07.html">Lab 07</a>
-        <a class="active" href="lab-08.html">Lab 08</a>
-        <a href="lab-09.html">Lab 09</a>
-        <a href="lab-10.html">Lab 10</a>
-        <a href="lab-11.html">Lab 11</a>
-        <a href="lab-12.html">Lab 12</a>
-        <a href="lab-13.html">Lab 13</a>
-        <a href="lab-14.html">Lab 14</a>
+        <a href="story.html">Story</a>
+        <a href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a class="active" href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a href="lab-11.html">11</a>
+        <a href="lab-12.html">12</a>
+        <a href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 08 · Performance · Understand first, then run</p>
-    <h1>Clustering keys &amp; search optimization</h1>
-    <p class="lede">
-      Snowflake stores data in <strong>micro-partitions</strong>. A <strong>clustering key</strong> helps the engine
-      <em>skip</em> partitions when your filters match. Read each blue box → copy the SQL under it.
-    </p>
+    <p class="eyebrow">Lab 08 · Friday noon · You are Elena</p>
+    <h1>Stop scanning a year when Alex wants 7 days</h1>
+    <p class="lede">Huge event history makes ‘last 7 days’ expensive. Elena clusters <code>CURATED.BIG_EVENTS</code> on <code>EVENT_DATE</code>.</p>
 
-    <div class="callout tip">
-      <strong>After this lab you can explain</strong>
-      <ul>
-        <li>What <code>SYSTEM$CLUSTERING_INFORMATION</code> tells you (and a sample cert-style answer)</li>
-        <li>When to add <code>CLUSTER BY</code> vs leave natural load order</li>
-        <li>When <strong>search optimization</strong> beats clustering (point lookups, cost tradeoff)</li>
-        <li>How to prove pruning in the <strong>Query Profile</strong></li>
-      </ul>
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Risk team filters BIG_EVENTS to recent weeks; queries scan hundreds of thousands of micro-partitions. Finance sees the credit line move.
     </div>
 
-    <div class="callout warn">
-      <strong>Prerequisites</strong>
-      Lab 00 (<code>ARCH_INTERVIEW</code>, warehouse <code>WH_ARCH_XS</code>, role <code>ROLE_ARCH_LAB_ADMIN</code>).
+    <div class="callout ok">
+      <strong>Solution you will build</strong>
+      Synthetic big table, inspect <code>SYSTEM$CLUSTERING_INFORMATION</code>, <code>CLUSTER BY (EVENT_DATE)</code>, re-run filtered aggregate.
     </div>
-
-    <h2>Big picture (30 seconds)</h2>
-    <div class="flow">
-      <div class="node">Large table</div>
-      <div class="arrow">→</div>
-      <div class="node accent">Filter on key column<br /><small>e.g. EVENT_DATE</small></div>
-      <div class="arrow">→</div>
-      <div class="node">Prune micro-partitions</div>
-      <div class="arrow">→</div>
-      <div class="node">Less bytes scanned</div>
-    </div>
-    <p class="hint">
-      Clustering is not an index in the Oracle sense. Snowflake rewrites micro-partitions over time (automatic clustering)
-      when you define a key. You still pay for maintenance credits.
-    </p>
 
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Build a demo table big enough to see pruning</h3>
-          <p>200k rows is tiny for production — but enough on a trial to open Query Profile.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL idea</th><th>Plain English</th></tr>
-          <tr><td><code>GENERATOR(ROWCOUNT => …)</code></td><td>Fake rows without a CSV file</td></tr>
-          <tr><td><code>EVENT_DATE</code> spread over 365 days</td><td>Filters on “last 7 days” should skip old partitions — once clustered</td></tr>
-          <tr><td><code>CURATED.BIG_EVENTS</code></td><td>Lab table; safe to drop later</td></tr>
-        </table>
-        <span class="why">Interviewers care: you chose a key that matches <em>real query patterns</em>, not every column.</span>
-      </div>
-
+      <div class="step-head"><div class="step-num">1</div><div><h3>Clustering demo</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Step 1 · create BIG_EVENTS</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
+        <div class="code-head"><span>SQL · sql/08_clustering.sql</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
 USE SCHEMA CURATED;
 
 CREATE OR REPLACE TABLE BIG_EVENTS AS
-SELECT
-  SEQ4() AS EVENT_ID,
-  UNIFORM(1, 5, RANDOM()) AS CUSTOMER_ID,
+SELECT SEQ4() AS EVENT_ID, UNIFORM(1, 5, RANDOM()) AS CLIENT_ID,
   DATEADD('day', -UNIFORM(0, 364, RANDOM()), CURRENT_DATE()) AS EVENT_DATE,
   UNIFORM(1, 100, RANDOM()) / 1 AS AMOUNT
-FROM TABLE(GENERATOR(ROWCOUNT => 200000));</code></pre>
+FROM TABLE(GENERATOR(ROWCOUNT => 200000));
+
+SELECT SYSTEM$CLUSTERING_INFORMATION('CURATED.BIG_EVENTS', '(EVENT_DATE)');
+ALTER TABLE BIG_EVENTS CLUSTER BY (EVENT_DATE);
+SELECT COUNT(*), SUM(AMOUNT) FROM BIG_EVENTS
+WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());
+SELECT 'Lab 08 clustering demo ready' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ Table created — note row count in results.</div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Baseline: clustering information <em>before</em> a key</h3>
-          <p>This is the function cert exams love to ask about.</p>
-        </div>
+      <div class="story">
+        <p>Search optimization is for point lookups on IDs — Elena mentions it in interviews; clustering fits date-filtered risk reports.</p>
       </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>
-          <code>SYSTEM$CLUSTERING_INFORMATION('schema.table', '(COL)')</code> returns JSON stats.
-          Focus on <strong>average_overlap_ratio</strong> and <strong>average_depth</strong>.
-        </p>
-        <table class="gloss">
-          <tr><th>Metric (typical)</th><th>What to say in an interview / sample exam</th></tr>
-          <tr><td><code>average_overlap_ratio</code></td><td>How much partition ranges overlap on that key — <strong>lower is better</strong> for pruning</td></tr>
-          <tr><td><code>average_depth</code></td><td>How deep clustering runs — very high depth can mean the key fights the load pattern</td></tr>
-          <tr><td>No key yet</td><td>Stats still describe natural layout; compare after <code>CLUSTER BY</code></td></tr>
-        </table>
-        <span class="why">
-          Sample exam soundbite: “I use SYSTEM$CLUSTERING_INFORMATION to see overlap on the declared key;
-          if overlap stays high after automatic clustering, I revisit the key or query patterns.”
-        </span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · Step 2 · baseline clustering info</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT SYSTEM$CLUSTERING_INFORMATION('CURATED.BIG_EVENTS', '(EVENT_DATE)');</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div>
-          <h3>Declare a clustering key</h3>
-          <p>Automatic clustering runs asynchronously — re-check info after a few minutes if stats look unchanged.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>ALTER TABLE … CLUSTER BY (EVENT_DATE)</code></td><td>Tell Snowflake: keep partitions ordered/grouped on this column</td></tr>
-          <tr><td>Automatic clustering</td><td>Background job — not instant; costs credits on large tables</td></tr>
-        </table>
-        <span class="why">Architect rule: cluster on columns used in <code>WHERE</code> / joins that scan large history — often dates or tenant IDs.</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · Step 3 · add clustering key</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>ALTER TABLE BIG_EVENTS CLUSTER BY (EVENT_DATE);
-
-SELECT SYSTEM$CLUSTERING_INFORMATION('CURATED.BIG_EVENTS', '(EVENT_DATE)');</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">4</div>
-        <div>
-          <h3>Run a filter query &amp; open Query Profile</h3>
-          <p>Prove pruning with “partitions scanned” — not vibes.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>
-          This query filters to the last 7 days. After clustering, Query Profile should show
-          <strong>fewer partitions scanned</strong> than a full table scan.
-        </p>
-        <span class="why">In interviews: “I validate with Query Profile partition pruning, not only elapsed time.”</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · Step 4 · pruning-friendly query</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT COUNT(*), SUM(AMOUNT)
-FROM BIG_EVENTS
-WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());</code></pre>
-      </div>
-      <div class="badge-ok">✓ In Snowsight: History → this query → Query Profile → TableScan / partitions scanned.</div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">5</div>
-        <div>
-          <h3>Search optimization (talktrack — optional SQL)</h3>
-          <p>Use when clustering does not help <em>point lookups</em>.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>
-          <strong>Search optimization</strong> builds a search access path for equality / substring predicates
-          (e.g. <code>WHERE EVENT_ID = 12345</code>) when micro-partition pruning alone is weak.
-        </p>
-        <table class="gloss">
-          <tr><th>When to mention it</th><th>Tradeoff to say out loud</th></tr>
-          <tr><td>High-selectivity point lookups on a column <em>not</em> in the clustering key</td><td>Extra storage + background maintenance credits</td></tr>
-          <tr><td>Lookup by business key, ID, email token</td><td>Not a replacement for clustering on time-range analytics</td></tr>
-        </table>
-        <span class="why">Interview line: “Clustering for range scans; search optimization for needle-in-haystack equality — I weigh scan savings vs SO maintenance cost.”</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · Step 5 · optional search optimization</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>-- Optional: only if you want to demo point lookup acceleration
-ALTER TABLE BIG_EVENTS ADD SEARCH OPTIMIZATION ON EQUALITY(EVENT_ID);
-
-SELECT EVENT_ID, AMOUNT
-FROM BIG_EVENTS
-WHERE EVENT_ID = 42;  -- pick an ID that exists or expect 0 rows</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">✓</div>
-        <div>
-          <h3>Quick self-check</h3>
-        </div>
-      </div>
-      <ol>
-        <li>What does a <em>lower</em> <code>average_overlap_ratio</code> imply?</li>
-        <li>Why is clustering not the same as a traditional B-tree index?</li>
-        <li>When would you propose search optimization instead of (or in addition to) clustering?</li>
-      </ol>
-      <details class="callout tip" style="cursor:pointer">
-        <summary><strong>Click for short answers</strong></summary>
-        <ol>
-          <li>Better separation of partition bounds on the key → more pruning opportunity.</li>
-          <li>Snowflake manages micro-partitions; clustering rewrites layout over time — no user-managed index pages.</li>
-          <li>Equality / point lookups on columns that range filters don’t prune well — accept SO storage/maintenance cost.</li>
-        </ol>
-      </details>
     </article>
 
     <div class="soundbite">
-      <strong>60-second interview answer</strong><br />
-      “For large fact tables I align clustering keys with dominant filters — often event or load dates.
-      I check SYSTEM$CLUSTERING_INFORMATION for overlap on that key and confirm pruning in Query Profile.
-      For rare high-selectivity point lookups I consider search optimization and call out the extra maintenance cost.
-      I don’t cluster every column — keys have a credit cost.”
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Meridian’s last-7-days reports were scanning the whole year. I clustered CURATED.BIG_EVENTS on EVENT_DATE and validated overlap with SYSTEM$CLUSTERING_INFORMATION.
+      <em>Outcome:</em> fewer bytes scanned on date filters — better speed and FinOps story for Marcus.”
     </div>
+
 
     <div class="pager">
       <a class="btn ghost" href="lab-07.html">← Lab 07</a>
-      <a class="btn primary" href="lab-09.html">Next: Lab 09 Time Travel →</a>
+      <a class="btn primary" href="lab-09.html">Lab 09 →</a>
     </div>
   </div>
-
-  <footer class="footer">Stuck? Copy the Step number + SQL + error into chat.</footer>
+  <footer class="footer">sql/08_clustering.sql</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

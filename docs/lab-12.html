@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 12 — dbt at scale</title>
+  <title>Lab 12 — dbt contracts & Slim CI</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,114 +12,69 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
-        <a href="lab-00.html">Lab 00</a>
-        <a href="lab-01.html">Lab 01</a>
-        <a href="lab-02.html">Lab 02</a>
-        <a href="lab-03.html">Lab 03</a>
-        <a href="lab-04.html">Lab 04</a>
-        <a href="lab-05.html">Lab 05</a>
-        <a href="lab-06.html">Lab 06</a>
-        <a href="lab-07.html">Lab 07</a>
-        <a href="lab-08.html">Lab 08</a>
-        <a href="lab-09.html">Lab 09</a>
-        <a href="lab-10.html">Lab 10</a>
-        <a href="lab-11.html">Lab 11</a>
-        <a class="active" href="lab-12.html">Lab 12</a>
-        <a href="lab-13.html">Lab 13</a>
-        <a href="lab-14.html">Lab 14</a>
+        <a href="story.html">Story</a>
+        <a href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a href="lab-11.html">11</a>
+        <a class="active" href="lab-12.html">12</a>
+        <a href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 12 · dbt platform · Understand first — CI is explained, not required</p>
-    <h1>dbt at scale: sources, contracts &amp; Slim CI</h1>
-    <p class="lede">
-      Lab 02 ran incremental merge locally. Architects design how <strong>many developers</strong> change models safely:
-      declared <strong>sources</strong>, <strong>contracts</strong> on marts, and <strong>Slim CI</strong> so pull requests
-      only build what changed. You do not need to run GitHub Actions for this lab — read the workflow sketch.
-    </p>
+    <p class="eyebrow">Lab 12 · Sunday · You are Elena · Alex’s broken metric</p>
+    <h1>Silent dbt changes broke the board deck</h1>
+    <p class="lede">Lab 02 proved incremental merge. Now many developers change models — sources, contracts, Slim CI so PRs don’t rebuild the world.</p>
 
-    <div class="callout tip">
-      <strong>After this lab you can explain</strong>
-      <ul>
-        <li><code>sources.yml</code> — upstream ownership &amp; freshness hooks</li>
-        <li><code>contract</code> on models — column names/types enforced at build time</li>
-        <li>Slim CI: <code>dbt ls --select state:modified+</code> + defer to prod manifest</li>
-        <li>How this repo’s <code>dbt_project/</code> is structured</li>
-      </ul>
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      A column rename in the txn mart shipped without notice. Alex’s Looker tile went blank before the board meeting. Marcus: “Govern the published marts.”
     </div>
 
-    <h2>Repo map (this course)</h2>
-    <table class="plain">
-      <tr><th>Path</th><th>Role</th></tr>
-      <tr><td><code>models/staging/_sources.yml</code></td><td>Declares <code>RAW.ORDERS_EVENTS</code> as source <code>raw.orders_events</code></td></tr>
-      <tr><td><code>models/staging/stg_orders.sql</code></td><td>Light transform view in <code>CURATED</code></td></tr>
-      <tr><td><code>models/marts/fct_orders_incremental.sql</code></td><td>Incremental merge mart (Lab 02 pattern)</td></tr>
-      <tr><td><code>models/marts/schema.yml</code></td><td>Tests — extend with contracts in Step 2</td></tr>
-    </table>
+    <div class="callout ok">
+      <strong>Solution you will design</strong>
+      Declare <code>landing.txn_events</code> in sources, enforce contract on <code>fct_orders_incremental</code>, Slim CI with <code>state:modified+</code> and defer.
+    </div>
+
+    <div class="story">
+      <p>Jordan owns git; Elena owns what may break Alex — contracts on published marts, not every staging view.</p>
+    </div>
 
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Sources — boundary with RAW</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>
-          Sources document “we don’t own this table.” Lineage starts at <code>{{ source('raw', 'orders_events') }}</code>.
-          Freshness blocks can alert when loads stall.
-        </p>
-        <span class="why">Interview: “Staging reads sources; marts read refs — never skip the source layer in enterprise repos.”</span>
-      </div>
-
+      <div class="step-head"><div class="step-num">1</div><div><h3>Sources boundary — LANDING.TXN_EVENTS</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>YAML · sources excerpt</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>YAML · dbt_project/models/staging/_sources.yml</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>version: 2
 
 sources:
-  - name: raw
-    database: ARCH_INTERVIEW
-    schema: RAW
+  - name: landing
+    database: MERIDIAN_BANK
+    schema: LANDING
     tables:
-      - name: orders_events
-        description: "Lab 02 source events for incremental merge demo"
-        loaded_at_field: updated_at
-        freshness:
-          warn_after: {count: 24, period: hour}
-          error_after: {count: 48, period: hour}</code></pre>
+      - name: txn_events
+        description: "Meridian Bank txn events for incremental merge demo"</code></pre>
       </div>
     </article>
 
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Model contract on a mart</h3>
-          <p>Downstream tools (BI, other teams) get a stable column guarantee.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>Contract piece</th><th>Plain English</th></tr>
-          <tr><td><code>contract: {enforced: true}</code></td><td>dbt fails the build if model SQL output doesn’t match YAML columns/types</td></tr>
-          <tr><td>Column list with <code>data_type</code></td><td>Document + enforce schema for consumers</td></tr>
-        </table>
-        <span class="why">Architects use contracts on published marts — not every staging view.</span>
-      </div>
-
+      <div class="step-head"><div class="step-num">2</div><div><h3>Contract on the published mart</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>YAML · contract example for fct_orders_incremental</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>YAML · contract example</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>version: 2
 
 models:
   - name: fct_orders_incremental
-    description: "Incremental order fact — published mart with enforced contract"
     config:
       contract:
         enforced: true
@@ -140,153 +95,28 @@ models:
     </article>
 
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div>
-          <h3>Incremental model (reference SQL)</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>Snowflake <code>merge</code> strategy with <code>unique_key</code> — same as Lab 02. Contract YAML must match this SELECT list.</p>
-      </div>
-
+      <div class="step-head"><div class="step-num">3</div><div><h3>Slim CI commands (illustration)</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · fct_orders_incremental.sql core</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>{{ config(
-    materialized='incremental',
-    unique_key='order_id',
-    incremental_strategy='merge'
-) }}
-
-select
-    order_id,
-    customer_id,
-    status,
-    order_total,
-    updated_at
-from {{ ref('stg_orders') }}
-
-{% if is_incremental() %}
-  where updated_at > (select coalesce(max(updated_at), '1900-01-01'::timestamp_ntz) from {{ this }})
-{% endif %}</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">4</div>
-        <div>
-          <h3>Slim CI talktrack</h3>
-          <p>Full <code>dbt build</code> on every PR doesn’t scale. Slim CI builds the modified subgraph.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <ol>
-          <li>On merge to main, upload <code>manifest.json</code> artifact from prod-like target.</li>
-          <li>On PR, download that manifest → <code>--state path/to/prod/</code></li>
-          <li><code>dbt ls --select state:modified+ --resource-type model</code> — what changed + downstream</li>
-          <li><code>dbt build --select state:modified+ --defer --state …</code> — run only that slice, defer unmodified refs to prod</li>
-        </ol>
-        <span class="why">Interview line: “Slim CI cuts warehouse spend and queue time; contracts stop breaking BI when a column rename slips in.”</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>Shell · Slim CI commands (illustration)</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>Shell</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>dbt deps
 dbt ls --select state:modified+ --resource-type model --state ./prod_artifact/
 dbt build --select state:modified+ --defer --state ./prod_artifact/</code></pre>
       </div>
     </article>
 
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">5</div>
-        <div>
-          <h3>GitHub Actions sketch (illustration only)</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>
-          Wire secrets for Snowflake + store prod manifest from scheduled main-branch job.
-          PR job uses same pattern with <code>pull_request</code> trigger. Adjust paths to your repo.
-        </p>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>YAML · .github/workflows/dbt-slim-ci.yml (sample)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>name: dbt Slim CI
-on:
-  pull_request:
-    paths: ['dbt_project/**']
-
-jobs:
-  slim-ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install dbt-snowflake
-      - name: Download prod manifest artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dbt-manifest-prod
-          path: prod_artifact/
-      - name: Slim build
-        env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-        working-directory: dbt_project
-        run: |
-          dbt deps --profiles-dir .
-          dbt build --select state:modified+ --defer --state ../prod_artifact/ --profiles-dir .</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">✓</div>
-        <div>
-          <h3>Quick self-check</h3>
-        </div>
-      </div>
-      <ol>
-        <li>Source vs ref — when use each?</li>
-        <li>What breaks first if a mart SQL adds a column not in the contract?</li>
-        <li>What does <code>state:modified+</code> include?</li>
-      </ol>
-      <details class="callout tip" style="cursor:pointer">
-        <summary><strong>Click for short answers</strong></summary>
-        <ol>
-          <li>Source for upstream RAW/external; ref for models you own in the DAG.</li>
-          <li>dbt build fails contract enforcement (if enforced: true).</li>
-          <li>Changed nodes plus all downstream dependents.</li>
-        </ol>
-      </details>
-    </article>
-
     <div class="soundbite">
-      <strong>60-second interview answer</strong><br />
-      “I treat RAW as dbt sources with freshness, stage in views, publish marts with enforced contracts.
-      CI uses Slim — state:modified+ with defer to prod manifest — so PRs only rebuild the affected subgraph.
-      On Snowflake I keep incremental merge on facts with explicit unique keys and test order_id in YAML.”
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Meridian’s mart broke because nobody enforced the published schema. I declared landing.txn_events as a dbt source, enforced a contract on fct_orders_incremental, and described Slim CI so PRs only build state:modified+ with defer to prod manifest.
+      <em>Outcome:</em> Alex’s dashboards get stable columns; Jordan’s team ships faster without full-graph builds every time.”
     </div>
+
 
     <div class="pager">
       <a class="btn ghost" href="lab-11.html">← Lab 11</a>
-      <a class="btn primary" href="lab-13.html">Next: Lab 13 FinOps →</a>
+      <a class="btn primary" href="lab-13.html">Lab 13 →</a>
     </div>
   </div>
-
-  <footer class="footer">Stuck? Copy the Step number + yaml/sql into chat.</footer>
+  <footer class="footer">dbt_project/ · read Lab 02 incremental SQL</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

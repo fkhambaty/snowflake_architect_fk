@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 13 — FinOps &amp; ACCOUNT_USAGE</title>
+  <title>Lab 13 — FinOps</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,211 +12,88 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
-        <a href="lab-00.html">Lab 00</a>
-        <a href="lab-01.html">Lab 01</a>
-        <a href="lab-02.html">Lab 02</a>
-        <a href="lab-03.html">Lab 03</a>
-        <a href="lab-04.html">Lab 04</a>
-        <a href="lab-05.html">Lab 05</a>
-        <a href="lab-06.html">Lab 06</a>
-        <a href="lab-07.html">Lab 07</a>
-        <a href="lab-08.html">Lab 08</a>
-        <a href="lab-09.html">Lab 09</a>
-        <a href="lab-10.html">Lab 10</a>
-        <a href="lab-11.html">Lab 11</a>
-        <a href="lab-12.html">Lab 12</a>
-        <a class="active" href="lab-13.html">Lab 13</a>
-        <a href="lab-14.html">Lab 14</a>
+        <a href="story.html">Story</a>
+        <a href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a href="lab-11.html">11</a>
+        <a href="lab-12.html">12</a>
+        <a class="active" href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 13 · FinOps · Understand first, then run</p>
-    <h1>FinOps: ACCOUNT_USAGE &amp; resource monitors</h1>
-    <p class="lede">
-      Architects answer “who burned credits?” and “how do we cap runaway warehouses?”
-      <code>SNOWFLAKE.ACCOUNT_USAGE</code> views power chargeback dashboards — with <strong>latency</strong>.
-      Resource monitors enforce soft/hard stops on warehouse spend.
-    </p>
+    <p class="eyebrow">Lab 13 · Sunday night · You are Elena · Finance forwarded the bill</p>
+    <h1>Surprise Snowflake credits</h1>
+    <p class="lede">Finance asks which team burned credits. Elena uses ACCOUNT_USAGE and a resource monitor on WH_BANK_XS.</p>
 
-    <div class="callout warn">
-      <strong>Role &amp; latency</strong>
-      <ul>
-        <li>Step 1–2: use <code>ACCOUNTADMIN</code> (or a role with imported privileges on ACCOUNT_USAGE).</li>
-        <li>Views can lag <strong>~45 minutes to 3 hours</strong> — empty or stale results on a quiet trial are normal.</li>
-      </ul>
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Marcus got a Snowflake invoice spike. Ad hoc queries on WH_BANK_XS ran all weekend. Nobody could attribute spend to a team.
     </div>
 
-    <div class="callout tip">
-      <strong>After this lab you can explain</strong>
-      <ul>
-        <li>Warehouse metering vs query history — different questions</li>
-        <li>Resource monitor triggers: NOTIFY vs SUSPEND</li>
-        <li>Why FinOps dashboards need “as of” timestamps</li>
-      </ul>
+    <div class="callout ok">
+      <strong>Solution you will run</strong>
+      Warehouse metering + query history from ACCOUNT_USAGE; attach resource monitor <code>RM_BANK_LAB</code> to <code>WH_BANK_XS</code>.
+    </div>
+
+    <div class="story">
+      <p>Sam wants auditability; Marcus wants guardrails. Elena tells Finance views lag ~3 hours — set expectations.</p>
     </div>
 
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Warehouse credit burn (last 7 days)</h3>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">1</div><div><h3>Visibility + guardrails</h3></div></div>
       <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>View</th><th>Question</th></tr>
-          <tr><td><code>WAREHOUSE_METERING_HISTORY</code></td><td>Which warehouses consumed credits in each interval?</td></tr>
-          <tr><td><code>SUM(CREDITS_USED)</code></td><td>Rank warehouses for chargeback or right-sizing</td></tr>
-        </table>
-        <span class="why">Interview: tie oversized warehouse + auto-suspend policy to this query’s top row.</span>
+        <h4>ACCOUNTADMIN for account views</h4>
+        <p>Switch to ACCOUNTADMIN only for ACCOUNT_USAGE reads and resource monitor creation — then back to ROLE_BANK_LAB_ADMIN for daily work.</p>
       </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · Step 1 · warehouse credits</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · sql/13_finops.sql</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
 
-SELECT
-  WAREHOUSE_NAME,
-  SUM(CREDITS_USED) AS CREDITS
+SELECT WAREHOUSE_NAME, SUM(CREDITS_USED) AS CREDITS
 FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
 WHERE START_TIME >= DATEADD('day', -7, CURRENT_TIMESTAMP())
-GROUP BY 1
-ORDER BY 2 DESC NULLS LAST;</code></pre>
-      </div>
-      <div class="badge-ok">✓ Expect at least WH_ARCH_XS if you ran prior labs — maybe after latency delay.</div>
-    </article>
+GROUP BY 1 ORDER BY 2 DESC NULLS LAST;
 
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Expensive queries (last 24 hours)</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>Column</th><th>Use</th></tr>
-          <tr><td><code>TOTAL_ELAPSED_TIME</code></td><td>Wall time — user pain</td></tr>
-          <tr><td><code>BYTES_SCANNED</code></td><td>Spill / full scan smell (with Query Profile in Lab 08)</td></tr>
-          <tr><td><code>QUERY_TEXT</code></td><td>Find rogue cross joins or missing filters</td></tr>
-        </table>
-        <span class="why">If zero rows: say “ACCOUNT_USAGE latency” — still a valid architect answer.</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · Step 2 · top queries</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT
-  QUERY_ID,
-  USER_NAME,
-  ROLE_NAME,
-  WAREHOUSE_NAME,
-  TOTAL_ELAPSED_TIME/1000 AS SECONDS,
-  BYTES_SCANNED,
-  QUERY_TEXT
+SELECT QUERY_ID, USER_NAME, ROLE_NAME, WAREHOUSE_NAME,
+  TOTAL_ELAPSED_TIME/1000 AS SECONDS, BYTES_SCANNED
 FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
 WHERE START_TIME >= DATEADD('day', -1, CURRENT_TIMESTAMP())
-ORDER BY TOTAL_ELAPSED_TIME DESC NULLS LAST
-LIMIT 20;</code></pre>
-      </div>
-    </article>
+ORDER BY TOTAL_ELAPSED_TIME DESC NULLS LAST LIMIT 20;
 
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div>
-          <h3>Resource monitor on lab warehouse</h3>
-          <p>Guardrail for trials and demos — adjust quota to your account.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>Trigger</th><th>Behavior</th></tr>
-          <tr><td><code>ON 75 PERCENT DO NOTIFY</code></td><td>Email/notification — ops awareness</td></tr>
-          <tr><td><code>ON 100 PERCENT DO SUSPEND</code></td><td>Stop warehouse — prevents runaway credits</td></tr>
-          <tr><td><code>ALTER WAREHOUSE … SET RESOURCE_MONITOR</code></td><td>Attach monitor to specific compute</td></tr>
-        </table>
-        <span class="why">Monitors apply to monthly account credit pool semantics — explain NOTIFY vs SUSPEND in governance interviews.</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · Step 3 · resource monitor</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE RESOURCE MONITOR IF NOT EXISTS RM_ARCH_LAB
+CREATE RESOURCE MONITOR IF NOT EXISTS RM_BANK_LAB
   WITH CREDIT_QUOTA = 10
-  TRIGGERS
-    ON 75 PERCENT DO NOTIFY
-    ON 100 PERCENT DO SUSPEND;
+  TRIGGERS ON 75 PERCENT DO NOTIFY ON 100 PERCENT DO SUSPEND;
 
-ALTER WAREHOUSE WH_ARCH_XS SET RESOURCE_MONITOR = RM_ARCH_LAB;
-
-SELECT 'Lab 13 FinOps queries ran — wire resource monitor discussed' AS status;</code></pre>
+ALTER WAREHOUSE WH_BANK_XS SET RESOURCE_MONITOR = RM_BANK_LAB;
+SELECT 'Lab 13 FinOps OK' AS status;</code></pre>
       </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">4</div>
-        <div>
-          <h3>FinOps toolkit (talktrack)</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <ul>
-          <li><strong>Warehouse sizing</strong> — right-size XS/S; separate ETL vs BI warehouses.</li>
-          <li><strong>Auto-suspend / auto-resume</strong> — low suspend threshold for ad hoc WH.</li>
-          <li><strong>Query timeout</strong> — cap pathological queries at session or account level.</li>
-          <li><strong>Storage</strong> — <code>STORAGE_USAGE</code>, Time Travel retention cost (Lab 09).</li>
-          <li><strong>Tagging</strong> — object tags for cost allocation (mention if asked).</li>
-        </ul>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">✓</div>
-        <div>
-          <h3>Quick self-check</h3>
-        </div>
-      </div>
-      <ol>
-        <li>Why might QUERY_HISTORY miss the query you ran 10 minutes ago?</li>
-        <li>What happens when a resource monitor hits SUSPEND at 100%?</li>
-        <li>Metering history vs query history — different use?</li>
-      </ol>
-      <details class="callout tip" style="cursor:pointer">
-        <summary><strong>Click for short answers</strong></summary>
-        <ol>
-          <li>ACCOUNT_USAGE latency (up to ~3 hours).</li>
-          <li>Warehouse suspends; new queries wait until credits reset / monitor adjusted / manual resume policy.</li>
-          <li>Metering: credit burn by warehouse. Query history: individual SQL tuning and attribution.</li>
-        </ol>
-      </details>
     </article>
 
     <div class="soundbite">
-      <strong>60-second interview answer</strong><br />
-      “I use ACCOUNT_USAGE warehouse metering for chargeback and query history for tuning — always noting view latency.
-      I attach resource monitors with NOTIFY then SUSPEND on departmental warehouses.
-      FinOps pairs with technical fixes: clustering, Slim CI, right-sized warehouses, and auto-suspend.
-      I never tune from live queries alone on busy accounts — I use delayed views plus Query Profile.”
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Meridian’s bill was a black box. I pulled WAREHOUSE_METERING_HISTORY and QUERY_HISTORY from ACCOUNT_USAGE for attribution and tuned WH_BANK_XS with RM_BANK_LAB suspend at 100%.
+      <em>Outcome:</em> Finance sees who spent credits; runaway ad hoc jobs get stopped before Marcus forwards another surprise invoice.”
     </div>
+
 
     <div class="pager">
       <a class="btn ghost" href="lab-12.html">← Lab 12</a>
-      <a class="btn primary" href="lab-14.html">Next: Lab 14 Mock interview →</a>
+      <a class="btn primary" href="lab-14.html">Lab 14 →</a>
     </div>
   </div>
-
-  <footer class="footer">Stuck? Copy the Step number + SQL + error into chat.</footer>
+  <footer class="footer">sql/13_finops.sql · ACCOUNTADMIN required</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

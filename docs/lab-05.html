@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 05 — Streams, Tasks, Dynamic Tables vs dbt</title>
+  <title>Lab 05 — Streams & tasks</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,343 +12,153 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
-        <a href="lab-00.html">Lab 00</a>
-        <a href="lab-01.html">Lab 01</a>
-        <a href="lab-02.html">Lab 02</a>
-        <a href="lab-03.html">Lab 03</a>
-        <a href="lab-04.html">Lab 04</a>
-        <a class="active" href="lab-05.html">Lab 05</a>
-        <a href="lab-06.html">Lab 06</a>
-        <a href="lab-07.html">Lab 07</a>
-        <a href="lab-08.html">Lab 08</a>
-        <a href="lab-09.html">Lab 09</a>
-        <a href="lab-10.html">Lab 10</a>
-        <a href="lab-11.html">Lab 11</a>
-        <a href="lab-12.html">Lab 12</a>
-        <a href="lab-13.html">Lab 13</a>
-        <a href="lab-14.html">Lab 14</a>
+        <a href="story.html">Story</a>
+        <a href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a class="active" href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a href="lab-11.html">11</a>
+        <a href="lab-12.html">12</a>
+        <a href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 05 · Pipelines · Understand first, then run</p>
-    <h1>Streams + Tasks (+ optional Dynamic Table) vs dbt</h1>
-    <p class="lede">
-      Snowflake-native CDC: a <strong>stream</strong> notices new rows, a <strong>task</strong> moves them.
-      You will <strong>suspend</strong> the task when done so credits don’t leak.
-    </p>
-
-    <div class="callout warn">
-      <strong>Prerequisites</strong>
-      <code>RAW.ORDERS_EVENTS</code> from Lab 02. If missing, run Lab 02 Day-1 SQL first.
-    </div>
-
-    <h2>Big picture</h2>
-    <div class="flow">
-      <div class="node">INSERT bronze</div>
-      <div class="arrow">→</div>
-      <div class="node accent">Stream</div>
-      <div class="arrow">→</div>
-      <div class="node">Task → silver CDC table</div>
-    </div>
-
-    <!-- STEP 0 -->
+    <p class="eyebrow">Lab 05 · Thursday · You are Elena · Jordan’s hourly chore</p>
+    <h1>Automate curated CDC from LANDING</h1>
+    <p class="lede">Jordan manually copied new txns every hour. Elena wires a stream on <code>LANDING.TXN_EVENTS</code> and a task into <code>CURATED.TXN_SILVER_CDC</code>. Compare with dynamic tables when you read Lab 05 optional SQL.</p>
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">0</div>
-        <div>
-          <h3>Privilege repair — EXECUTE TASK (ACCOUNTADMIN)</h3>
-        </div>
+      <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if policies or tasks fail)</h3></div></div>
+      <div class="story">
+        <p>Marcus escalated: “Elena, your role can’t apply policies or run tasks.” Only ACCOUNTADMIN can stamp those powers on <code>ROLE_BANK_LAB_ADMIN</code>. Skip if Lab 00 smoke test already passed.</p>
       </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p><code>EXECUTE TASK</code> and creating/resuming tasks need account-level trust for the lab admin role.</p>
-        <table class="gloss">
-          <tr><th>Grant</th><th>Why for Lab 05</th></tr>
-          <tr><td><code>EXECUTE TASK ON ACCOUNT</code></td><td>Lets you run <code>EXECUTE TASK …</code> manually in the lab</td></tr>
-        </table>
-        <span class="why">Error on EXECUTE TASK → re-run this Step 0 block.</span>
-      </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · Step 0</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · sql/00_privilege_repair.sql</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
-GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
-GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+
+GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
+GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+
 SET uname = (SELECT CURRENT_USER());
-GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
-USE ROLE ROLE_ARCH_LAB_ADMIN;
-SELECT 'EXECUTE TASK grant OK' AS status;</code></pre>
+GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);
+
+USE ROLE ROLE_BANK_LAB_ADMIN;
+CREATE ROLE IF NOT EXISTS ROLE_BANK_SMOKE_TMP COMMENT = 'temp smoke test';
+DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;
+
+USE DATABASE MERIDIAN_BANK;
+CREATE SCHEMA IF NOT EXISTS LANDING;
+CREATE SCHEMA IF NOT EXISTS CURATED;
+CREATE SCHEMA IF NOT EXISTS RISK_CTRL;
+CREATE SCHEMA IF NOT EXISTS FINANCE_MART;
+CREATE SCHEMA IF NOT EXISTS FILE_IN;
+CREATE SCHEMA IF NOT EXISTS UTILS;
+
+SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
       </div>
     </article>
 
-    <!-- STEP 1 TARGET -->
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Near-real-time risk dashboards need curated rows minutes after landing — not when Jordan remembers to run INSERT…SELECT.
+    </div>
+
+    <div class="callout ok">
+      <strong>Solution you will build</strong>
+      Stream <code>LANDING.TXN_EVENTS_STR</code> + task <code>CURATED.TASK_TXN_CDC</code> on <code>WH_BANK_XS</code>, triggered when stream has data.
+    </div>
+
+    <div class="story">
+      <p>Jordan: “Can Snowflake tell me what changed?” Elena: “Streams bookmark deltas; tasks run the MERGE path on a schedule or WHEN clause.”</p>
+    </div>
+
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Create silver CDC target table</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>The task will <code>INSERT</code> new order events here. <code>LOADED_AT</code> defaults when the row lands in silver.</p>
-        <span class="why">Separate table from Lab 04 <code>SILVER_ORDERS</code> — this one is append-only CDC demo.</span>
-      </div>
-
+      <div class="step-head"><div class="step-num">1</div><div><h3>Stream + task pipeline</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · target table</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
+        <div class="code-head"><span>SQL · sql/05_streams_tasks.sql</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
 USE SCHEMA CURATED;
 
-CREATE OR REPLACE TABLE ORDERS_SILVER_CDC (
-  ORDER_ID NUMBER,
-  CUSTOMER_ID NUMBER,
-  STATUS STRING,
-  ORDER_TOTAL NUMBER(12,2),
-  UPDATED_AT TIMESTAMP_NTZ,
-  LOADED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
-);</code></pre>
-      </div>
-    </article>
+CREATE OR REPLACE TABLE TXN_SILVER_CDC (
+  TXN_ID NUMBER, CLIENT_ID NUMBER, STATUS STRING, AMOUNT NUMBER(12,2),
+  UPDATED_AT TIMESTAMP_NTZ, LOADED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
 
-    <!-- STEP 2 STREAM -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Create append-only stream on bronze</h3>
-        </div>
-      </div>
+CREATE OR REPLACE STREAM LANDING.TXN_EVENTS_STR
+  ON TABLE LANDING.TXN_EVENTS APPEND_ONLY = TRUE;
 
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>STREAM … ON TABLE RAW.ORDERS_EVENTS</code></td><td>Snowflake tracks deltas since stream created</td></tr>
-          <tr><td><code>APPEND_ONLY = TRUE</code></td><td>Only inserts matter — good for event landing tables</td></tr>
-        </table>
-        <span class="why">Streams don’t move data by themselves — they’re a change log pointer.</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · stream</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE OR REPLACE STREAM RAW.ORDERS_EVENTS_STR
-  ON TABLE RAW.ORDERS_EVENTS
-  APPEND_ONLY = TRUE;</code></pre>
-      </div>
-    </article>
-
-    <!-- STEP 3 TASK -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div>
-          <h3>Create task (rare schedule — we run manually)</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>WHEN SYSTEM$STREAM_HAS_DATA(…)</code></td><td>Skip work if stream is empty</td></tr>
-          <tr><td><code>SCHEDULE = 'USING CRON …'</code></td><td>Placeholder; lab uses <code>EXECUTE TASK</code></td></tr>
-          <tr><td><code>INSERT … SELECT … FROM stream</code></td><td>Consume stream rows into silver</td></tr>
-        </table>
-        <span class="why">Production tasks run on a real schedule; we RESUME then EXECUTE once for learning.</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · task definition</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE OR REPLACE TASK CURATED.TASK_ORDERS_CDC
-  WAREHOUSE = WH_ARCH_XS
+CREATE OR REPLACE TASK CURATED.TASK_TXN_CDC
+  WAREHOUSE = WH_BANK_XS
   SCHEDULE = 'USING CRON 0 0 1 1 * UTC'
-  WHEN SYSTEM$STREAM_HAS_DATA('RAW.ORDERS_EVENTS_STR')
+  WHEN SYSTEM$STREAM_HAS_DATA('LANDING.TXN_EVENTS_STR')
 AS
-  INSERT INTO CURATED.ORDERS_SILVER_CDC (ORDER_ID, CUSTOMER_ID, STATUS, ORDER_TOTAL, UPDATED_AT)
-  SELECT ORDER_ID, CUSTOMER_ID, STATUS, ORDER_TOTAL, UPDATED_AT
-  FROM RAW.ORDERS_EVENTS_STR;</code></pre>
+  INSERT INTO CURATED.TXN_SILVER_CDC (TXN_ID, CLIENT_ID, STATUS, AMOUNT, UPDATED_AT)
+  SELECT TXN_ID, CLIENT_ID, STATUS, AMOUNT, UPDATED_AT FROM LANDING.TXN_EVENTS_STR;
+
+ALTER TASK CURATED.TASK_TXN_CDC RESUME;
+DELETE FROM CURATED.TXN_SILVER_CDC WHERE TXN_ID = 1099;
+DELETE FROM LANDING.TXN_EVENTS WHERE TXN_ID = 1099;
+INSERT INTO LANDING.TXN_EVENTS VALUES (1099, 1, 'POSTED', 1.00, CURRENT_TIMESTAMP());
+EXECUTE TASK CURATED.TASK_TXN_CDC;
+SELECT * FROM CURATED.TXN_SILVER_CDC WHERE TXN_ID = 1099;
+ALTER TASK CURATED.TASK_TXN_CDC SUSPEND;
+SELECT 'Lab 05 OK — task suspended' AS status;</code></pre>
       </div>
+      <div class="badge-ok">✓ Row 1099 appears in TXN_SILVER_CDC after EXECUTE TASK</div>
     </article>
 
-    <!-- STEP 4 RUN -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">4</div>
-        <div>
-          <h3>Resume task → insert test row → execute → verify</h3>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">2</div><div><h3>Optional: dynamic table pattern</h3></div></div>
       <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>New stream data appears after an <code>INSERT</code> to the base table. Then the task drains the stream into CDC silver.</p>
-        <span class="why">Order id <code>1099</code> is a lab-only row — easy to spot in results.</span>
+        <h4>When Elena picks dynamic tables</h4>
+        <p>Snowflake-managed refresh with TARGET_LAG — great when dbt isn’t owning the DAG. Jordan’s stream+task stays explicit SQL in the bank ops path.</p>
       </div>
-
-      <p class="chunk-label">Chunk A — enable + feed stream</p>
       <div class="code-block">
-        <div class="code-head"><span>SQL · resume + insert</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>ALTER TASK CURATED.TASK_ORDERS_CDC RESUME;
+        <div class="code-head"><span>SQL · sql/05_dynamic_table.sql</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
+USE SCHEMA CURATED;
 
-INSERT INTO RAW.ORDERS_EVENTS VALUES
-  (1099, 1, 'CREATED', 1.00, CURRENT_TIMESTAMP());</code></pre>
-      </div>
-
-      <p class="chunk-label">Chunk B — run task + check</p>
-      <div class="code-block">
-        <div class="code-head"><span>SQL · execute + select</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>EXECUTE TASK CURATED.TASK_ORDERS_CDC;
-
-SELECT * FROM CURATED.ORDERS_SILVER_CDC WHERE ORDER_ID = 1099;</code></pre>
-      </div>
-      <div class="badge-ok">✓ One row for order 1099 in ORDERS_SILVER_CDC</div>
-    </article>
-
-    <!-- STEP 5 SUSPEND -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">5</div>
-        <div>
-          <h3>Suspend task (save credits)</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>A resumed task can fire on schedule even when you’re not watching. <code>SUSPEND</code> stops automatic runs.</p>
-        <span class="why">Always suspend lab tasks unless you intentionally leave a scheduler on.</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · suspend</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>ALTER TASK CURATED.TASK_ORDERS_CDC SUSPEND;
-
-SELECT 'Lab 05 stream/task OK — task suspended to save credits' AS status;</code></pre>
-      </div>
-    </article>
-
-    <!-- OPTIONAL DT -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">6</div>
-        <div>
-          <h3>Optional: Dynamic Table (declarative refresh)</h3>
-          <p>Skip if your account edition blocks it — interview answer still works.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>Dynamic tables let Snowflake maintain a query result with a target lag — less imperative than stream+task.</p>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>TARGET_LAG = 'DOWNSTREAM'</code></td><td>Refresh when downstream needs it (simplified)</td></tr>
-          <tr><td><code>AS SELECT … FROM RAW.ORDERS_EVENTS</code></td><td>Declarative pipeline body</td></tr>
-        </table>
-        <span class="why">Compare to stream/task: who owns orchestration — you vs platform.</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head"><span>SQL · optional dynamic table</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE SCHEMA CURATED;
-
-CREATE OR REPLACE DYNAMIC TABLE DT_ORDERS_STATUS
+CREATE OR REPLACE DYNAMIC TABLE DT_TXN_STATUS
   TARGET_LAG = 'DOWNSTREAM'
-  WAREHOUSE = WH_ARCH_XS
+  WAREHOUSE = WH_BANK_XS
 AS
-SELECT ORDER_ID, STATUS, UPDATED_AT
-FROM RAW.ORDERS_EVENTS;
+  SELECT TXN_ID, STATUS, UPDATED_AT FROM LANDING.TXN_EVENTS;
 
-SELECT * FROM DT_ORDERS_STATUS ORDER BY ORDER_ID LIMIT 10;
-SELECT 'Dynamic table created (optional path)' AS status;</code></pre>
+SELECT * FROM DT_TXN_STATUS ORDER BY TXN_ID LIMIT 10;</code></pre>
       </div>
-    </article>
-
-    <!-- COMPARISON -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">7</div>
-        <div>
-          <h3>Comparison: Streams/Tasks vs Dynamic Tables vs dbt</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this for interviews</h4>
-        <p>No single winner — architects pick based on team skills, latency, and governance.</p>
-      </div>
-
-      <table class="gloss">
-        <tr><th>Approach</th><th>What it is</th><th>Strengths</th><th>Watch-outs</th></tr>
-        <tr>
-          <td>Stream + Task</td>
-          <td>Native CDC + scheduled/imperative SQL</td>
-          <td>Fine-grained control, in-account, no extra orchestrator</td>
-          <td>Task graphs, monitoring, suspend/resume discipline</td>
-        </tr>
-        <tr>
-          <td>Dynamic Table</td>
-          <td>Declarative materialized pipeline in Snowflake</td>
-          <td>Less boilerplate, lag-driven refresh</td>
-          <td>Edition/features, debugging DAG of DTs</td>
-        </tr>
-        <tr>
-          <td>dbt (Lab 02)</td>
-          <td>SQL transforms + tests in git, runs on warehouse</td>
-          <td>Version control, testing, docs, portable pattern</td>
-          <td>Needs orchestration (CI/Airflow) for near-real-time</td>
-        </tr>
-      </table>
-    </article>
-
-    <!-- QUIZ -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">✓</div>
-        <div>
-          <h3>Self-check</h3>
-        </div>
-      </div>
-      <ol>
-        <li>What does a stream store — full table copy or change metadata?</li>
-        <li>Why <code>SUSPEND</code> after the lab?</li>
-        <li>When would you pick dbt over a task chain?</li>
-        <li>What does <code>APPEND_ONLY</code> assume about source changes?</li>
-      </ol>
-      <details class="callout tip" style="cursor:pointer">
-        <summary><strong>Click for short answers</strong></summary>
-        <ol>
-          <li>Change tracking / delta pointers — not a second full copy of the table.</li>
-          <li>Prevent scheduled task runs burning warehouse credits overnight.</li>
-          <li>Rich transform testing, git review, portable analytics engineering workflow.</li>
-          <li>Only inserts — not in-place updates/deletes on the source table.</li>
-        </ol>
-      </details>
     </article>
 
     <div class="soundbite">
-      <strong>Interview soundbite</strong><br />
-      “For near-real-time in Snowflake I use streams for change capture and tasks for incremental INSERT/MERGE,
-      with SYSTEM$STREAM_HAS_DATA to avoid empty runs — and I suspend tasks in non-prod.
-      Dynamic tables are declarative when I want lag-based refresh without hand-rolling task DAGs.
-      dbt stays my choice for tested, versioned marts when batch latency is fine.”
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Meridian couldn’t rely on Jordan’s calendar. I added a stream on LANDING.TXN_EVENTS and a warehouse task that loads CURATED.TXN_SILVER_CDC only when data changed.
+      <em>Outcome:</em> automated near-real-time curated rows; task suspended after lab proof so credits stay sane.”
     </div>
+
 
     <div class="pager">
       <a class="btn ghost" href="lab-04.html">← Lab 04</a>
-      <a class="btn primary" href="lab-06.html">Next: Lab 06 Landing →</a>
+      <a class="btn primary" href="lab-06.html">Lab 06 →</a>
     </div>
   </div>
-
-  <footer class="footer">Task stuck? Check Task History in Snowsight and confirm EXECUTE TASK grant.</footer>
+  <footer class="footer">sql/05_streams_tasks.sql · sql/05_dynamic_table.sql</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

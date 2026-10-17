@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Snowflake Architect Interview Prep — SnowShop</title>
+  <title>Meridian Bank — Snowflake Architect Prep</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -15,110 +15,81 @@
         <a href="story.html">Story</a>
         <a href="lab-00.html">00</a>
         <a href="lab-01.html">01</a>
-        <a href="lab-07.html">07</a>
-        <a href="lab-14.html">14</a>
-        <a href="#labs">All labs</a>
+        <a href="#labs">Labs</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
     <section class="hero">
-      <p class="eyebrow">One company story · Labs 00 → 14 · ~18 hours</p>
-      <h1>You are Maya.<br />This is SnowShop.</h1>
+      <p class="eyebrow">Meridian Bank · You are Elena Vasquez · Labs 00–14</p>
+      <h1>Build the bank’s data platform.<br />One business problem at a time.</h1>
       <p class="lede">
-        Don’t study floating topics. Live one week inside a company —
-        then tell that week in your interview.
+        Not random topics. A week inside Meridian Bank:
+        problem → Snowflake solution → Elena explains the outcome.
       </p>
       <div class="cta-row">
-        <a class="btn primary" href="story.html">1. Read the full story</a>
+        <a class="btn primary" href="story.html">1. Read the bank story</a>
         <a class="btn ghost" href="lab-00.html">2. Start Lab 00</a>
       </div>
     </section>
 
     <section>
-      <h2>Before you click anything — required context</h2>
+      <h2>Required context (read before Lab 00)</h2>
       <div class="story">
         <div class="story-label">The situation</div>
         <p>
-          <strong>SnowShop</strong> is a small online store. The CEO, <strong>Priya</strong>, hired you —
-          <strong>Maya</strong>, the Snowflake Architect — to build a safe, cheap, understandable data platform.
-        </p>
-        <p>
-          Your coworkers never change:
+          <strong>Meridian Bank</strong> hired <strong>Elena Vasquez</strong> (Snowflake Architect — that’s you).
+          COO <strong>Marcus Hale</strong> wants a real cloud data platform: safe for regulators, usable for analysts, cheap enough that Finance doesn’t revolt.
         </p>
         <ul class="cast">
-          <li><strong>Alex</strong> — Analyst (charts, no secrets)</li>
-          <li><strong>Jordan</strong> — Data Engineer (pipes, dbt, messy dock data)</li>
-          <li><strong>Sam</strong> — Compliance (allowed to see sensitive fields for audits)</li>
+          <li><strong>Alex Rivera</strong> — Analyst (dashboards; no SSN)</li>
+          <li><strong>Jordan Okonkwo</strong> — Data Engineer (landing + dbt)</li>
+          <li><strong>Sam Okada</strong> — Risk &amp; Compliance (audit access)</li>
         </ul>
-        <p>
-          Later: <strong>Nora</strong> (partner store) and <strong>Dev</strong> (QA twin).
-          Every lab is the <em>next day</em> of this same week. Read <a href="story.html">the story</a> once before Lab 00.
-        </p>
+        <p>Database you will build: <code>MERIDIAN_BANK</code>. Full cast &amp; week: <a href="story.html">Story</a>.</p>
       </div>
 
       <div class="story">
-        <div class="story-label">Why roles are named FR_ and AR_ (not random)</div>
+        <div class="story-label">FR_ vs AR_ (not random letters)</div>
         <table class="gloss">
-          <tr><th>Prefix</th><th>Stands for</th><th>In the story</th></tr>
-          <tr>
-            <td><code>FR_</code></td>
-            <td><strong>F</strong>unctional <strong>R</strong>ole</td>
-            <td>Job badge — who you are (Analyst, Engineer, Compliance)</td>
-          </tr>
-          <tr>
-            <td><code>AR_</code></td>
-            <td><strong>A</strong>ccess <strong>R</strong>ole</td>
-            <td>Key-ring — which doors that job may open</td>
-          </tr>
+          <tr><th>Prefix</th><th>Full name</th><th>Meaning</th></tr>
+          <tr><td><code>FR_</code></td><td>Functional Role</td><td>Job badge (Alex = <code>FR_ANALYST</code>)</td></tr>
+          <tr><td><code>AR_</code></td><td>Access Role</td><td>Key-ring of permissions (<code>AR_CURATED_READ</code>)</td></tr>
         </table>
-        <p style="margin-top:0.75rem;color:var(--muted)">
-          Example: Alex wears <code>FR_ANALYST</code>, which includes the key-ring <code>AR_CURATED_READ</code>.
-          Humans wear <code>FR_</code>. Permissions hang on <code>AR_</code>. That naming is intentional so you can read a role list and know the purpose.
-        </p>
       </div>
 
       <div class="callout warn">
-        <strong>How you learn each day</strong>
-        Read that chapter in the <a href="story.html">story</a> → open the lab → read orange story boxes →
-        blue “Understand this” → Copy SQL → run in Snowsight → say the soundbite as Maya.
+        <strong>Already ran old SnowShop labs?</strong>
+        Drop them first with <code>sql/cleanup_lab00_lab01.sql</code> (also pasted at the end of chat when you ask),
+        then start Lab 00 fresh as Meridian Bank.
       </div>
     </section>
 
     <section id="labs">
-      <h2>Labs (same order as the story)</h2>
+      <h2>Labs</h2>
       <div class="grid">
-        <a class="card" href="lab-00.html"><span class="num">00 · Mon morning</span><h3>Maya builds the workshop</h3><p>Building, generator, manager badge, vault with 5 customers.</p></a>
-        <a class="card" href="lab-01.html"><span class="num">01 · Mon afternoon</span><h3>Keys for Alex, Jordan, Sam</h3><p>FR_ job badges + AR_ key-rings. Vault locked for Alex.</p></a>
-        <a class="card" href="lab-02.html"><span class="num">02 · Tuesday</span><h3>Jordan’s night clerk</h3><p>dbt incremental merge — only new/changed orders.</p></a>
-        <a class="card" href="lab-03.html"><span class="num">03 · Wed morning</span><h3>Magic ink &amp; velvet ropes</h3><p>Masking + row access for Alex vs Sam.</p></a>
-        <a class="card" href="lab-04.html"><span class="num">04 · Wed afternoon</span><h3>Dock → kitchen → dining</h3><p>Medallion layers; Data Vault as optional kitchen.</p></a>
-        <a class="card" href="lab-05.html"><span class="num">05 · Thursday</span><h3>Belt, sous-chef, recipes</h3><p>Streams/tasks vs dynamic tables vs dbt.</p></a>
-        <a class="card" href="lab-06.html"><span class="num">06 · Thu evening</span><h3>Trucks at the bay</h3><p>Stage + COPY; Snowpipe story.</p></a>
-        <a class="card" href="lab-07.html"><span class="num">07 · Fri morning</span><h3>X-ray the slow query</h3><p>Query Profile; scale up vs out.</p></a>
-        <a class="card" href="lab-08.html"><span class="num">08 · Fri noon</span><h3>Label the aisles</h3><p>Clustering + search optimization talk.</p></a>
-        <a class="card" href="lab-09.html"><span class="num">09 · Fri afternoon</span><h3>Undo &amp; Dev the twin</h3><p>Time Travel, UNDROP, zero-copy clone.</p></a>
-        <a class="card" href="lab-10.html"><span class="num">10 · Saturday</span><h3>Nora’s window</h3><p>Secure share — no USB stick.</p></a>
-        <a class="card" href="lab-11.html"><span class="num">11 · Sat evening</span><h3>If the city floods</h3><p>Clone vs share vs replicate/DR.</p></a>
-        <a class="card" href="lab-12.html"><span class="num">12 · Sunday</span><h3>Kitchen rules in writing</h3><p>dbt contracts + Slim CI.</p></a>
-        <a class="card" href="lab-13.html"><span class="num">13 · Sun night</span><h3>The electric meter</h3><p>FinOps, monitors, ACCOUNT_USAGE.</p></a>
-        <a class="card" href="lab-14.html"><span class="num">14 · Interview Mon</span><h3>Tell the week out loud</h3><p>12 scenarios as Maya.</p></a>
+        <a class="card" href="lab-00.html"><span class="num">00</span><h3>Build the bank workshop</h3><p>Problem: no home for data. → MERIDIAN_BANK.</p></a>
+        <a class="card" href="lab-01.html"><span class="num">01</span><h3>Stop analysts seeing SSN</h3><p>Problem: vault open to everyone. → FR_/AR_ + safe view.</p></a>
+        <a class="card" href="lab-02.html"><span class="num">02</span><h3>Don’t rebuild the ledger nightly</h3><p>dbt incremental merge.</p></a>
+        <a class="card" href="lab-03.html"><span class="num">03</span><h3>Mask email; filter countries</h3><p>Policies for Alex vs Sam.</p></a>
+        <a class="card" href="lab-04.html"><span class="num">04</span><h3>Landing → curated → mart</h3><p>Medallion for the bank.</p></a>
+        <a class="card" href="lab-05.html"><span class="num">05</span><h3>Automate the handoff</h3><p>Streams/tasks vs dbt.</p></a>
+        <a class="card" href="lab-06.html"><span class="num">06</span><h3>Files land overnight</h3><p>Stage + COPY / Snowpipe.</p></a>
+        <a class="card" href="lab-07.html"><span class="num">07</span><h3>Board query is dying</h3><p>Query Profile.</p></a>
+        <a class="card" href="lab-08.html"><span class="num">08</span><h3>Prune the big table</h3><p>Clustering.</p></a>
+        <a class="card" href="lab-09.html"><span class="num">09</span><h3>Undo &amp; QA twin</h3><p>Time Travel / clone.</p></a>
+        <a class="card" href="lab-10.html"><span class="num">10</span><h3>Partner wants data</h3><p>Secure share.</p></a>
+        <a class="card" href="lab-11.html"><span class="num">11</span><h3>Region fails</h3><p>DR choices.</p></a>
+        <a class="card" href="lab-12.html"><span class="num">12</span><h3>dbt breaks metrics</h3><p>Contracts + CI.</p></a>
+        <a class="card" href="lab-13.html"><span class="num">13</span><h3>Surprise bill</h3><p>FinOps.</p></a>
+        <a class="card" href="lab-14.html"><span class="num">14</span><h3>Tell the week</h3><p>Mock interview.</p></a>
       </div>
     </section>
-
-    <section>
-      <h2>Schedule &amp; exam map</h2>
-      <p class="hint">
-        <a href="COURSE_18H.md">18-hour schedule</a> ·
-        <a href="study_guide_map.md">Exam domain map</a> ·
-        Phone: <a href="https://fkhambaty.github.io/snowflake_architect_fk/">GitHub Pages</a>
-      </p>
-    </section>
   </div>
-
   <footer class="footer">
-    You are Maya · Job badges FR_ · Key-rings AR_ · One story through Lab 14
+    <a href="https://fkhambaty.github.io/snowflake_architect_fk/">GitHub Pages</a> ·
+    Cleanup: <code>sql/cleanup_lab00_lab01.sql</code>
   </footer>
   <script src="assets/course.js"></script>
 </body>

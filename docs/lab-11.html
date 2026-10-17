@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 11 — Multi-account, replication, DR</title>
+  <title>Lab 11 — Replication & DR</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,195 +12,87 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
-        <a href="lab-00.html">Lab 00</a>
-        <a href="lab-01.html">Lab 01</a>
-        <a href="lab-02.html">Lab 02</a>
-        <a href="lab-03.html">Lab 03</a>
-        <a href="lab-04.html">Lab 04</a>
-        <a href="lab-05.html">Lab 05</a>
-        <a href="lab-06.html">Lab 06</a>
-        <a href="lab-07.html">Lab 07</a>
-        <a href="lab-08.html">Lab 08</a>
-        <a href="lab-09.html">Lab 09</a>
-        <a href="lab-10.html">Lab 10</a>
-        <a class="active" href="lab-11.html">Lab 11</a>
-        <a href="lab-12.html">Lab 12</a>
-        <a href="lab-13.html">Lab 13</a>
-        <a href="lab-14.html">Lab 14</a>
+        <a href="story.html">Story</a>
+        <a href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a class="active" href="lab-11.html">11</a>
+        <a href="lab-12.html">12</a>
+        <a href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 11 · Architecture · Diagrams first</p>
-    <h1>Multi-account, replication &amp; DR</h1>
-    <p class="lede">
-      A single trial account <strong>cannot</strong> prove cross-region failover live.
-      This lab teaches the <strong>decision tree</strong> architects use — with diagrams and safe
-      <code>SHOW</code> commands that work in one account. No fake second-region SQL that hard-fails.
-    </p>
+    <p class="eyebrow">Lab 11 · Saturday night · You are Elena · Marcus asks about regions</p>
+    <h1>What if the region dies?</h1>
+    <p class="lede">Single trial account can’t prove failover live. Elena teaches share vs clone vs replication and runs safe SHOW commands in MERIDIAN_BANK.</p>
 
-    <div class="callout tip">
-      <strong>After this lab you can explain</strong>
-      <ul>
-        <li>When to use <strong>share</strong> vs <strong>replication</strong> vs <strong>clone</strong></li>
-        <li>Account / database / failover group concepts (high level)</li>
-        <li>RPO/RTO language for Snowflake DR</li>
-        <li>What you <em>can</em> demo on trial vs what you describe</li>
-      </ul>
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Marcus asks the board: “If us-east goes dark, can we still settle transactions?” Meridian has partner shares and QA clones — but no documented DR story.
     </div>
 
-    <h2>Decision tree (memorize the branches)</h2>
-    <div class="flow">
-      <div class="node">Need partner read-only data?</div>
-      <div class="arrow">→</div>
-      <div class="node accent">Share / Marketplace<br /><small>Lab 10</small></div>
-    </div>
-    <div class="flow">
-      <div class="node">Need QA copy today in same account?</div>
-      <div class="arrow">→</div>
-      <div class="node accent">Zero-copy clone<br /><small>Lab 09</small></div>
-    </div>
-    <div class="flow">
-      <div class="node">Need warm copy in another account/region for DR?</div>
-      <div class="arrow">→</div>
-      <div class="node accent">Replication + failover groups<br /><small>this lab</small></div>
+    <div class="callout ok">
+      <strong>Solution you will articulate</strong>
+      Replication + failover groups for RPO/RTO; validate config with SHOW commands; don’t confuse share (Nora) or clone (Dev) with geo-DR.
     </div>
 
-    <table class="plain">
-      <tr><th>Pattern</th><th>Best for</th><th>Not for</th></tr>
-      <tr><td>Share</td><td>Cross-org read, consumer pays compute</td><td>Writable DR primary in your account</td></tr>
-      <tr><td>Clone</td><td>Dev/QA fork, fast sandbox</td><td>Geo-redundant production continuity alone</td></tr>
-      <tr><td>Replication</td><td>Account/database copy to DR region/account</td><td>Ad hoc CSV export replacement</td></tr>
-    </table>
-
-    <h2>Replication picture (provider → replica)</h2>
-    <div class="flow">
-      <div class="node accent">Primary account<br /><small>us-east</small></div>
-      <div class="arrow">→</div>
-      <div class="node">Replication group<br /><small>objects + grants refresh</small></div>
-      <div class="arrow">→</div>
-      <div class="node">Secondary account<br /><small>eu-west</small></div>
-      <div class="arrow">→</div>
-      <div class="node">Optional failover<br /><small>promote secondary</small></div>
-    </div>
-    <p class="hint">
-      <strong>RPO</strong> = how much data you might lose (replication lag).
-      <strong>RTO</strong> = how long until secondary serves traffic (failover runbook + warehouse spin-up).
-    </p>
-
-    <h2>Organizational multi-account (landing zone)</h2>
-    <p class="hint">
-      Enterprises split <strong>prod / non-prod / security admin</strong> accounts.
-      Snowflake Organizations tie accounts under one billing/admin umbrella.
-      You describe this in interviews; trial is usually one account.
-    </p>
-    <div class="flow">
-      <div class="node">Org admin account</div>
-      <div class="arrow">→</div>
-      <div class="node">Prod account</div>
-      <div class="node">Non-prod account</div>
-      <div class="node">Security / audit</div>
+    <div class="story">
+      <div class="story-label">Decision tree Elena draws for Marcus</div>
+      <p>Partner read → Share (Lab 10). QA fork today → Clone (Lab 09). Warm copy in another account/region → Replication (this lab).</p>
     </div>
 
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Safe introspection in one account</h3>
-          <p>Prove you know catalog commands without a second region.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>Command</th><th>What it shows on trial</th></tr>
-          <tr><td><code>SHOW REPLICATION DATABASES</code></td><td>Databases enabled as replication source (often empty on trial)</td></tr>
-          <tr><td><code>SHOW FAILOVER GROUPS</code></td><td>Failover groups if any exist (often empty)</td></tr>
-          <tr><td><code>SHOW ORGANIZATION ACCOUNTS</code></td><td>Only if org admin — may error on personal trial (say that aloud)</td></tr>
-        </table>
-        <span class="why">Interview skill: “I’d validate DR config with SHOW commands and account parameters — not assume replication is on.”</span>
-      </div>
-
+      <div class="step-head"><div class="step-num">1</div><div><h3>Safe introspection in one account</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Step 1 · safe SHOW commands</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
+        <div class="code-head"><span>SQL · SHOW replication catalog</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
 
 SHOW REPLICATION DATABASES;
 SHOW FAILOVER GROUPS;
 
--- May require org admin; empty/error on solo trial is OK to discuss:
+-- May require org admin on personal trial — discuss aloud if empty/error:
 -- SHOW ORGANIZATION ACCOUNTS;</code></pre>
       </div>
     </article>
 
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Talktrack: enabling replication (do not run on trial unless configured)</h3>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">2</div><div><h3>Reference pattern (explain — two accounts)</h3></div></div>
       <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>
-          Typical flow (two accounts, business-critical feature):
-          enable replication on source database → create replication/failover group → add secondary account →
-          schedule refresh → document failover promotion runbook.
-        </p>
-        <span class="why">We paste this as reference only — running <code>ALTER DATABASE … ENABLE REPLICATION</code> without a secondary setup still teaches vocabulary but won’t complete DR alone.</span>
+        <p>Production flow: <code>ALTER DATABASE MERIDIAN_BANK ENABLE REPLICATION TO ACCOUNTS = …</code>, failover group, refresh lag = RPO, promotion runbook = RTO.</p>
       </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · Step 2 · reference pattern (explain, don’t require)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>-- Reference architecture (two accounts + regions):
--- Primary: ALTER DATABASE ARCH_INTERVIEW ENABLE REPLICATION TO ACCOUNTS = &lt;secondary_account_id&gt;;
--- Create REPLICATION GROUP or FAILOVER GROUP including DBs, shares, users as needed
--- Secondary: refresh from primary; test read-only workloads
--- Failover: promote secondary when primary region unavailable (controlled event)</code></pre>
+        <div class="code-head"><span>SQL · reference only</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Primary: ALTER DATABASE MERIDIAN_BANK ENABLE REPLICATION TO ACCOUNTS = &lt;secondary_account_id&gt;;
+-- Create REPLICATION / FAILOVER GROUP; secondary refreshes; controlled failover promotion</code></pre>
       </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">✓</div>
-        <div>
-          <h3>Quick self-check</h3>
-        </div>
-      </div>
-      <ol>
-        <li>Share vs replication — one sentence each?</li>
-        <li>Clone vs replication for DR?</li>
-        <li>What are RPO and RTO in your own words?</li>
-      </ol>
-      <details class="callout tip" style="cursor:pointer">
-        <summary><strong>Click for short answers</strong></summary>
-        <ol>
-          <li>Share: cross-account read of live objects. Replication: copy/sync objects to another account for DR or hub-spoke.</li>
-          <li>Clone is same-account fast fork; replication is ongoing geo/account continuity.</li>
-          <li>RPO: max acceptable data loss window. RTO: max acceptable downtime to restore service.</li>
-        </ol>
-      </details>
     </article>
 
     <div class="soundbite">
-      <strong>60-second interview answer</strong><br />
-      “For partners I use secure shares. For QA I zero-copy clone in non-prod.
-      For DR I replicate critical databases to a secondary account/region with a failover group and tested promotion runbook.
-      I separate RPO/RTO targets from marketing — replication lag and failover steps define what we actually get.
-      On a single trial I validate with SHOW REPLICATION DATABASES and document the full pattern for production.”
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Marcus needed DR language, not buzzwords. I separated share for Nora, clone for Dev, and replication for region loss with explicit RPO/RTO from lag and failover steps.
+      On trial I proved discipline with SHOW REPLICATION DATABASES — production gets a tested runbook on MERIDIAN_BANK.
+      <em>Outcome:</em> board hears an honest continuity plan.”
     </div>
+
 
     <div class="pager">
       <a class="btn ghost" href="lab-10.html">← Lab 10</a>
-      <a class="btn primary" href="lab-12.html">Next: Lab 12 dbt at scale →</a>
+      <a class="btn primary" href="lab-12.html">Lab 12 →</a>
     </div>
   </div>
-
-  <footer class="footer">Stuck? Copy the Step number + question into chat.</footer>
+  <footer class="footer">Diagram-first lab · safe SHOW on trial</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

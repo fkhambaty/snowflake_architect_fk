@@ -1,25 +1,13 @@
--- Lab 07: Generate queries to study in Query Profile + warehouse basics
-USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
+USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
 
--- A) Simple selective query (should prune well on tiny data)
-SELECT *
-FROM RAW.CUSTOMERS
-WHERE COUNTRY = 'US';
+SELECT * FROM LANDING.CLIENTS WHERE COUNTRY = 'US';
 
--- B) Heavier shape: join + aggregate (open Query Profile on this query id)
-SELECT
-  c.COUNTRY,
-  COUNT(*) AS ORDERS,
-  SUM(o.ORDER_TOTAL) AS REVENUE
-FROM RAW.CUSTOMERS c
-JOIN RAW.ORDERS_EVENTS o
-  ON o.CUSTOMER_ID = c.CUSTOMER_ID
-GROUP BY c.COUNTRY
-ORDER BY REVENUE DESC;
+SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(t.AMOUNT) AS VOLUME
+FROM LANDING.CLIENTS c
+JOIN LANDING.TXN_EVENTS t ON t.CLIENT_ID = c.CLIENT_ID
+GROUP BY c.COUNTRY ORDER BY VOLUME DESC;
 
--- C) Show warehouse settings you will discuss
-SHOW WAREHOUSES LIKE 'WH_ARCH_XS';
-
-SELECT 'Lab 07: open Query History → click the JOIN query → Query Profile' AS next_step;
+SHOW WAREHOUSES LIKE 'WH_BANK_XS';
+SELECT 'Open Query History → JOIN query → Query Profile' AS next_step;

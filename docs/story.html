@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SnowShop — the full story</title>
+  <title>Meridian Bank — the full story</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -14,314 +14,193 @@
         <a href="index.html">Home</a>
         <a class="active" href="story.html">Story</a>
         <a href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
         <a href="lab-14.html">Lab 14</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">One story · Labs 00 → 14 · Read in order</p>
-    <h1>SnowShop</h1>
+    <p class="eyebrow">One bank · One week · Labs 00 → 14</p>
+    <h1>Meridian Bank</h1>
     <p class="lede">
-      A small online store. Real customer secrets. A boss who wants answers yesterday.
-      You are not memorizing menus — you are living one week inside this company.
-      Each lab is the next day of the same story.
+      You are <strong>Elena Vasquez</strong>, Snowflake Architect.
+      Meridian Bank is drowning in spreadsheets, scared of regulators, and tired of surprise cloud bills.
+      Every lab is the next business problem Elena solves — then she explains what changed.
     </p>
 
     <div class="callout tip">
-      <strong>How to use this page</strong>
-      Read a chapter here → then open that lab and run the SQL.
-      When something feels abstract, come back and re-read the chapter. The people stay the same the whole way.
+      <strong>How to read this course</strong>
+      Story chapter → Lab page → <em>Business problem</em> → <em>Solution (SQL)</em> → <em>Elena’s wrap-up</em>.
+      Object names: <a href="BANK_NAMING.md">BANK_NAMING.md</a>
     </div>
 
-    <!-- CAST -->
-    <h2>The cast (memorize these five)</h2>
+    <h2>The cast</h2>
     <div class="story">
-      <div class="story-label">Who’s who</div>
       <ul class="cast">
-        <li><strong>Maya</strong> — Snowflake Architect (that’s <em>you</em>). Builds the workshop. Designs the locks. Explains the “why”.</li>
-        <li><strong>Priya</strong> — CEO of SnowShop. Wants speed, safety, and a bill that doesn’t explode.</li>
-        <li><strong>Alex</strong> — Business Analyst. Needs charts. Must <em>not</em> see SSN or full emails.</li>
-        <li><strong>Jordan</strong> — Data Engineer. Lives in messy dock data. Builds pipes and dbt models.</li>
-        <li><strong>Sam</strong> — Compliance Officer. Allowed to see sensitive fields for audits — and only for that.</li>
+        <li><strong>Elena Vasquez</strong> — Snowflake Architect (you)</li>
+        <li><strong>Marcus Hale</strong> — COO (wants speed, safety, sane cost)</li>
+        <li><strong>Alex Rivera</strong> — Business Analyst (dashboards; must not see SSN)</li>
+        <li><strong>Jordan Okonkwo</strong> — Data Engineer (pipelines, dbt, landing data)</li>
+        <li><strong>Sam Okada</strong> — Risk &amp; Compliance (audits; can see sensitive fields)</li>
+        <li><strong>Nora Patel</strong> — Partner credit union (needs a secure data window)</li>
+        <li><strong>Dev</strong> — QA twin of production (clones, experiments)</li>
       </ul>
-      <p style="margin-top:0.75rem">
-        Later you’ll meet <strong>Nora</strong> (partner store that needs a data share) and <strong>Dev</strong> (QA twin of production).
-      </p>
     </div>
 
-    <!-- NAMING -->
-    <h2>Why badges are named FR_ and AR_ (not random)</h2>
+    <h2>Why FR_ and AR_</h2>
     <div class="story">
-      <div class="story-label">Naming rule Maya uses forever</div>
-      <p>
-        Snowflake lets you name roles anything. Maya refuses random names. She uses prefixes so a tired human
-        can read a list at 2 a.m. and still know what a badge <em>is for</em>.
-      </p>
       <table class="gloss">
-        <tr><th>Prefix</th><th>Full words</th><th>Means</th><th>Example</th></tr>
-        <tr>
-          <td><code>FR_</code></td>
-          <td><strong>F</strong>unctional <strong>R</strong>ole</td>
-          <td>A <em>job</em> people wear — who you are at work</td>
-          <td><code>FR_ANALYST</code> = Alex’s job badge</td>
-        </tr>
-        <tr>
-          <td><code>AR_</code></td>
-          <td><strong>A</strong>ccess <strong>R</strong>ole</td>
-          <td>A <em>key-ring</em> — what doors that job may open (no humans wear this alone)</td>
-          <td><code>AR_CURATED_READ</code> = “read the clean shelves”</td>
-        </tr>
+        <tr><th>Prefix</th><th>Means</th><th>Bank example</th></tr>
+        <tr><td><code>FR_</code></td><td><strong>F</strong>unctional <strong>R</strong>ole = job badge</td><td><code>FR_ANALYST</code> = Alex’s job</td></tr>
+        <tr><td><code>AR_</code></td><td><strong>A</strong>ccess <strong>R</strong>ole = key-ring</td><td><code>AR_CURATED_READ</code> = clean data keys</td></tr>
       </table>
-      <p>
-        <strong>Rule of the story:</strong> clip key-rings (<code>AR_</code>) onto job badges (<code>FR_</code>).
-        Never hand every table key to every person by name. Hire fifty Alexes tomorrow — same job badge, same rings.
-      </p>
+      <p>Elena hangs doors on <code>AR_</code>, clips rings onto <code>FR_</code>, gives humans only <code>FR_</code>.</p>
     </div>
 
-    <!-- CHAPTERS -->
-    <h2>The week at SnowShop</h2>
+    <h2>The week</h2>
 
     <article class="step" id="ch00">
-      <div class="step-head"><div class="step-num">00</div><div><h3>Monday morning — Maya gets a workshop</h3></div></div>
+      <div class="step-head"><div class="step-num">00</div><div><h3>Monday AM — No bank without a building</h3></div></div>
       <div class="story">
-        <p>
-          Priya walks into Maya’s desk with coffee and panic.
-          “We’re drowning in spreadsheets. Build us a real data home. Small bill. No drama.”
-        </p>
-        <p>
-          Maya creates a private workshop building named <code>ARCH_INTERVIEW</code>,
-          rents a tiny generator <code>WH_ARCH_XS</code> that sleeps when idle,
-          and pins a manager badge on herself: <code>ROLE_ARCH_LAB_ADMIN</code>.
-          She labels rooms: RAW (loading dock), CURATED (clean shelves), SECURE (policy office),
-          MART (report wall), STAGE_DATA (truck bay), UTILS (toolbox).
-        </p>
-        <p>
-          Before lunch she drops five fake customers into the dock vault — names, emails, SSN last-4.
-          The vault exists. The story can begin.
-        </p>
-        <p><a class="btn primary" href="lab-00.html">Do Lab 00</a></p>
+        <p><strong>Problem:</strong> Meridian has no dedicated Snowflake home. Teams dump files everywhere.</p>
+        <p><strong>Solution:</strong> Elena creates database <code>MERIDIAN_BANK</code>, warehouse <code>WH_BANK_XS</code>, schemas (LANDING, CURATED, …), loads 5 sample clients.</p>
+        <p><a class="btn primary" href="lab-00.html">Open Lab 00</a></p>
       </div>
     </article>
 
     <article class="step" id="ch01">
-      <div class="step-head"><div class="step-num">01</div><div><h3>Monday afternoon — three jobs, one vault</h3></div></div>
+      <div class="step-head"><div class="step-num">01</div><div><h3>Monday PM — Analysts must not see SSN</h3></div></div>
       <div class="story">
-        <p>
-          Alex wants customer names for a board deck. Jordan needs the messy vault to build pipelines.
-          Sam needs SSN for an audit. Priya says: “If Alex ever sees SSN, we all get fired.”
-        </p>
-        <p>
-          Maya doesn’t invent fifty personal keys. She prints:
-        </p>
-        <ul class="cast">
-          <li><code>FR_ANALYST</code>, <code>FR_DATA_ENGINEER</code>, <code>FR_COMPLIANCE</code> — job badges</li>
-          <li><code>AR_CURATED_READ</code>, <code>AR_RAW_READ</code>, <code>AR_PII_READ</code> — key-rings</li>
-        </ul>
-        <p>
-          She installs a glass reception window <code>V_CUSTOMERS_PUBLIC</code> (no email, no SSN).
-          Alex’s job gets only the curated key-ring. Jordan gets vault + curated. Sam gets PII + curated.
-        </p>
-        <p>
-          Maya puts on Alex’s badge and tries the vault door. It refuses. She smiles.
-          That refusal is the product.
-        </p>
-        <p><a class="btn primary" href="lab-01.html">Do Lab 01</a></p>
+        <p><strong>Problem:</strong> Alex needs client names. Sam needs SSN. Regulators will destroy Meridian if Alex sees SSN.</p>
+        <p><strong>Solution:</strong> FR_/AR_ role model + safe view <code>V_CLIENT_DIRECTORY</code>. Alex blocked from landing vault.</p>
+        <p><a class="btn primary" href="lab-01.html">Open Lab 01</a></p>
       </div>
     </article>
 
     <article class="step" id="ch02">
-      <div class="step-head"><div class="step-num">02</div><div><h3>Tuesday — Jordan’s night clerk (dbt)</h3></div></div>
+      <div class="step-head"><div class="step-num">02</div><div><h3>Tuesday — Rebuild the ledger every night? No.</h3></div></div>
       <div class="story">
-        <p>
-          Orders keep arriving. Priya asks Jordan: “Do you rewrite the entire order book every night?”
-          Jordan looks offended. “Only new pages and corrections.”
-        </p>
-        <p>
-          Maya and Jordan wire dbt: Day 1 five orders land in RAW. The clerk builds a clean fact table.
-          Day 2 two new orders appear; order 1001 ships. The clerk <em>merges</em> — no duplicate junk, no full rewrite.
-          Alex will eventually chart from the clean book, not the dock clipboard.
-        </p>
-        <p><a class="btn primary" href="lab-02.html">Do Lab 02</a></p>
+        <p><strong>Problem:</strong> Full refresh of transactions burns money and time.</p>
+        <p><strong>Solution:</strong> dbt incremental merge on txn events — only new/changed rows.</p>
+        <p><a class="btn primary" href="lab-02.html">Open Lab 02</a></p>
       </div>
     </article>
 
     <article class="step" id="ch03">
-      <div class="step-head"><div class="step-num">03</div><div><h3>Wednesday morning — magic ink and velvet ropes</h3></div></div>
+      <div class="step-head"><div class="step-num">03</div><div><h3>Wednesday AM — Even clean tables leak email</h3></div></div>
       <div class="story">
-        <p>
-          Sam is still nervous. “Even on the clean table, Alex might see full emails.”
-          Maya paints emails with magic ink: Alex sees <code>***@…</code>; Sam sees the real address.
-          She adds velvet ropes: Alex only walks US aisles; Sam can walk every country.
-        </p>
-        <p>
-          Same SELECT. Different costume. Different reality. Priya finally exhales.
-        </p>
-        <p><a class="btn primary" href="lab-03.html">Do Lab 03</a></p>
+        <p><strong>Problem:</strong> RBAC isn’t enough; emails still show in full for analysts.</p>
+        <p><strong>Solution:</strong> Masking + row access policies for Alex vs Sam.</p>
+        <p><a class="btn primary" href="lab-03.html">Open Lab 03</a></p>
       </div>
     </article>
 
     <article class="step" id="ch04">
-      <div class="step-head"><div class="step-num">04</div><div><h3>Wednesday afternoon — dock, kitchen, dining room</h3></div></div>
+      <div class="step-head"><div class="step-num">04</div><div><h3>Wednesday PM — Marcus gets lost in the data</h3></div></div>
       <div class="story">
-        <p>
-          Priya tours the building and gets lost. Maya draws three zones on a napkin:
-          <strong>Bronze</strong> dock (RAW), <strong>Silver</strong> kitchen (cleaned CURATED),
-          <strong>Gold</strong> dining room (MART summaries for Alex).
-        </p>
-        <p>
-          A visiting consultant whispers “Data Vault.” Maya nods: “That’s another kitchen layout —
-          great for huge history and audit trails. SnowShop doesn’t need a cathedral yet.”
-          Priya cares about the napkin, not the buzzword.
-        </p>
-        <p><a class="btn primary" href="lab-04.html">Do Lab 04</a></p>
+        <p><strong>Problem:</strong> Nobody knows bronze vs gold; reports point at landing tables.</p>
+        <p><strong>Solution:</strong> Medallion: LANDING → CURATED → FINANCE_MART (+ Data Vault talk).</p>
+        <p><a class="btn primary" href="lab-04.html">Open Lab 04</a></p>
       </div>
     </article>
 
     <article class="step" id="ch05">
-      <div class="step-head"><div class="step-num">05</div><div><h3>Thursday — conveyor belt, sous-chef, recipe book</h3></div></div>
+      <div class="step-head"><div class="step-num">05</div><div><h3>Thursday — Hand-carrying files is not a pipeline</h3></div></div>
       <div class="story">
-        <p>
-          Jordan is tired of hand-carrying boxes from dock to kitchen.
-          Maya shows three helpers:
-        </p>
-        <ul class="cast">
-          <li><strong>Stream + task</strong> — a conveyor belt that moves new boxes on a schedule</li>
-          <li><strong>Dynamic table</strong> — a sous-chef who keeps one dish fresh with a promised lag</li>
-          <li><strong>dbt</strong> — the recipe book the team versions in Git (Tuesday’s clerk, grown up)</li>
-        </ul>
-        <p>
-          They start the belt, prove one box moves, then switch the belt off so the generator doesn’t hum all night.
-        </p>
-        <p><a class="btn primary" href="lab-05.html">Do Lab 05</a></p>
+        <p><strong>Problem:</strong> Jordan manually moves new transactions every hour.</p>
+        <p><strong>Solution:</strong> Streams + tasks (and when to use dynamic tables vs dbt).</p>
+        <p><a class="btn primary" href="lab-05.html">Open Lab 05</a></p>
       </div>
     </article>
 
     <article class="step" id="ch06">
-      <div class="step-head"><div class="step-num">06</div><div><h3>Thursday evening — trucks at the bay</h3></div></div>
+      <div class="step-head"><div class="step-num">06</div><div><h3>Thursday night — Files arrive; who loads them?</h3></div></div>
       <div class="story">
-        <p>
-          A truck backs into STAGE_DATA. Files spill onto the bay. COPY INTO pours them into a landing table.
-          Priya asks, “Can this happen while we sleep?” Maya: “That’s Snowpipe — same pour, automatic when the cloud door beeps.
-          Tonight we practice the pour by hand so you understand the machine.”
-        </p>
-        <p><a class="btn primary" href="lab-06.html">Do Lab 06</a></p>
+        <p><strong>Problem:</strong> Partner files land overnight; morning desk is chaos.</p>
+        <p><strong>Solution:</strong> Stage + COPY pattern; Snowpipe = automated COPY.</p>
+        <p><a class="btn primary" href="lab-06.html">Open Lab 06</a></p>
       </div>
     </article>
 
     <article class="step" id="ch07">
-      <div class="step-head"><div class="step-num">07</div><div><h3>Friday morning — X-ray for a slow order</h3></div></div>
+      <div class="step-head"><div class="step-num">07</div><div><h3>Friday AM — Board deck query is dying</h3></div></div>
       <div class="story">
-        <p>
-          Alex’s dashboard crawls. Priya is already drafting an angry Slack.
-          Maya opens Query Profile — the X-ray. Where did time go? Spilling? Waiting?
-          She teaches the difference: bigger generator (scale up) vs more generators for a crowd (scale out).
-          Alex’s query breathes again. Priya deletes the draft.
-        </p>
-        <p><a class="btn primary" href="lab-07.html">Do Lab 07</a></p>
+        <p><strong>Problem:</strong> Alex’s board query crawls; Marcus is angry.</p>
+        <p><strong>Solution:</strong> Query Profile; scale up vs out.</p>
+        <p><a class="btn primary" href="lab-07.html">Open Lab 07</a></p>
       </div>
     </article>
 
     <article class="step" id="ch08">
-      <div class="step-head"><div class="step-num">08</div><div><h3>Friday noon — label the aisles</h3></div></div>
+      <div class="step-head"><div class="step-num">08</div><div><h3>Friday noon — Scanning every shelf for 7 days</h3></div></div>
       <div class="story">
-        <p>
-          The event shelf has grown. Jordan walks every aisle for “last seven days.” Maya clusters by date —
-          labels the aisles so the walk is short. She warns Sam about a fancy “search optimization” index:
-          brilliant for needle-in-haystack lookups, not free candy.
-        </p>
-        <p><a class="btn primary" href="lab-08.html">Do Lab 08</a></p>
+        <p><strong>Problem:</strong> Huge event table; “last 7 days” reads everything.</p>
+        <p><strong>Solution:</strong> Clustering (+ search optimization talk).</p>
+        <p><a class="btn primary" href="lab-08.html">Open Lab 08</a></p>
       </div>
     </article>
 
     <article class="step" id="ch09">
-      <div class="step-head"><div class="step-num">09</div><div><h3>Friday afternoon — Dev the twin and the undo button</h3></div></div>
+      <div class="step-head"><div class="step-num">09</div><div><h3>Friday PM — Someone dropped a table</h3></div></div>
       <div class="story">
-        <p>
-          Jordan deletes a table by accident. The room goes quiet. Maya presses UNDROP. Life returns.
-          Then she introduces <strong>Dev</strong> — a zero-copy twin of a table for QA experiments.
-          “Practice on Dev,” she says. “Don’t juggle production china.”
-        </p>
-        <p><a class="btn primary" href="lab-09.html">Do Lab 09</a></p>
+        <p><strong>Problem:</strong> Accidental drop / need a safe QA copy.</p>
+        <p><strong>Solution:</strong> UNDROP, Time Travel, zero-copy clone (Dev).</p>
+        <p><a class="btn primary" href="lab-09.html">Open Lab 09</a></p>
       </div>
     </article>
 
     <article class="step" id="ch10">
-      <div class="step-head"><div class="step-num">10</div><div><h3>Saturday — Nora wants a window, not a USB stick</h3></div></div>
+      <div class="step-head"><div class="step-num">10</div><div><h3>Saturday — Nora wants a USB stick</h3></div></div>
       <div class="story">
-        <p>
-          <strong>Nora</strong> runs a partner store. She asks for a data dump. Maya refuses the USB stick era.
-          She shares a secure view — Nora sees only what SnowShop allows, live.
-          Priya eyes the Marketplace like a mall of such windows for the future.
-        </p>
-        <p><a class="btn primary" href="lab-10.html">Do Lab 10</a></p>
+        <p><strong>Problem:</strong> Partner credit union asks for a data dump.</p>
+        <p><strong>Solution:</strong> Secure share of a view — no USB era.</p>
+        <p><a class="btn primary" href="lab-10.html">Open Lab 10</a></p>
       </div>
     </article>
 
     <article class="step" id="ch11">
-      <div class="step-head"><div class="step-num">11</div><div><h3>Saturday evening — what if the city floods?</h3></div></div>
+      <div class="step-head"><div class="step-num">11</div><div><h3>Saturday night — What if the region dies?</h3></div></div>
       <div class="story">
-        <p>
-          Priya asks the hard question: “If our region dies, do we die?”
-          Maya draws three answers on the whiteboard:
-          clone for practice, share for partners, replicate/failover for a second city that keeps selling.
-          SnowShop chooses on purpose — not after the flood.
-        </p>
-        <p><a class="btn primary" href="lab-11.html">Do Lab 11</a></p>
+        <p><strong>Problem:</strong> Marcus asks about disaster recovery.</p>
+        <p><strong>Solution:</strong> Clone vs share vs replicate — choose on purpose.</p>
+        <p><a class="btn primary" href="lab-11.html">Open Lab 11</a></p>
       </div>
     </article>
 
     <article class="step" id="ch12">
-      <div class="step-head"><div class="step-num">12</div><div><h3>Sunday — write the kitchen rules</h3></div></div>
+      <div class="step-head"><div class="step-num">12</div><div><h3>Sunday — Broken dbt breaks the bank deck</h3></div></div>
       <div class="story">
-        <p>
-          Jordan’s dbt recipes are spreading. Maya adds contracts: “This dish must keep these columns.”
-          Slim CI: only cook what changed in the pull request. Alex stops fearing silent breakages.
-          The recipe book is finally a team sport.
-        </p>
-        <p><a class="btn primary" href="lab-12.html">Do Lab 12</a></p>
+        <p><strong>Problem:</strong> Silent model changes break Alex’s metrics.</p>
+        <p><strong>Solution:</strong> Contracts + Slim CI.</p>
+        <p><a class="btn primary" href="lab-12.html">Open Lab 12</a></p>
       </div>
     </article>
 
     <article class="step" id="ch13">
-      <div class="step-head"><div class="step-num">13</div><div><h3>Sunday night — the electric meter</h3></div></div>
+      <div class="step-head"><div class="step-num">13</div><div><h3>Sunday night — Surprise credit bill</h3></div></div>
       <div class="story">
-        <p>
-          Finance forwards a credit bill. Priya’s eye twitches. Maya opens the meter (ACCOUNT_USAGE),
-          finds which generator hummed, and bolts on a resource monitor — a breaker that trips before the house burns.
-          “Architects own cost,” she says, “not just diagrams.”
-        </p>
-        <p><a class="btn primary" href="lab-13.html">Do Lab 13</a></p>
+        <p><strong>Problem:</strong> Finance forwards a painful Snowflake bill.</p>
+        <p><strong>Solution:</strong> ACCOUNT_USAGE + resource monitors.</p>
+        <p><a class="btn primary" href="lab-13.html">Open Lab 13</a></p>
       </div>
     </article>
 
     <article class="step" id="ch14">
-      <div class="step-head"><div class="step-num">14</div><div><h3>Interview Monday — tell SnowShop out loud</h3></div></div>
+      <div class="step-head"><div class="step-num">14</div><div><h3>Interview Monday — Elena tells the week</h3></div></div>
       <div class="story">
-        <p>
-          No Snowsight in the room. Just Maya (you) across from someone who asks:
-          How do you stop Alex from seeing SSN? Why merge not rebuild? Spill on Query Profile? Share or replicate?
-        </p>
-        <p>
-          You don’t recite syntax. You tell this week. You are the architect who lived it.
-        </p>
-        <p><a class="btn primary" href="lab-14.html">Do Lab 14</a></p>
+        <p><strong>Problem:</strong> Interviewer asks scenario questions with no laptop.</p>
+        <p><strong>Solution:</strong> Retell Meridian Bank — problem, decision, proof, outcome.</p>
+        <p><a class="btn primary" href="lab-14.html">Open Lab 14</a></p>
       </div>
     </article>
 
-    <div class="soundbite">
-      <strong>Carry this one sentence into every lab</strong><br />
-      “I’m Maya at SnowShop: job badges are <code>FR_</code>, key-rings are <code>AR_</code>,
-      and every lab is the next day of the same company story.”
-    </div>
-
     <div class="pager">
       <a class="btn ghost" href="index.html">← Home</a>
-      <a class="btn primary" href="lab-00.html">Start Chapter 00 →</a>
+      <a class="btn primary" href="lab-00.html">Start Lab 00 →</a>
     </div>
   </div>
-
-  <footer class="footer">Story first · SQL in each lab · Same cast the whole way</footer>
+  <footer class="footer">Meridian Bank · Elena Vasquez · FR_ jobs · AR_ key-rings</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

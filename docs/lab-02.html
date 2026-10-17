@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 02 — dbt incremental on Snowflake</title>
+  <title>Lab 02 — Meridian Bank dbt incremental</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,6 +12,7 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
+        <a href="story.html">Story</a>
         <a href="lab-00.html">00</a>
         <a href="lab-01.html">01</a>
         <a class="active" href="lab-02.html">02</a>
@@ -32,62 +33,35 @@
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 02 · Domain 3 + dbt · Understand first, then run</p>
-    <h1>dbt incremental merge on Snowflake</h1>
-    <p class="lede">
-      Same rule as Lab 01: <strong>read the blue box → then copy</strong>.
-      If you only run commands, you’ll freeze when they ask “why merge, not full refresh?”
-    </p>
+    <p class="eyebrow">Lab 02 · Tuesday · You are Elena · Jordan owns pipelines</p>
+    <h1>Stop rebuilding the transaction ledger every night</h1>
+    <p class="lede">Jordan (Engineer) told Marcus the txn fact takes 45 minutes to full-refresh. Alex still needs fresh totals for the board deck. Pattern: <strong>Business problem → Solution (SQL/dbt) → Elena’s wrap-up</strong>. Need Lab 01 roles; dbt reads <code>LANDING.TXN_EVENTS</code> via <code>stg_orders</code> (order_id alias is fine).</p>
 
-    <div class="flow">
-      <div class="node">RAW events</div>
-      <div class="arrow">→</div>
-      <div class="node">stg_orders<br /><small>clean rename</small></div>
-      <div class="arrow">→</div>
-      <div class="node accent">fct_orders<br /><small>incremental MERGE</small></div>
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Meridian’s transaction history grows daily. Jordan’s nightly full refresh of the fact table burns warehouse credits and still misses same-day updates.
+      Marcus: “Fix the ledger without doubling our Snowflake bill.”
     </div>
 
-    <div class="callout tip">
-      <strong>Four words you must own</strong>
-      <table class="gloss">
-        <tr><th>Word</th><th>Kid-simple meaning</th></tr>
-        <tr><td>Incremental</td><td>After day 1, only process new/changed rows</td></tr>
-        <tr><td>Merge / upsert</td><td>New keys insert; existing keys update</td></tr>
-        <tr><td>unique_key</td><td>How we know “this is the same order”</td></tr>
-        <tr><td>Watermark</td><td>“Only rows newer than what I already loaded” (here: <code>updated_at</code>)</td></tr>
-      </table>
+    <div class="callout ok">
+      <strong>Solution you will build</strong>
+      Day-1 rows in <code>LANDING.TXN_EVENTS</code>, dbt incremental <code>merge</code> on <code>fct_orders_incremental</code> with <code>unique_key=order_id</code> and <code>updated_at</code> watermark.
+      Profiles use <code>ROLE_BANK_LAB_ADMIN</code>, <code>MERIDIAN_BANK</code>, <code>WH_BANK_XS</code>.
     </div>
 
-    <!-- STEP 1 -->
+    <div class="story">
+      <div class="story-label">Tuesday in the data team room</div>
+      <p>Jordan: “I can land events in LANDING — you make dbt only touch deltas.” Elena: “Merge on txn id, watermark on updated_at, prove it with Day 2 updates.”</p>
+    </div>
+
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Tell dbt how to log into Snowflake</h3>
-          <p><code>profiles.yml</code> is dbt’s address book — not part of your Git repo.</p>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">1</div><div><h3>Wire dbt to Meridian Bank</h3></div></div>
       <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>Field</th><th>Meaning</th></tr>
-          <tr><td><code>account</code></td><td>Your Snowflake account locator (like QQ00022 + region)</td></tr>
-          <tr><td><code>role</code></td><td>Badge dbt wears — our lab admin</td></tr>
-          <tr><td><code>database / schema</code></td><td>Where models land (<code>ARCH_INTERVIEW.CURATED</code>)</td></tr>
-          <tr><td><code>warehouse</code></td><td>Which engine runs the SQL dbt generates</td></tr>
-          <tr><td><code>threads</code></td><td>How many models dbt can build in parallel</td></tr>
-        </table>
-        <span class="why">Interview: “dbt doesn’t store Snowflake secrets in the project — profiles stay on the runner / developer machine or in CI secrets.”</span>
+        <h4>profiles.yml = dbt’s login card</h4>
+        <p>dbt runs as <code>ROLE_BANK_LAB_ADMIN</code> — same badge Elena uses to own objects. Models land in <code>CURATED</code>; source is <code>landing.txn_events</code> in <code>_sources.yml</code>.</p>
       </div>
-
-      <ol>
-        <li>Open <code>dbt_project</code> in VS Code.</li>
-        <li>Edit <code>C:\Users\YOURNAME\.dbt\profiles.yml</code></li>
-      </ol>
-
       <div class="code-block">
-        <div class="code-head"><span>YAML · profiles.yml</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>YAML · profiles.yml (from dbt_project/profiles.yml.example)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>snowflake_architect_fk:
   target: dev
   outputs:
@@ -96,284 +70,144 @@
       account: YOUR_ACCOUNT_LOCATOR
       user: YOUR_USER
       password: YOUR_PASSWORD
-      role: ROLE_ARCH_LAB_ADMIN
-      database: ARCH_INTERVIEW
-      warehouse: WH_ARCH_XS
+      role: ROLE_BANK_LAB_ADMIN
+      database: MERIDIAN_BANK
+      warehouse: WH_BANK_XS
       schema: CURATED
       threads: 4</code></pre>
-      </div>
-
-      <div class="explain">
-        <h4>What <code>dbt debug</code> actually checks</h4>
-        <p>Can dbt find the project? Can it log in? Can it see the warehouse/database?
-        Green checks = plumbing OK. It does <em>not</em> build models yet.</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>Terminal</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>cd dbt_project
 dbt debug</code></pre>
       </div>
-      <div class="badge-ok">✓ Connection OK before you continue</div>
+      <div class="badge-ok">✓ All checks passed before you load data</div>
     </article>
 
-    <!-- STEP 2 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Load Day-1 source rows (raw landing)</h3>
-          <p>dbt transforms data — something else usually lands it. Here that “something” is you + SQL.</p>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">2</div><div><h3>Day 1 — load transaction events at the dock</h3></div></div>
       <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>CREATE TABLE ORDERS_EVENTS</code></td><td>Landing table for order changes (like a mini CDC feed)</td></tr>
-          <tr><td><code>ORDER_ID</code></td><td>Business key — same order over time</td></tr>
-          <tr><td><code>UPDATED_AT</code></td><td>Watermark column — when this version of the order happened</td></tr>
-          <tr><td><code>INSERT … 5 rows</code></td><td>Fake “Day 1” batch</td></tr>
-        </table>
-        <span class="why">If <code>UPDATED_AT</code> doesn’t move when status changes, incremental merge will miss updates. That’s a classic production bug.</span>
+        <h4>Why UPDATED_AT matters</h4>
+        <p>Incremental merge only re-processes rows newer than the fact’s max <code>updated_at</code>. If Jordan updates status but forgets to bump the timestamp, the fact stays wrong — a classic production bug.</p>
       </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · Day 1</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
-USE SCHEMA RAW;
+        <div class="code-head"><span>SQL · sql/02_orders_source.sql</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
+USE SCHEMA LANDING;
 
-CREATE OR REPLACE TABLE ORDERS_EVENTS (
-  ORDER_ID     NUMBER,
-  CUSTOMER_ID  NUMBER,
+CREATE OR REPLACE TABLE TXN_EVENTS (
+  TXN_ID       NUMBER,
+  CLIENT_ID    NUMBER,
   STATUS       STRING,
-  ORDER_TOTAL  NUMBER(12,2),
+  AMOUNT       NUMBER(12,2),
   UPDATED_AT   TIMESTAMP_NTZ
 );
 
-INSERT INTO ORDERS_EVENTS VALUES
-  (1001, 1, 'CREATED',   40.00, '2026-10-01 10:00:00'),
-  (1002, 2, 'CREATED',   15.50, '2026-10-01 11:00:00'),
-  (1003, 3, 'SHIPPED',   99.00, '2026-10-01 12:00:00'),
-  (1004, 4, 'CREATED',   22.00, '2026-10-01 13:00:00'),
-  (1005, 5, 'CANCELLED', 10.00, '2026-10-01 14:00:00');
+INSERT INTO TXN_EVENTS VALUES
+  (1001, 1, 'POSTED',    40.00, '2026-10-01 10:00:00'),
+  (1002, 2, 'POSTED',    15.50, '2026-10-01 11:00:00'),
+  (1003, 3, 'SETTLED',   99.00, '2026-10-01 12:00:00'),
+  (1004, 4, 'POSTED',    22.00, '2026-10-01 13:00:00'),
+  (1005, 5, 'REVERSED',  10.00, '2026-10-01 14:00:00');
 
-SELECT 'day1' AS batch, COUNT(*) AS n FROM ORDERS_EVENTS;</code></pre>
+SELECT 'day1' AS batch, COUNT(*) AS n FROM TXN_EVENTS;</code></pre>
       </div>
-      <div class="badge-ok">✓ n = 5</div>
+      <div class="badge-ok">✓ n = 5 in LANDING.TXN_EVENTS</div>
     </article>
 
-    <!-- STEP 2b model explain -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div>
-          <h3>Read the dbt model (don’t run yet — understand)</h3>
-          <p>Open <code>dbt_project/models/marts/fct_orders_incremental.sql</code> in VS Code while you read this.</p>
-        </div>
+      <div class="step-head"><div class="step-num">3</div><div><h3>Read the dbt graph (staging → mart)</h3></div></div>
+      <div class="story">
+        <p><code>stg_orders</code> is a view: reads <code>{{ source('landing', 'txn_events') }}</code>, renames <code>txn_id</code> → <code>order_id</code> for the mart contract. Marts = business facts Alex trusts.</p>
       </div>
-
-      <div class="explain">
-        <h4>Line-by-line: the config block</h4>
-        <table class="gloss">
-          <tr><th>Code</th><th>Meaning</th></tr>
-          <tr><td><code>materialized='incremental'</code></td><td>First run builds a table; later runs only apply deltas</td></tr>
-          <tr><td><code>unique_key='order_id'</code></td><td>Match rows by order id when merging</td></tr>
-          <tr><td><code>incremental_strategy='merge'</code></td><td>On Snowflake, generate a <code>MERGE</code> (upsert), not delete+insert of everything</td></tr>
-        </table>
-      </div>
-
-      <div class="explain">
-        <h4>Line-by-line: the SELECT + watermark</h4>
-        <table class="gloss">
-          <tr><th>Code</th><th>Meaning</th></tr>
-          <tr><td><code>{{ ref('stg_orders') }}</code></td><td>Read from the staging model (dbt dependency graph)</td></tr>
-          <tr><td><code>{% if is_incremental() %}</code></td><td>This filter runs only on run #2, #3, … not the first build</td></tr>
-          <tr><td><code>updated_at > max(updated_at) from {{ this }}</code></td><td>Only rows newer than what’s already in the target table</td></tr>
-          <tr><td><code>{{ this }}</code></td><td>Fancy name for “the table this model is building”</td></tr>
-          <tr><td><code>coalesce(..., '1900-01-01')</code></td><td>If target empty, treat max as ancient date so all rows qualify</td></tr>
-        </table>
-        <span class="why">First run: no filter → load all. Second run: filter + MERGE → cheap updates.</span>
-      </div>
-
       <div class="code-block">
-        <div class="code-head"><span>dbt SQL · for reading (already in repo)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>{{
-  config(
-    materialized='incremental',
-    unique_key='order_id',
-    incremental_strategy='merge'
-  )
-}}
+        <div class="code-head"><span>dbt · stg_orders.sql + fct_orders_incremental.sql</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- stg_orders.sql (view)
+select txn_id as order_id, client_id as customer_id, status,
+       amount as order_total, updated_at
+from {{ source('landing', 'txn_events') }}
 
-select
-    order_id,
-    customer_id,
-    status,
-    order_total,
-    updated_at
+-- fct_orders_incremental.sql (incremental merge)
+{{ config(materialized='incremental', unique_key='order_id', incremental_strategy='merge') }}
+select order_id, customer_id, status, order_total, updated_at
 from {{ ref('stg_orders') }}
-
 {% if is_incremental() %}
-  where updated_at > (
-    select coalesce(max(updated_at), '1900-01-01'::timestamp_ntz)
-    from {{ this }}
-  )
+  where updated_at > (select coalesce(max(updated_at), '1900-01-01'::timestamp_ntz) from {{ this }})
 {% endif %}</code></pre>
       </div>
-
-      <div class="explain">
-        <h4>What about <code>stg_orders</code>?</h4>
-        <p>It’s a simple view: select columns from <code>RAW.ORDERS_EVENTS</code>.
-        Staging = “rename/cast/clean lightly.” Marts = “business facts.” Keeping them separate is a dbt habit interviewers expect.</p>
-      </div>
     </article>
 
-    <!-- STEP 3 run -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">4</div>
-        <div>
-          <h3>First dbt run — build the table</h3>
-          <p>dbt compiles your model into Snowflake SQL, then runs it.</p>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>Understand the commands</h4>
-        <table class="gloss">
-          <tr><th>Command</th><th>Meaning</th></tr>
-          <tr><td><code>dbt run --select …</code></td><td>Build only these models (faster than whole project)</td></tr>
-          <tr><td><code>dbt test --select …</code></td><td>Run tests from <code>schema.yml</code> (unique / not_null on order_id)</td></tr>
-        </table>
-        <span class="why">Tests are how you prove the merge didn’t create duplicate order ids.</span>
-      </div>
-
+      <div class="step-head"><div class="step-num">4</div><div><h3>First dbt run — build the fact</h3></div></div>
       <div class="code-block">
         <div class="code-head"><span>Terminal · first run</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>dbt run --select stg_orders fct_orders_incremental
 dbt test --select fct_orders_incremental</code></pre>
       </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · verify</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE DATABASE ARCH_INTERVIEW;
-SELECT COUNT(*) AS rows_after_first_run FROM CURATED.FCT_ORDERS_INCREMENTAL;
-SELECT * FROM CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
+        <div class="code-head"><span>SQL · verify in Snowsight</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE DATABASE MERIDIAN_BANK;
+SELECT COUNT(*) AS rows_after_first_run FROM CURATED.FCT_ORDERS_INCREMENTAL;</code></pre>
       </div>
-      <div class="badge-ok">✓ 5 rows. Order 1001 status = CREATED</div>
+      <div class="badge-ok">✓ 5 rows; order_id 1001 status POSTED</div>
     </article>
 
-    <!-- STEP 4 day2 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">5</div>
-        <div>
-          <h3>Day 2 changes + second run (the point of the lab)</h3>
-          <p>Two new orders + one status change with a newer <code>UPDATED_AT</code>.</p>
-        </div>
-      </div>
-
+      <div class="step-head"><div class="step-num">5</div><div><h3>Day 2 — new txns + status change, then second run</h3></div></div>
       <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <ul>
-          <li><code>INSERT</code> 1006, 1007 → brand new keys → MERGE will insert</li>
-          <li><code>UPDATE</code> 1001 to SHIPPED + bump <code>UPDATED_AT</code> → MERGE will update that key</li>
-          <li>If you forgot to bump <code>UPDATED_AT</code>, the watermark filter would skip 1001 — status would stay CREATED (bug)</li>
-        </ul>
+        <h4>This is the whole point</h4>
+        <p>Two inserts + one update with a newer <code>UPDATED_AT</code>. Second <code>dbt run</code> should MERGE only those rows — not rebuild history.</p>
       </div>
-
       <div class="code-block">
-        <div class="code-head"><span>SQL · Day 2</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
-USE SCHEMA RAW;
+        <div class="code-head"><span>SQL · sql/02_orders_day2.sql</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
+USE SCHEMA LANDING;
 
-INSERT INTO ORDERS_EVENTS VALUES
-  (1006, 1, 'CREATED', 55.00, '2026-10-02 09:00:00'),
-  (1007, 2, 'CREATED', 18.00, '2026-10-02 09:30:00');
+INSERT INTO TXN_EVENTS VALUES
+  (1006, 1, 'POSTED', 55.00, '2026-10-02 09:00:00'),
+  (1007, 2, 'POSTED', 18.00, '2026-10-02 09:30:00');
 
-UPDATE ORDERS_EVENTS
-SET STATUS = 'SHIPPED', UPDATED_AT = '2026-10-02 10:00:00'
-WHERE ORDER_ID = 1001;
+UPDATE TXN_EVENTS
+SET STATUS = 'SETTLED', UPDATED_AT = '2026-10-02 10:00:00'
+WHERE TXN_ID = 1001;
 
-SELECT ORDER_ID, STATUS, UPDATED_AT FROM ORDERS_EVENTS ORDER BY ORDER_ID;</code></pre>
+SELECT TXN_ID, STATUS, UPDATED_AT FROM TXN_EVENTS ORDER BY TXN_ID;</code></pre>
       </div>
-
-      <div class="explain">
-        <h4>What the second <code>dbt run</code> does</h4>
-        <p>Because the table already exists, <code>is_incremental()</code> is true → watermark filter applies →
-        Snowflake runs a <code>MERGE</code> on those few rows instead of rebuilding all history.</p>
-      </div>
-
       <div class="code-block">
         <div class="code-head"><span>Terminal · second run</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>dbt run --select fct_orders_incremental</code></pre>
       </div>
-
       <div class="code-block">
         <div class="code-head"><span>SQL · prove merge</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT ORDER_ID, STATUS, UPDATED_AT
-FROM CURATED.FCT_ORDERS_INCREMENTAL
-ORDER BY ORDER_ID;</code></pre>
+FROM CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
       </div>
-
       <ul class="checklist">
-        <li>7 rows total (not 10, not duplicates)</li>
-        <li>1001 is SHIPPED</li>
+        <li>7 rows total (no duplicates)</li>
+        <li>1001 is SETTLED</li>
         <li>1006 and 1007 exist</li>
       </ul>
     </article>
 
-    <!-- STEP 5 -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">6</div>
-        <div>
-          <h3>Cost talking point + self-check</h3>
-        </div>
-      </div>
-
-      <div class="explain">
-        <h4>In Query History, what are you looking for?</h4>
-        <p>Run #2 should show a statement type around <strong>MERGE</strong> into the fact table.
-        That’s your proof you didn’t full-scan rebuild for fun.</p>
-        <span class="why">When NOT incremental: tiny dims; logic changing constantly; full refresh still cheap and safer.</span>
-      </div>
-
-      <ol>
-        <li>What does <code>unique_key</code> prevent if the same order_id arrives twice?</li>
-        <li>Why bump <code>UPDATED_AT</code> when status changes?</li>
-        <li>What’s the difference between staging and marts in one sentence?</li>
-      </ol>
-      <details class="callout tip" style="cursor:pointer">
-        <summary><strong>Click for short answers</strong></summary>
-        <ol>
-          <li>Duplicate fact rows — merge updates the same key instead.</li>
-          <li>So the watermark filter includes that row on the next incremental run.</li>
-          <li>Staging cleans/sources; marts are business-ready tables analysts use.</li>
-        </ol>
-      </details>
-    </article>
-
     <div class="soundbite">
-      <strong>Interview soundbite (you know why each knob exists)</strong><br />
-      “I use dbt incremental merge on Snowflake with order_id as unique_key and updated_at as watermark.
-      First run builds; later runs merge only new/changed rows. I prove with tests and Query History MERGE.
-      Landing stays in RAW; marts in CURATED behind the same RBAC model.”
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Meridian’s problem was a nightly full refresh on growing txn history. I loaded events in LANDING.TXN_EVENTS and taught dbt to incremental-merge into CURATED.FCT_ORDERS_INCREMENTAL with order_id as unique_key and updated_at as watermark.
+      Day 2 inserts and a status change on 1001 merged without rebuilding the whole table — Jordan saves runtime, Alex gets fresh facts.
+      <em>Outcome:</em> cheaper pipeline, correct upserts, proof in Query History as MERGE not full-table rewrite.”
     </div>
+
 
     <div class="pager">
       <a class="btn ghost" href="lab-01.html">← Lab 01</a>
-      <a class="btn primary" href="index.html">Home</a>
+      <a class="btn primary" href="lab-03.html">Lab 03 →</a>
     </div>
   </div>
-
-  <footer class="footer">If a line still feels magical, paste that line into chat and ask “explain like I’m new.”</footer>
+  <footer class="footer">Source SQL: sql/02_orders_source.sql · sql/02_orders_day2.sql</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

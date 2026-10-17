@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 00 — Course setup</title>
+  <title>Lab 00 — Meridian Bank workshop</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,294 +12,142 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
+        <a href="story.html">Story</a>
         <a class="active" href="lab-00.html">00</a>
         <a href="lab-01.html">01</a>
         <a href="lab-02.html">02</a>
-        <a href="lab-03.html">03</a>
-        <a href="lab-04.html">04</a>
-        <a href="lab-05.html">05</a>
-        <a href="lab-06.html">06</a>
-        <a href="lab-07.html">07</a>
-        <a href="lab-08.html">08</a>
-        <a href="lab-09.html">09</a>
-        <a href="lab-10.html">10</a>
-        <a href="lab-11.html">11</a>
-        <a href="lab-12.html">12</a>
-        <a href="lab-13.html">13</a>
-        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 00 · Monday morning · You are Maya</p>
-    <h1>Maya builds the workshop</h1>
+    <p class="eyebrow">Lab 00 · Monday morning · You are Elena</p>
+    <h1>Build Meridian Bank’s workshop</h1>
     <p class="lede">
-      You are <strong>Maya</strong>, Snowflake Architect at <strong>SnowShop</strong>.
-      CEO <strong>Priya</strong> just asked for a real data home — small bill, no drama.
-      Full cast &amp; week: <a href="story.html">read the story first</a>.
-      Then: orange story (if any) → blue understand → Copy SQL.
+      Read <a href="story.html">the bank story</a> if you haven’t.
+      Pattern every lab: <strong>Problem → Solution (SQL) → Elena’s wrap-up</strong>.
     </p>
 
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Meridian Bank has no dedicated Snowflake home. Files and half-built tables live in random places.
+      Marcus (COO) says: “Give us one building, a cheap engine, and a clear owner — today.”
+    </div>
+
+    <div class="callout ok">
+      <strong>Solution you will build</strong>
+      Database <code>MERIDIAN_BANK</code>, warehouse <code>WH_BANK_XS</code>, architect role
+      <code>ROLE_BANK_LAB_ADMIN</code>, schemas for landing/curated/risk/marts, and 5 sample <code>LANDING.CLIENTS</code>.
+    </div>
+
     <div class="story">
-      <div class="story-label">This chapter in the story</div>
-      <p>
-        Maya creates building <code>ARCH_INTERVIEW</code>, tiny generator <code>WH_ARCH_XS</code>,
-        manager badge <code>ROLE_ARCH_LAB_ADMIN</code>, labeled rooms (RAW, CURATED, …),
-        and drops five fake customers into the vault so Monday afternoon’s security story can begin.
-      </p>
-    </div>
-    <div class="progress-track" aria-hidden="true">
-      <span class="on"></span><span></span><span></span><span></span>
-    </div>
-    <p class="meta">Progress: Step 1 of 4 on this page</p>
-
-    <div class="callout tip">
-      <strong>Plain English: what are we making?</strong>
-      <table class="plain">
-        <tr><th>Thing</th><th>Name</th><th>Kid-simple meaning</th></tr>
-        <tr><td>Warehouse</td><td><code>WH_ARCH_XS</code></td><td>The “engine” that runs SQL (X-Small = cheap)</td></tr>
-        <tr><td>Role</td><td><code>ROLE_ARCH_LAB_ADMIN</code></td><td>Your lab “badge” with permission to own objects</td></tr>
-        <tr><td>Database</td><td><code>ARCH_INTERVIEW</code></td><td>A folder for all interview practice data</td></tr>
-        <tr><td>Schemas we create</td><td><code>RAW</code>, <code>CURATED</code>, <code>SECURE</code>, <code>UTILS</code>, <code>MART</code>, <code>STAGE_DATA</code></td><td>Subfolders inside the database</td></tr>
+      <div class="story-label">Rooms Elena labels</div>
+      <table class="gloss">
+        <tr><th>Schema</th><th>Bank meaning</th></tr>
+        <tr><td><code>LANDING</code></td><td>Loading dock — raw client/txn files land here</td></tr>
+        <tr><td><code>CURATED</code></td><td>Clean shelves — safe for broader read</td></tr>
+        <tr><td><code>RISK_CTRL</code></td><td>Policy office — masking / entitlements</td></tr>
+        <tr><td><code>FINANCE_MART</code></td><td>Report wall for Finance / Alex</td></tr>
+        <tr><td><code>FILE_IN</code></td><td>Truck bay for file stages</td></tr>
+        <tr><td><code>UTILS</code></td><td>Toolbox</td></tr>
       </table>
+      <p>Snowflake also shows <code>PUBLIC</code> + <code>INFORMATION_SCHEMA</code> — ignore those; they’re automatic.</p>
     </div>
 
-    <div class="flow">
-      <div class="node">You</div>
-      <div class="arrow">→</div>
-      <div class="node accent">ROLE_ARCH_LAB_ADMIN</div>
-      <div class="arrow">→</div>
-      <div class="node">ARCH_INTERVIEW</div>
-      <div class="arrow">→</div>
-      <div class="node">RAW · CURATED · SECURE · UTILS · MART · STAGE_DATA</div>
-    </div>
-
-    <!-- STEP 1 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Open Snowsight (Snowflake’s website)</h3>
-          <p>If you can open Gmail in a browser, you can do this.</p>
-        </div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Open Snowsight as ACCOUNTADMIN</h3></div></div>
+      <div class="explain">
+        <h4>Why ACCOUNTADMIN for five minutes?</h4>
+        <p>Only the “mayor” can create warehouses/databases and stamp Elena’s role with CREATE ROLE power.
+        Day-to-day Elena will wear <code>ROLE_BANK_LAB_ADMIN</code>, not ACCOUNTADMIN.</p>
       </div>
-      <ol>
-        <li>Go to your Snowflake URL (often <code>https://app.snowflake.com</code>) and log in.</li>
-        <li>On the left menu, click <strong>Projects</strong> → <strong>Worksheets</strong> (sometimes just <strong>Worksheets</strong>).</li>
-        <li>Click <strong>+ Worksheet</strong> (or “+” → SQL Worksheet).</li>
-        <li>Rename it to <code>lab_00_setup</code> (top title — click to edit).</li>
-      </ol>
-
-      <div class="ui-mock" aria-label="Mock of Snowsight worksheet bar">
+      <div class="ui-mock">
         <div class="ui-mock-bar">
           <div class="ui-chip glow"><span class="dot"></span> Role: ACCOUNTADMIN ▾</div>
-          <div class="ui-chip">Warehouse: … ▾</div>
-          <div class="ui-chip">Database: … ▾</div>
         </div>
-        <div class="ui-mock-body">
-          <p class="hint" style="margin:0">
-            <strong style="color:var(--warn)">Look at the blinking chip ↑</strong><br />
-            At the top of the worksheet, set <strong>Role</strong> to <code>ACCOUNTADMIN</code>
-            (or <code>SYSADMIN</code> if that is what your trial uses to create databases).
-          </p>
-        </div>
-      </div>
-
-      <div class="callout warn">
-        <strong>Interview tip (say this later)</strong>
-        “I only use ACCOUNTADMIN to bootstrap. Day-to-day work should use a custom role.”
       </div>
     </article>
 
-    <!-- STEP 2 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Bootstrap — understand each chunk, then run</h3>
-          <p>You can run chunks one-by-one (best for learning) or the full script at the bottom.</p>
-        </div>
-      </div>
-
-      <p class="chunk-label">Chunk A — become admin + create the cheap warehouse</p>
+      <div class="step-head"><div class="step-num">2</div><div><h3>Bootstrap the bank workshop</h3></div></div>
       <div class="explain">
-        <h4>Understand this before you copy</h4>
+        <h4>What this SQL does (plain English)</h4>
         <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>USE ROLE ACCOUNTADMIN</code></td><td>Wear the bootstrap badge (only for setup)</td></tr>
-          <tr><td><code>CREATE WAREHOUSE … XSMALL</code></td><td>Create a tiny SQL engine so labs cost almost nothing</td></tr>
-          <tr><td><code>AUTO_SUSPEND = 60</code></td><td>Turn the engine off after 60s idle → saves credits</td></tr>
-          <tr><td><code>AUTO_RESUME = TRUE</code></td><td>Wake it automatically when you run SQL</td></tr>
-          <tr><td><code>IF NOT EXISTS</code></td><td>Safe to re-run; won’t explode if it already exists</td></tr>
+          <tr><th>Part</th><th>Meaning</th></tr>
+          <tr><td>Create <code>WH_BANK_XS</code></td><td>Tiny engine; auto-sleeps to save money</td></tr>
+          <tr><td>Create <code>ROLE_BANK_LAB_ADMIN</code></td><td>Elena’s lab badge</td></tr>
+          <tr><td>Account grants</td><td>Create roles, apply policies, run tasks, create shares (later labs)</td></tr>
+          <tr><td>Create <code>MERIDIAN_BANK</code></td><td>The bank’s database building</td></tr>
+          <tr><td>Ownership → lab admin</td><td>Elena owns the objects she builds</td></tr>
+          <tr><td>Smoke create+drop role</td><td>Proves CREATE ROLE works before Lab 01</td></tr>
         </table>
-        <span class="why">Interview: “I right-size warehouses and auto-suspend so demos don’t burn money.”</span>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · warehouse</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Lab 00 bootstrap</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
 
-CREATE WAREHOUSE IF NOT EXISTS WH_ARCH_XS
+CREATE WAREHOUSE IF NOT EXISTS WH_BANK_XS
   WAREHOUSE_SIZE = 'XSMALL'
   AUTO_SUSPEND = 60
   AUTO_RESUME = TRUE
   INITIALLY_SUSPENDED = TRUE
-  COMMENT = 'Interview prep lab warehouse';</code></pre>
-      </div>
+  COMMENT = 'Meridian Bank lab warehouse';
 
-      <p class="chunk-label">Chunk B — create lab admin role + give it powers</p>
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <table class="gloss">
-          <tr><th>SQL</th><th>Plain English</th></tr>
-          <tr><td><code>CREATE ROLE ROLE_ARCH_LAB_ADMIN</code></td><td>Invent a badge that will own the lab playground</td></tr>
-          <tr><td><code>GRANT CREATE ROLE ON ACCOUNT …</code></td><td>Allow creating FR_*/AR_* roles (Lab 01)</td></tr>
-          <tr><td><code>APPLY MASKING / ROW ACCESS POLICY</code></td><td>Attach governance policies (Lab 03)</td></tr>
-          <tr><td><code>EXECUTE TASK</code></td><td>Run stream→task pipelines (Lab 05)</td></tr>
-          <tr><td><code>CREATE SHARE</code></td><td>Provider-side data share (Lab 10)</td></tr>
-          <tr><td><code>USAGE / OPERATE … WITH GRANT OPTION</code></td><td>Use warehouse and pass it to other roles</td></tr>
-          <tr><td><code>GRANT OWNERSHIP ON DATABASE …</code></td><td>Lab admin owns the playground</td></tr>
-        </table>
-        <span class="why">Missing these account grants is what caused the Lab 01 CREATE ROLE error — and will break Labs 03/05/10 too.</span>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>SQL · role + database + full-course grants</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE ROLE IF NOT EXISTS ROLE_ARCH_LAB_ADMIN
-  COMMENT = 'Owns interview prep lab objects';
+CREATE ROLE IF NOT EXISTS ROLE_BANK_LAB_ADMIN
+  COMMENT = 'Lab architect role — owns Meridian Bank lab objects';
 
-GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
-GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
-GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
-GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
-GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
 
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
-GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
 
-CREATE DATABASE IF NOT EXISTS ARCH_INTERVIEW
-  COMMENT = 'Snowflake Architect interview prep';
+CREATE DATABASE IF NOT EXISTS MERIDIAN_BANK
+  COMMENT = 'Meridian Bank — interview prep';
 
-GRANT OWNERSHIP ON DATABASE ARCH_INTERVIEW TO ROLE ROLE_ARCH_LAB_ADMIN COPY CURRENT GRANTS;
+GRANT OWNERSHIP ON DATABASE MERIDIAN_BANK TO ROLE ROLE_BANK_LAB_ADMIN COPY CURRENT GRANTS;
 
 SET uname = (SELECT CURRENT_USER());
-GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);</code></pre>
-      </div>
+GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);
 
-      <p class="chunk-label">Chunk C — smoke test + schemas</p>
-      <div class="explain">
-        <h4>Understand this before you copy</h4>
-        <p>We switch into lab admin and try creating a throwaway role. If that fails, stop — Lab 01 will fail too.</p>
-        <p>Then we create six schemas (subfolders): RAW (landing), CURATED (clean), SECURE (sensitive), UTILS (helpers), MART (gold reports), STAGE_DATA (file landing).</p>
-        <p>Snowflake also shows <code>PUBLIC</code> and <code>INFORMATION_SCHEMA</code> automatically — that is normal, not a mistake.</p>
-        <span class="why">Naming layers like this is how you talk about medallion / zone architecture in interviews.</span>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>SQL · smoke test + schemas</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-CREATE ROLE IF NOT EXISTS ROLE_ARCH_SMOKE_TMP COMMENT = 'temp smoke test - safe to drop';
-DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;
+USE ROLE ROLE_BANK_LAB_ADMIN;
+CREATE ROLE IF NOT EXISTS ROLE_BANK_SMOKE_TMP COMMENT = 'temp smoke test';
+DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;
 
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
 
-CREATE SCHEMA IF NOT EXISTS RAW;
+CREATE SCHEMA IF NOT EXISTS LANDING;
 CREATE SCHEMA IF NOT EXISTS CURATED;
-CREATE SCHEMA IF NOT EXISTS SECURE;
+CREATE SCHEMA IF NOT EXISTS RISK_CTRL;
+CREATE SCHEMA IF NOT EXISTS FINANCE_MART;
+CREATE SCHEMA IF NOT EXISTS FILE_IN;
 CREATE SCHEMA IF NOT EXISTS UTILS;
-CREATE SCHEMA IF NOT EXISTS MART;
-CREATE SCHEMA IF NOT EXISTS STAGE_DATA;
 
-SELECT CURRENT_ROLE() AS role, CURRENT_WAREHOUSE() AS wh, CURRENT_DATABASE() AS db;
-SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;
-SELECT 'Lab 00 bootstrap OK — CREATE ROLE smoke test passed' AS status;</code></pre>
+SELECT 'Lab 00 Meridian Bank bootstrap OK' AS status;
+SHOW SCHEMAS IN DATABASE MERIDIAN_BANK;</code></pre>
       </div>
-
-      <div class="callout ok">
-        <strong>Success message</strong>
-        You must see <code>Lab 00 bootstrap OK — CREATE ROLE smoke test passed</code>.
-      </div>
-
-      <div class="callout bad">
-        <strong>If GRANT ROLE TO USER fails</strong>
-        Find your username, then grant manually:
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>SQL · find username</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT CURRENT_USER();</code></pre>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>SQL · manual grant</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ACCOUNTADMIN;
-GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER "PASTE_YOUR_USERNAME_HERE";</code></pre>
-      </div>
+      <div class="badge-ok">✓ Status message + schemas LANDING, CURATED, RISK_CTRL, FINANCE_MART, FILE_IN, UTILS</div>
     </article>
 
-    <!-- STEP 3 -->
     <article class="step">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div>
-          <h3>Prove it worked (checklist)</h3>
-          <p>Switch the top chips, then run the check query.</p>
-        </div>
+      <div class="step-head"><div class="step-num">3</div><div><h3>Load five sample clients into the vault</h3></div></div>
+      <div class="explain">
+        <h4>Why clients with SSN last-4?</h4>
+        <p>Lab 01’s whole drama needs real-looking PII so Elena can prove Alex cannot see it.</p>
       </div>
-
-      <div class="ui-mock">
-        <div class="ui-mock-bar">
-          <div class="ui-chip glow"><span class="dot"></span> Role: ROLE_ARCH_LAB_ADMIN ▾</div>
-          <div class="ui-chip glow"><span class="dot"></span> WH: WH_ARCH_XS ▾</div>
-          <div class="ui-chip glow"><span class="dot"></span> DB: ARCH_INTERVIEW ▾</div>
-        </div>
-        <div class="ui-mock-body">
-          <div class="ui-tree">
-            Data → Databases → <span class="hl">ARCH_INTERVIEW</span><br />
-            &nbsp;&nbsp;├── <span class="hl">RAW</span> · <span class="hl">CURATED</span> · <span class="hl">SECURE</span><br />
-            &nbsp;&nbsp;├── <span class="hl">UTILS</span> · <span class="hl">MART</span> · <span class="hl">STAGE_DATA</span><br />
-            &nbsp;&nbsp;└── PUBLIC + INFORMATION_SCHEMA <span style="color:var(--muted)">(Snowflake defaults — OK)</span>
-          </div>
-          <div class="badge-ok">✓ More than 6 names is normal — PUBLIC and INFORMATION_SCHEMA always appear</div>
-        </div>
-      </div>
-
       <div class="code-block">
-        <div class="code-head">
-          <span>SQL · success check</span>
-          <button type="button" class="copy-btn">Copy</button>
-        </div>
-<pre><code>SELECT CURRENT_ROLE(), CURRENT_WAREHOUSE(), CURRENT_DATABASE();
-SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;</code></pre>
-      </div>
+        <div class="code-head"><span>SQL · sample clients</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;
+USE SCHEMA LANDING;
 
-      <ul class="checklist">
-        <li>Role shows <code>ROLE_ARCH_LAB_ADMIN</code></li>
-        <li>Warehouse shows <code>WH_ARCH_XS</code></li>
-        <li>Database shows <code>ARCH_INTERVIEW</code></li>
-        <li>You see our six schemas: RAW, CURATED, SECURE, UTILS, MART, STAGE_DATA (plus PUBLIC + INFORMATION_SCHEMA is fine)</li>
-      </ul>
-    </article>
-
-    <!-- STEP 4 -->
-    <article class="step">
-      <div class="step-head">
-        <div class="step-num">4</div>
-        <div>
-          <h3>Load sample customers (needed for Lab 01)</h3>
-          <p>Tiny fake table with emails and SSN last-4 so we can practice hiding PII next.</p>
-        </div>
-      </div>
-
-      <div class="code-block">
-        <div class="code-head">
-          <span>SQL · sample customers</span>
-          <button type="button" class="copy-btn">Copy</button>
-        </div>
-<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
-USE WAREHOUSE WH_ARCH_XS;
-USE DATABASE ARCH_INTERVIEW;
-USE SCHEMA RAW;
-
-CREATE OR REPLACE TABLE CUSTOMERS (
-  CUSTOMER_ID   NUMBER,
+CREATE OR REPLACE TABLE CLIENTS (
+  CLIENT_ID     NUMBER,
   FULL_NAME     STRING,
   EMAIL         STRING,
   PHONE         STRING,
@@ -308,52 +156,32 @@ CREATE OR REPLACE TABLE CUSTOMERS (
   CREATED_AT    TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
 
-INSERT INTO CUSTOMERS (CUSTOMER_ID, FULL_NAME, EMAIL, PHONE, COUNTRY, SSN_LAST4) VALUES
+INSERT INTO CLIENTS (CLIENT_ID, FULL_NAME, EMAIL, PHONE, COUNTRY, SSN_LAST4) VALUES
   (1, 'Asha Patel',  'asha.patel@example.com',  '+1-555-0101', 'US', '1234'),
   (2, 'Ben Okonkwo', 'ben.okonkwo@example.com', '+1-555-0102', 'US', '5678'),
   (3, 'Chen Wei',    'chen.wei@example.com',    '+1-555-0103', 'CA', '9012'),
   (4, 'Diana Rossi', 'diana.rossi@example.com', '+1-555-0104', 'US', '3456'),
   (5, 'Evan Ng',     'evan.ng@example.com',     '+1-555-0105', 'UK', '7890');
 
-SELECT * FROM CUSTOMERS ORDER BY CUSTOMER_ID;</code></pre>
+SELECT * FROM CLIENTS ORDER BY CLIENT_ID;</code></pre>
       </div>
-
-      <div class="ui-mock">
-        <div class="ui-mock-bar"><div class="ui-chip">Results</div></div>
-        <div class="ui-mock-body">
-          <div class="ui-result">
-            <table>
-              <thead><tr><th>CUSTOMER_ID</th><th>FULL_NAME</th><th>EMAIL</th><th>SSN_LAST4</th></tr></thead>
-              <tbody>
-                <tr><td>1</td><td>Asha Patel</td><td>asha.patel@…</td><td>1234</td></tr>
-                <tr><td>2</td><td>Ben Okonkwo</td><td>ben.okonkwo@…</td><td>5678</td></tr>
-                <tr><td>3</td><td>Chen Wei</td><td>chen.wei@…</td><td>9012</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="badge-ok">✓ You should see 5 rows. PII columns exist on purpose — Lab 01 will lock them down.</div>
-        </div>
-      </div>
+      <div class="badge-ok">✓ 5 rows in LANDING.CLIENTS</div>
     </article>
 
     <div class="soundbite">
-      <strong>Interview soundbite (read out loud once)</strong><br />
-      “I bootstrap a dedicated lab role, warehouse, and database so demos never pollute production.
-      Least privilege starts with isolating the playground itself.”
-    </div>
-
-    <div class="callout ok">
-      <strong>You’re done with Lab 00 when…</strong>
-      You can switch to <code>ROLE_ARCH_LAB_ADMIN</code>, see our six schemas (plus PUBLIC / INFORMATION_SCHEMA is fine), and <code>RAW.CUSTOMERS</code> has 5 rows.
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Meridian had no Snowflake home. I created database MERIDIAN_BANK, a cheap auto-suspend warehouse,
+      an architect role that owns the lab, and clear schemas — LANDING for raw, CURATED for clean, RISK_CTRL for policies,
+      FINANCE_MART for reports. I loaded five sample clients with PII so we can prove security tomorrow.
+      <em>Outcome:</em> one owned playground, near-zero idle cost, ready for RBAC.”
     </div>
 
     <div class="pager">
-      <a class="btn ghost" href="index.html">← Home</a>
-      <a class="btn primary" href="lab-01.html">Next: Lab 01 RBAC →</a>
+      <a class="btn ghost" href="story.html">← Story</a>
+      <a class="btn primary" href="lab-01.html">Lab 01 — lock the vault →</a>
     </div>
   </div>
-
-  <footer class="footer">Stuck? Copy the error message text into chat and ask for help.</footer>
+  <footer class="footer">Cleanup later: sql/cleanup_lab00_lab01.sql</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

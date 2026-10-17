@@ -1,16 +1,13 @@
-# Copy relevant block into ~/.dbt/profiles.yml (Windows: C:\Users\<you>\.dbt\profiles.yml)
 snowflake_architect_fk:
   target: dev
   outputs:
     dev:
       type: snowflake
-      account: YOUR_ACCOUNT_LOCATOR   # e.g. xy12345.us-east-1
+      account: YOUR_ACCOUNT_LOCATOR
       user: YOUR_USER
-      # Choose ONE auth method your org uses:
-      password: YOUR_PASSWORD         # or use keypair / SSO externally
-      role: ROLE_ARCH_LAB_ADMIN
-      database: ARCH_INTERVIEW
-      warehouse: WH_ARCH_XS
+      password: YOUR_PASSWORD
+      role: ROLE_BANK_LAB_ADMIN
+      database: MERIDIAN_BANK
+      warehouse: WH_BANK_XS
       schema: CURATED
       threads: 4
-      client_session_keep_alive: False

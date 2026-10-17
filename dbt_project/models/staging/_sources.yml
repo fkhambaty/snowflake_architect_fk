@@ -1,9 +1,9 @@
 version: 2
 
 sources:
-  - name: raw
-    database: ARCH_INTERVIEW
-    schema: RAW
+  - name: landing
+    database: MERIDIAN_BANK
+    schema: LANDING
     tables:
-      - name: orders_events
-        description: "Lab 02 source events for incremental merge demo"
+      - name: txn_events
+        description: "Meridian Bank txn events for incremental merge demo"
