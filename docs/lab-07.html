@@ -35,67 +35,210 @@
   <div class="wrap">
     <p class="eyebrow">Lab 07 · Friday AM · You are Elena · Alex’s board query</p>
     <h1>Marcus is angry — the board query crawls</h1>
-    <p class="lede">Alex’s join query scans too much. Elena uses Query Profile and warehouse sizing vocabulary — scale up vs scale out.</p>
+    <p class="lede">
+      Read <strong>Teach first</strong> before you open Snowsight UI.
+      You will learn what Query Profile measures, <em>then</em> reproduce Alex’s SQL and inspect the profile on the heavy join.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
-      Board meeting in two hours. Alex’s country rollup on clients + txns takes forever on <code>WH_BANK_XS</code>. Marcus: “Is it the data or the engine?”
+      Board meeting in two hours. Alex’s country rollup on clients + txns takes forever on <code>WH_BANK_XS</code>.
+      Marcus: “Is it the data or the engine?”
     </div>
 
     <div class="callout ok">
       <strong>Solution you will run</strong>
-      Reproduce heavy joins in Snowsight, open Query Profile on the worst query, inspect warehouse settings with <code>SHOW WAREHOUSES</code>.
+      Warm up with a cheap filter query, run Alex’s join aggregate, inspect warehouse size with <code>SHOW WAREHOUSES</code>,
+      then open <strong>Query Profile</strong> on the join in Query History — narrate bytes scanned and pruning before blaming the warehouse.
     </div>
 
     <figure class="viz-panel">
       <img src="assets/lab07-profile.jpg" alt="Elena opens Query Profile while Alex's board query crawls on WH_BANK_XS" width="1600" height="900" loading="eager" />
       <figcaption>
         <strong>Picture · Open the blueprint</strong>
-        Elena uses Query Profile while Alex’s board query crawls.
+        Elena uses Query Profile while Alex’s board query crawls — diagnose before upsizing.
       </figcaption>
     </figure>
 
+    <section class="teach">
+      <h2>Teach first — dictionary (learn this before the UI)</h2>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>Why Marcus cares</th></tr>
+        <tr>
+          <td><strong>Query Profile</strong></td>
+          <td>Snowsight “X-ray” of one finished query: operators, time, bytes read, partitions touched</td>
+          <td>Proves whether slowness is scan volume vs join vs spill vs warehouse queue</td>
+        </tr>
+        <tr>
+          <td><strong>Bytes scanned</strong></td>
+          <td>How much compressed data Snowflake actually read from storage for that query</td>
+          <td>Big scans = bigger bill + longer runtime even on a large warehouse</td>
+        </tr>
+        <tr>
+          <td><strong>Micro-partition</strong></td>
+          <td>Snowflake’s tiny storage chunk (roughly MB-scale) inside a table — not visible as “partitions” you create manually</td>
+          <td>Queries skip chunks they don’t need (<em>pruning</em>); bad filters scan too many chunks</td>
+        </tr>
+        <tr>
+          <td><strong>Partition pruning</strong></td>
+          <td>Percentage of micro-partitions skipped because filters/clustering helped</td>
+          <td>Low pruning on a date filter → clustering or SQL fix (Lab 08) before “buy bigger WH”</td>
+        </tr>
+        <tr>
+          <td><strong>Warehouse size</strong></td>
+          <td>T-shirt size (XS, S, M, …) — more CPU/memory per cluster for the same query plan</td>
+          <td>Helps when the plan is sound but compute-bound; doesn’t fix reading the whole table</td>
+        </tr>
+        <tr>
+          <td><strong>Scale up</strong></td>
+          <td>Make one cluster bigger (XS → S → M)</td>
+          <td>“Stronger single engine” for tough queries</td>
+        </tr>
+        <tr>
+          <td><strong>Scale out</strong></td>
+          <td>Add clusters on a <em>multi-cluster</em> warehouse for concurrent users</td>
+          <td>“More checkout lanes” — not the same as making one query faster</td>
+        </tr>
+        <tr>
+          <td><strong>Remote spill</strong></td>
+          <td>Query ran out of memory and wrote temp data to remote storage mid-run</td>
+          <td>Profile red flag — often bigger WH or rewrite join/aggregate</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>Elena’s diagnosis order (interview script)</h2>
+      <div class="flow-pipeline" aria-label="Performance triage order">
+        <div class="flow-node stg">
+          <span class="flow-tag">1</span>
+          <strong>SQL &amp; filters</strong>
+          <span class="flow-sub">Push filters early · correct join keys</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">2</span>
+          <strong>Bytes &amp; pruning</strong>
+          <span class="flow-sub">Query Profile table scan stats</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">3</span>
+          <strong>Warehouse fit</strong>
+          <span class="flow-sub">Size / queue · meeting-window bump only if needed</span>
+        </div>
+      </div>
+      <p>
+        Alex’s board query joins all US clients to all txn events — on small lab data it finishes fast, but the <em>pattern</em> is what you explain to Marcus:
+        profile the join, cite bytes scanned, mention clustering (Lab 08) if pruning is weak on real volume.
+      </p>
+    </section>
+
     <div class="story">
-      <p>Elena: “Profile first — partitions scanned, spill, join order — then right-size WH_BANK_XS or fix SQL. Scaling out = more clusters on a multi-cluster warehouse; scaling up = larger size.”</p>
+      <div class="story-label">Friday AM · war room</div>
+      <p>
+        Elena: “Profile first — partitions scanned, spill, join order — then right-size WH_BANK_XS or fix SQL.
+        Scaling out is for many dashboards at once; scaling up is a bigger engine for one heavy query.”
+      </p>
     </div>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Run Alex-style queries</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Set session</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Same lab context as other Meridian steps — admin role, XS warehouse, bank database.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/07_query_profile.sql</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
-USE DATABASE MERIDIAN_BANK;
+USE DATABASE MERIDIAN_BANK;</code></pre>
+      </div>
+    </article>
 
-SELECT * FROM LANDING.CLIENTS WHERE COUNTRY = 'US';
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Baseline — cheap filter query</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Single-table filter on <code>COUNTRY</code> — should scan only client rows, fast profile baseline.</p>
+        <h4>What you should see</h4>
+        <p>Small result set (US clients from Lab 00). In Profile: modest bytes scanned vs the join in step 3.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · filter only</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM LANDING.CLIENTS
+WHERE COUNTRY = 'US';</code></pre>
+      </div>
+      <div class="badge-ok">✓ Only US rows — note runtime in Query History</div>
+    </article>
 
-SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(t.AMOUNT) AS VOLUME
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Reproduce Alex’s board rollup (the heavy join)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Joins every client to every txn, groups by country — the pattern Alex runs before the meeting.</p>
+        <h4>Why Elena runs it separately</h4>
+        <p>So Query History shows two queries — easy to open Profile on the join, not the filter.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Alex board query</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(t.AMOUNT) AS VOLUME
 FROM LANDING.CLIENTS c
 JOIN LANDING.TXN_EVENTS t ON t.CLIENT_ID = c.CLIENT_ID
-GROUP BY c.COUNTRY ORDER BY VOLUME DESC;
+GROUP BY c.COUNTRY
+ORDER BY VOLUME DESC;</code></pre>
+      </div>
+      <div class="badge-ok">✓ One row per country with txn counts — this is the query you profile</div>
+    </article>
 
-SHOW WAREHOUSES LIKE 'WH_BANK_XS';
-SELECT 'Open Query History → JOIN query → Query Profile' AS next_step;</code></pre>
-      </div>
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Inspect warehouse headroom</h3></div></div>
       <div class="explain">
-        <h4>In Query Profile, Elena narrates</h4>
-        <p>Bytes scanned, percentage of partitions pruned, remote spill if any, warehouse load. Interview: “I’d fix SQL/filter pushdown before permanently upsizing.”</p>
+        <h4>What this does</h4>
+        <p><code>SHOW WAREHOUSES</code> lists size, state, and multi-cluster settings for <code>WH_BANK_XS</code>.</p>
+        <h4>What you should see</h4>
+        <p>Size column = XS (or your lab default). Interview: “I’d bump size temporarily for the board window only after SQL/scan fixes.”</p>
       </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · warehouse metadata</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SHOW WAREHOUSES LIKE 'WH_BANK_XS';</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Open Query Profile (UI step)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Not SQL — Snowsight navigation after step 3 completes.</p>
+        <h4>Elena narrates in the profile</h4>
+        <ul class="checklist">
+          <li><strong>TableScan</strong> nodes — bytes scanned on CLIENTS vs TXN_EVENTS</li>
+          <li><strong>Join</strong> — build/probe side, row counts (lab data is tiny; vocabulary matters in interview)</li>
+          <li><strong>Partition pruning</strong> — if present and low on real big tables, clustering next</li>
+          <li><strong>Remote disk spill</strong> — if any, call out upsize or rewrite</li>
+          <li><strong>Warehouse load</strong> — queue time vs execution time</li>
+        </ul>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · reminder row</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'Open Query History → JOIN query → Query Profile' AS next_step;</code></pre>
+      </div>
+      <div class="badge-ok">✓ You can explain bytes scanned vs warehouse size without guessing</div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s board query wasn’t magic — it was join cost and warehouse headroom. I reproduced Alex’s SQL, opened Query Profile, and checked WH_BANK_XS settings.
-      <em>Outcome:</em> Marcus gets a data-driven answer: tune SQL/clustering first, then scale warehouse for the meeting window.”
+      “Meridian’s board query wasn’t magic — it was join cost and how much data we read.
+      I reproduced Alex’s SQL, checked WH_BANK_XS size, and opened Query Profile on the join to cite bytes scanned and pruning.
+      <em>Outcome:</em> Marcus gets a data-driven answer — tune SQL and clustering first, then scale warehouse size for the meeting window if compute-bound.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-06.html">← Lab 06</a>
       <a class="btn primary" href="lab-08.html">Lab 08 →</a>
     </div>
   </div>
-  <footer class="footer">sql/07_query_profile.sql</footer>
+  <footer class="footer">sql/07_query_profile.sql · teach-first lab</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

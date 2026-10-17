@@ -16,6 +16,18 @@
         <a href="lab-00.html">00</a>
         <a class="active" href="lab-01.html">01</a>
         <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a href="lab-11.html">11</a>
+        <a href="lab-12.html">12</a>
+        <a href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
@@ -24,8 +36,9 @@
     <p class="eyebrow">Lab 01 · Monday afternoon · You are Elena</p>
     <h1>Stop analysts from seeing SSN</h1>
     <p class="lede">
-      Same pattern: problem → SQL solution → Elena’s wrap-up.
-      Need Lab 00 first (<code>MERIDIAN_BANK</code> + <code>LANDING.CLIENTS</code>).
+      Read every <strong>Teach first</strong> box before you run SQL.
+      Lab 00 must exist (<code>MERIDIAN_BANK</code> + <code>LANDING.CLIENTS</code>).
+      Today you learn the grant chain humans actually wear in interviews: FR_ job badges, AR_ key-rings, vault vs window.
     </p>
 
     <div class="callout bad">
@@ -37,9 +50,9 @@
     </div>
 
     <div class="callout ok">
-      <strong>Solution</strong>
+      <strong>Solution you will build</strong>
       Job badges <code>FR_*</code> + key-rings <code>AR_*</code> + safe view <code>CURATED.V_CLIENT_DIRECTORY</code>
-      (no email/phone/SSN). Prove Alex is blocked from <code>LANDING.CLIENTS</code>.
+      (no email/phone/SSN). Prove Alex is blocked from <code>LANDING.CLIENTS</code> with <code>USE SECONDARY ROLES NONE</code>.
     </div>
 
     <figure class="viz-panel">
@@ -51,15 +64,101 @@
       </figcaption>
     </figure>
 
-    <div class="story">
-      <div class="story-label">FR_ vs AR_ — say until it sticks</div>
+    <section class="teach">
+      <h2>Teach first — dictionary</h2>
       <table class="gloss">
-        <tr><th>Prefix</th><th>Full name</th><th>In Meridian Bank</th></tr>
-        <tr><td><code>FR_</code></td><td>Functional Role</td><td>Job badge — Alex=<code>FR_ANALYST</code>, Jordan=<code>FR_DATA_ENGINEER</code>, Sam=<code>FR_COMPLIANCE</code></td></tr>
-        <tr><td><code>AR_</code></td><td>Access Role</td><td>Key-ring — <code>AR_CURATED_READ</code>, <code>AR_LANDING_READ</code>, <code>AR_PII_READ</code></td></tr>
+        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
+        <tr>
+          <td><code>FR_</code> (functional role)</td>
+          <td>Job badge — what humans switch to in Snowsight</td>
+          <td>Alex = <code>FR_ANALYST</code>, Jordan = <code>FR_DATA_ENGINEER</code>, Sam = <code>FR_COMPLIANCE</code></td>
+        </tr>
+        <tr>
+          <td><code>AR_</code> (access role)</td>
+          <td>Key-ring of object privileges — not worn directly by staff</td>
+          <td><code>AR_LANDING_READ</code>, <code>AR_CURATED_READ</code>, <code>AR_PII_READ</code></td>
+        </tr>
+        <tr>
+          <td><strong>GRANT ROLE</strong></td>
+          <td>Clip a key-ring onto a job badge (inheritance)</td>
+          <td>AR_CURATED_READ hangs on FR_ANALYST’s lanyard</td>
+        </tr>
+        <tr>
+          <td><strong>USAGE</strong></td>
+          <td>“Enter this building/floor” — required before SELECT</td>
+          <td>Database + schema door pass</td>
+        </tr>
+        <tr>
+          <td><strong>SELECT grant</strong></td>
+          <td>Read rows from a table or view</td>
+          <td>Key to a specific cabinet</td>
+        </tr>
+        <tr>
+          <td><strong>FUTURE TABLES</strong></td>
+          <td>Auto-grant on tables created later in that schema</td>
+          <td>“Any new landing cabinet gets the same lock policy”</td>
+        </tr>
+        <tr>
+          <td><strong>View</strong></td>
+          <td>Saved SELECT — a window, not a second vault copy</td>
+          <td><code>V_CLIENT_DIRECTORY</code> — names only</td>
+        </tr>
+        <tr>
+          <td><strong>Secondary roles</strong></td>
+          <td>Extra roles Snowsight keeps active in the background</td>
+          <td>Second coat — lab admin still on while UI says FR_ANALYST</td>
+        </tr>
+        <tr>
+          <td><code>USE SECONDARY ROLES NONE</code></td>
+          <td>Hang the extra coats — only primary badge counts</td>
+          <td>Required before every privilege proof in this course</td>
+        </tr>
       </table>
-      <p>Elena hangs doors on AR_, clips AR_ onto FR_, gives humans only FR_.</p>
-    </div>
+    </section>
+
+    <section class="teach">
+      <h2>The grant chain — build keys before you clip badges</h2>
+      <div class="flow-pipeline" aria-label="RBAC grant order">
+        <div class="flow-node source">
+          <span class="flow-tag">1 · Create</span>
+          <strong>AR_ + FR_ roles</strong>
+          <span class="flow-sub">empty badges &amp; key-rings</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">2 · Grant objects</span>
+          <strong>USAGE + SELECT</strong>
+          <span class="flow-sub">onto AR_ only</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">3 · Inherit</span>
+          <strong>GRANT ROLE AR → FR</strong>
+          <span class="flow-sub">humans get FR_ only</span>
+        </div>
+      </div>
+      <p>
+        Elena never gives Alex <code>AR_LANDING_READ</code> directly. Alex wears <code>FR_ANALYST</code>, which inherits
+        <code>AR_CURATED_READ</code> only — so the vault table stays locked while the window view opens.
+      </p>
+    </section>
+
+    <section class="teach">
+      <h2>Vault vs window — two different doors</h2>
+      <table class="gloss">
+        <tr><th>Object</th><th>Layer</th><th>Who should query it?</th></tr>
+        <tr>
+          <td><code>LANDING.CLIENTS</code></td>
+          <td>Vault (bronze dock)</td>
+          <td>Jordan, Sam — not Alex</td>
+        </tr>
+        <tr>
+          <td><code>CURATED.V_CLIENT_DIRECTORY</code></td>
+          <td>Window (safe projection)</td>
+          <td>Alex for board decks</td>
+        </tr>
+      </table>
+    </section>
 
     <figure class="viz-panel">
       <svg class="viz-svg" viewBox="0 0 780 280" role="img" aria-label="Job badge FR_ANALYST clips onto key-ring AR_CURATED_READ which opens the window view but not the vault">
@@ -73,33 +172,27 @@
             <stop offset="100%" stop-color="#c9a45c"/>
           </linearGradient>
         </defs>
-        <!-- Job badge -->
         <rect x="28" y="56" width="168" height="128" rx="14" fill="#2a3342" stroke="#6bb8e0" stroke-width="3"/>
         <rect x="44" y="74" width="136" height="30" rx="6" fill="url(#gSky)"/>
         <text x="112" y="94" text-anchor="middle" fill="#151b24" font-family="DM Sans,Segoe UI,sans-serif" font-size="13" font-weight="700">FR_ANALYST</text>
         <text x="112" y="128" text-anchor="middle" fill="#d5dee8" font-family="DM Sans,Segoe UI,sans-serif" font-size="15" font-weight="600">Job badge</text>
         <text x="112" y="150" text-anchor="middle" fill="#8f9eb2" font-family="DM Sans,Segoe UI,sans-serif" font-size="12">who you are (Alex)</text>
-        <!-- Arrow 1 -->
         <text x="248" y="78" text-anchor="middle" fill="#c9a45c" font-family="DM Sans,Segoe UI,sans-serif" font-size="12" font-weight="600">GRANT ROLE</text>
         <path d="M210 120 H285" stroke="#6bb8e0" stroke-width="3" fill="none"/>
         <polygon points="285,113 305,120 285,127" fill="#6bb8e0"/>
-        <!-- Keyring (keys stay inside circle) -->
         <circle cx="370" cy="120" r="48" fill="#232b38" stroke="url(#gGold)" stroke-width="3"/>
         <circle cx="370" cy="120" r="13" fill="none" stroke="#e0c078" stroke-width="3"/>
         <path d="M382 108 q16 -4 22 12" stroke="#e0c078" stroke-width="3.5" fill="none" stroke-linecap="round"/>
         <path d="M384 128 q14 6 20 -4" stroke="#8f9eb2" stroke-width="3" fill="none" stroke-linecap="round"/>
         <text x="370" y="192" text-anchor="middle" fill="#d5dee8" font-family="DM Sans,Segoe UI,sans-serif" font-size="13" font-weight="600">AR_CURATED_READ</text>
         <text x="370" y="212" text-anchor="middle" fill="#8f9eb2" font-family="DM Sans,Segoe UI,sans-serif" font-size="12">key-ring · what you can open</text>
-        <!-- Arrow 2 -->
         <path d="M430 120 H500" stroke="#6bb8e0" stroke-width="3" fill="none"/>
         <polygon points="500,113 520,120 500,127" fill="#6bb8e0"/>
-        <!-- WINDOW — labels below glass, no overlap -->
         <rect x="530" y="36" width="112" height="168" rx="12" fill="#1e2530" stroke="#5bbf96" stroke-width="3"/>
         <rect x="548" y="52" width="76" height="72" rx="6" fill="#2a4050" stroke="#6bb8e0" stroke-width="2"/>
         <text x="586" y="148" text-anchor="middle" fill="#5bbf96" font-family="DM Sans,Segoe UI,sans-serif" font-size="13" font-weight="700">WINDOW</text>
         <text x="586" y="170" text-anchor="middle" fill="#9fd0ea" font-family="IBM Plex Mono,monospace" font-size="10">V_CLIENT_DIRECTORY</text>
         <text x="586" y="188" text-anchor="middle" fill="#8f9eb2" font-family="DM Sans,Segoe UI,sans-serif" font-size="11">names only ✓</text>
-        <!-- gap + X then VAULT -->
         <text x="666" y="100" text-anchor="middle" fill="#e08086" font-family="DM Sans,Segoe UI,sans-serif" font-size="22" font-weight="700">✗</text>
         <rect x="686" y="36" width="72" height="168" rx="12" fill="#2a2228" stroke="#e08086" stroke-width="3"/>
         <circle cx="722" cy="88" r="20" fill="#3a2a30" stroke="#e08086" stroke-width="2"/>
@@ -114,22 +207,23 @@
       </figcaption>
     </figure>
 
-    <!-- STEP 0 -->
     <article class="step">
       <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if CREATE ROLE failed)</h3></div></div>
       <div class="explain">
-        <h4>Story</h4>
+        <h4>When you need this</h4>
         <p>Only ACCOUNTADMIN can stamp Elena’s role with “may print new badges.” Skip if Lab 00 smoke test already passed.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · privilege repair</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · repair as mayor</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
 
 GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
 GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
-GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
-
-SET uname = (SELECT CURRENT_USER());
+GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · grant lab admin to you + smoke</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SET uname = (SELECT CURRENT_USER());
 GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);
 
 USE ROLE ROLE_BANK_LAB_ADMIN;
@@ -137,10 +231,15 @@ CREATE ROLE IF NOT EXISTS ROLE_BANK_SMOKE_TMP COMMENT = 'temp';
 DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;
 SELECT 'Privilege repair OK' AS status;</code></pre>
       </div>
+      <div class="badge-ok">✓ Status row — switch back to ROLE_BANK_LAB_ADMIN for Step 1</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Confirm the vault has clients</h3></div></div>
+      <div class="explain">
+        <h4>What this proves</h4>
+        <p>Lab 00 data is present and PII column is populated — RBAC has something real to protect.</p>
+      </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · count clients</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
@@ -148,118 +247,155 @@ USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
 SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM LANDING.CLIENTS;</code></pre>
       </div>
-      <div class="badge-ok">✓ n = 5</div>
+      <div class="badge-ok">✓ n = 5 and pii_rows = 5</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Print blank badges (FR_ and AR_)</h3></div></div>
-      <div class="story">
-        <p>Empty plastic first — no powers yet. Three job badges, three key-rings.</p>
+      <div class="explain">
+        <h4>Why empty roles first?</h4>
+        <p>Three job badges for humans, three key-rings for object grants. No powers until Steps 3–6.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · create roles</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
-USE WAREHOUSE WH_BANK_XS;
-USE DATABASE MERIDIAN_BANK;
-
-CREATE ROLE IF NOT EXISTS AR_LANDING_READ;
+        <div class="code-head"><span>SQL · access roles (key-rings)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE ROLE IF NOT EXISTS AR_LANDING_READ;
 CREATE ROLE IF NOT EXISTS AR_CURATED_READ;
-CREATE ROLE IF NOT EXISTS AR_PII_READ;
-
-CREATE ROLE IF NOT EXISTS FR_ANALYST;
+CREATE ROLE IF NOT EXISTS AR_PII_READ;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · functional roles (job badges)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE ROLE IF NOT EXISTS FR_ANALYST;
 CREATE ROLE IF NOT EXISTS FR_DATA_ENGINEER;
 CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;</code></pre>
       </div>
+      <div class="badge-ok">✓ Six roles under Account → Roles</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Let job badges use the bank engine</h3></div></div>
+      <div class="explain">
+        <h4>Why FR_ need warehouse USAGE?</h4>
+        <p>Proof queries run as Alex/Jordan/Sam — each FR_ must be allowed to start <code>WH_BANK_XS</code>.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · warehouse</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · warehouse on FR_</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_ANALYST;
 GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_DATA_ENGINEER;
 GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
+      <div class="badge-ok">✓ Each FR_ can USE WAREHOUSE in proofs</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Building + floor keys on key-rings</h3></div></div>
-      <div class="story">
-        <p>Database = building. Schema = floor. Table = cabinet (next).</p>
+      <div class="explain">
+        <h4>Database = building, schema = floor</h4>
+        <p><code>USAGE ON DATABASE</code> plus <code>USAGE ON SCHEMA</code> must be granted before any SELECT works.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · USAGE</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · database USAGE on AR_</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_LANDING_READ;
 GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_CURATED_READ;
-GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_PII_READ;
-
-GRANT USAGE ON SCHEMA LANDING TO ROLE AR_LANDING_READ;
+GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_PII_READ;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · schema USAGE on AR_</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT USAGE ON SCHEMA LANDING TO ROLE AR_LANDING_READ;
 GRANT USAGE ON SCHEMA CURATED TO ROLE AR_CURATED_READ;
 GRANT USAGE ON SCHEMA RISK_CTRL TO ROLE AR_PII_READ;
 GRANT USAGE ON SCHEMA LANDING TO ROLE AR_PII_READ;</code></pre>
       </div>
+      <div class="badge-ok">✓ Key-rings can “enter” the right floors</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Cabinet keys (SELECT) on key-rings</h3></div></div>
+      <div class="explain">
+        <h4>ALL vs FUTURE</h4>
+        <p><code>ALL TABLES</code> covers what exists today. <code>FUTURE TABLES</code> covers what Jordan creates tomorrow without a grant fire drill.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · SELECT + future</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · landing SELECT</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA LANDING TO ROLE AR_LANDING_READ;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA LANDING TO ROLE AR_LANDING_READ;
-
-GRANT SELECT ON ALL TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
-
-GRANT SELECT ON ALL TABLES IN SCHEMA LANDING TO ROLE AR_PII_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA LANDING TO ROLE AR_LANDING_READ;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · curated SELECT</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · PII landing SELECT</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA LANDING TO ROLE AR_PII_READ;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA LANDING TO ROLE AR_PII_READ;</code></pre>
       </div>
+      <div class="badge-ok">✓ AR_LANDING_READ and AR_PII_READ can read LANDING tables; AR_CURATED_READ reads CURATED</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Clip key-rings onto job badges</h3></div></div>
-      <div class="story">
-        <p>Alex → curated only. Jordan → landing + curated. Sam → PII + curated.</p>
+      <div class="explain">
+        <h4>Who gets which ring?</h4>
+        <ul class="checklist">
+          <li>Alex → <code>AR_CURATED_READ</code> only (window, not vault)</li>
+          <li>Jordan → landing + curated (pipelines + clean shelves)</li>
+          <li>Sam → PII + curated (audit + governed shelf)</li>
+        </ul>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · FR inherits AR</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST;
-
-GRANT ROLE AR_LANDING_READ TO ROLE FR_DATA_ENGINEER;
-GRANT ROLE AR_CURATED_READ TO ROLE FR_DATA_ENGINEER;
-
-GRANT ROLE AR_PII_READ TO ROLE FR_COMPLIANCE;
+        <div class="code-head"><span>SQL · Alex</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Jordan</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT ROLE AR_LANDING_READ TO ROLE FR_DATA_ENGINEER;
+GRANT ROLE AR_CURATED_READ TO ROLE FR_DATA_ENGINEER;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Sam</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT ROLE AR_PII_READ TO ROLE FR_COMPLIANCE;
 GRANT ROLE AR_CURATED_READ TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
+      <div class="badge-ok">✓ Inheritance visible under each FR_ role in Admin</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Let your user wear all three jobs (for testing)</h3></div></div>
+      <div class="explain">
+        <h4>Why grant FR_ to your login?</h4>
+        <p>You play Alex, Jordan, and Sam in one Snowflake user — realistic for a lab, not production (one human = one FR_ there).</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · grant to you</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · grant FR_ to you</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SET uname = (SELECT CURRENT_USER());
 GRANT ROLE FR_ANALYST TO USER IDENTIFIER($uname);
 GRANT ROLE FR_DATA_ENGINEER TO USER IDENTIFIER($uname);
 GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);</code></pre>
       </div>
+      <div class="badge-ok">✓ Role dropdown lists all three FR_ roles</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">8</div><div><h3>Build the safe client directory window</h3></div></div>
-      <div class="story">
-        <p>No email, phone, or SSN — only what Alex needs for charts.</p>
+      <div class="explain">
+        <h4>Why a view?</h4>
+        <p>One governed projection — Alex gets IDs, names, countries, dates. Email, phone, and SSN never appear in the SELECT list.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · safe view</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · create view</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE SCHEMA CURATED;
 
 CREATE OR REPLACE VIEW V_CLIENT_DIRECTORY AS
 SELECT CLIENT_ID, FULL_NAME, COUNTRY, CREATED_AT
-FROM LANDING.CLIENTS;
-
-GRANT SELECT ON VIEW V_CLIENT_DIRECTORY TO ROLE AR_CURATED_READ;
-
-SELECT 'Safe view ready' AS status;</code></pre>
+FROM LANDING.CLIENTS;</code></pre>
       </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · grant view to key-ring</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON VIEW V_CLIENT_DIRECTORY TO ROLE AR_CURATED_READ;
+
+SELECT 'Lab 01 Meridian Bank RBAC ready' AS status;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Status row — view visible under CURATED in Snowsight</div>
     </article>
 
     <article class="step">
@@ -276,7 +412,8 @@ SELECT 'Safe view ready' AS status;</code></pre>
         <strong>Snowsight gotcha — secondary roles</strong>
         Your user also has <code>ROLE_BANK_LAB_ADMIN</code> (and maybe <code>ACCOUNTADMIN</code>).
         Snowsight often keeps those as <em>secondary</em> roles, so the UI says <code>FR_ANALYST</code>
-        but you still have vault access. Always run <code>USE SECONDARY ROLES NONE;</code> before Alex/Sam proofs.
+        but you still have vault access. Run setup as lab admin; run <strong>proof statements in a fresh block</strong> — not “Run All” past the role switch.
+        Always run <code>USE SECONDARY ROLES NONE;</code> before Alex/Sam proofs.
       </div>
       <div class="ui-mock">
         <div class="ui-mock-bar">
@@ -285,18 +422,26 @@ SELECT 'Safe view ready' AS status;</code></pre>
           <div class="ui-chip">DB: MERIDIAN_BANK ▾</div>
         </div>
       </div>
+      <div class="explain">
+        <h4>What you’re proving</h4>
+        <p>Primary role is analyst-only; secondary roles empty; window SELECT works; vault SELECT fails.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Alex safe (primary role only)</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · become Alex (primary only)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_ANALYST;
-USE SECONDARY ROLES NONE;   -- required: turn off lab-admin / accountadmin power
+USE SECONDARY ROLES NONE;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
-SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();
-SELECT * FROM CURATED.V_CLIENT_DIRECTORY;</code></pre>
+SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();</code></pre>
       </div>
-      <div class="badge-ok">✓ Names/countries only · secondary roles should show NONE</div>
+      <div class="badge-ok">✓ FR_ANALYST primary · secondary shows NONE or empty</div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Alex blocked (celebrate)</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · window OK</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM CURATED.V_CLIENT_DIRECTORY;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Names and countries only — no EMAIL or SSN_LAST4 columns</div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · vault blocked (celebrate the error)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT * FROM LANDING.CLIENTS;</code></pre>
       </div>
       <div class="badge-fail">✗ Insufficient privileges — regulator would smile</div>
@@ -304,28 +449,35 @@ SELECT * FROM CURATED.V_CLIENT_DIRECTORY;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">10</div><div><h3>Proof: Jordan and Sam paths</h3></div></div>
+      <div class="explain">
+        <h4>Same rule every time</h4>
+        <p><code>USE ROLE</code> then <code>USE SECONDARY ROLES NONE</code> before each proof — policies and table access both respect the primary badge.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Jordan</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Jordan reads landing email</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_DATA_ENGINEER;
 USE SECONDARY ROLES NONE;
 SELECT CLIENT_ID, EMAIL FROM LANDING.CLIENTS LIMIT 5;</code></pre>
       </div>
-      <div class="badge-ok">✓ Engineer can read landing</div>
+      <div class="badge-ok">✓ Five rows with EMAIL — engineer has landing key-ring</div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Sam</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Sam reads SSN last-4</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_COMPLIANCE;
 USE SECONDARY ROLES NONE;
 SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
       </div>
-      <div class="badge-ok">✓ Compliance can read PII</div>
+      <div class="badge-ok">✓ SSN_LAST4 visible for all five clients</div>
       <p class="hint">When you go back to building objects: <code>USE ROLE ROLE_BANK_LAB_ADMIN;</code></p>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">11</div><div><h3>Smoke test (don’t skip)</h3></div></div>
       <div class="explain">
-        <p>Copy <code>sql/smoke_role_proofs.sql</code> and run <strong>one statement at a time</strong>.
-        The analyst → <code>LANDING.CLIENTS</code> step <em>must</em> error. If it returns rows, secondary roles are still on.</p>
+        <h4>What “smoke” means</h4>
+        <p>
+          Copy <code>sql/smoke_role_proofs.sql</code> and run <strong>one statement at a time</strong>.
+          The analyst → <code>LANDING.CLIENTS</code> step <em>must</em> error. If it returns rows, secondary roles are still on.
+        </p>
       </div>
       <div class="badge-ok">✓ Smoke green → continue to Lab 02</div>
     </article>
@@ -334,8 +486,8 @@ SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s problem was open access to client PII. I separated functional roles (jobs) from access roles (key-rings):
       FR_ANALYST, FR_DATA_ENGINEER, FR_COMPLIANCE and AR_CURATED_READ, AR_LANDING_READ, AR_PII_READ.
-      Analysts only inherit curated-read and query V_CLIENT_DIRECTORY — no email or SSN.
-      I proved it: as FR_ANALYST, landing select fails.
+      I hung USAGE and SELECT on the key-rings, clipped the right rings onto each job badge, and built V_CLIENT_DIRECTORY so analysts never need the vault table.
+      I proved it with USE SECONDARY ROLES NONE: as FR_ANALYST, landing SELECT fails.
       <em>Outcome:</em> Alex can ship the board deck; Sam can audit; the regulator’s nightmare path is closed.”
     </div>
 
@@ -344,7 +496,7 @@ SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
       <a class="btn primary" href="lab-02.html">Lab 02 →</a>
     </div>
   </div>
-  <footer class="footer">To wipe Labs 00+01: sql/cleanup_lab00_lab01.sql</footer>
+  <footer class="footer">Source SQL: sql/01_rbac.sql · sql/smoke_role_proofs.sql · To wipe: sql/cleanup_lab00_lab01.sql</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

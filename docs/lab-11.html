@@ -35,7 +35,10 @@
   <div class="wrap">
     <p class="eyebrow">Lab 11 · Saturday night · You are Elena · Marcus asks about regions</p>
     <h1>What if the region dies?</h1>
-    <p class="lede">Single trial account can’t prove failover live. Elena teaches share vs clone vs replication and runs safe SHOW commands in MERIDIAN_BANK.</p>
+    <p class="lede">
+      Read every <strong>Teach first</strong> section before you run SQL.
+      One trial account cannot prove live failover — but you <em>can</em> learn the vocabulary Marcus expects and run safe <code>SHOW</code> commands in <code>MERIDIAN_BANK</code>.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
@@ -44,7 +47,8 @@
 
     <div class="callout ok">
       <strong>Solution you will articulate</strong>
-      Replication + failover groups for RPO/RTO; validate config with SHOW commands; don’t confuse share (Nora) or clone (Dev) with geo-DR.
+      Separate <strong>share</strong> (Nora reads live curated data), <strong>clone</strong> (Dev’s same-account QA fork), and <strong>replication</strong> (warm copy in another account/region for failover).
+      Name <strong>RPO</strong> (how much data you might lose) and <strong>RTO</strong> (how long until you’re back). Validate config with small <code>SHOW</code> commands.
     </div>
 
     <figure class="viz-panel">
@@ -55,36 +59,202 @@
       </figcaption>
     </figure>
 
+    <section class="teach">
+      <h2>Teach first — dictionary (share vs clone vs replication)</h2>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>Meridian cast</th></tr>
+        <tr>
+          <td><strong>Share</strong></td>
+          <td>Provider publishes read-only objects; consumer queries them from <em>their</em> account with <em>their</em> warehouse</td>
+          <td>Nora’s credit union sees <code>V_SHARE_TXNS</code> — not a copy of <code>MERIDIAN_BANK</code> in her vault (Lab 10)</td>
+        </tr>
+        <tr>
+          <td><strong>Clone</strong></td>
+          <td>Zero-copy fork in the <em>same</em> account — new table name, shared storage until someone changes data</td>
+          <td>Dev refreshes QA from <code>TT_DEMO2</code> without doubling storage on day one (Lab 09)</td>
+        </tr>
+        <tr>
+          <td><strong>Replication</strong></td>
+          <td>Snowflake copies databases (or other objects) to a <em>secondary account</em>, often another region, on a schedule</td>
+          <td>Warm standby if Marcus’s primary region fails — not for Nora’s weekly read</td>
+        </tr>
+        <tr>
+          <td><strong>Failover group</strong></td>
+          <td>Named bundle of replicated objects you can <em>promote</em> so the secondary becomes primary</td>
+          <td>Marcus’s runbook: “when we fail over, these DBs flip together”</td>
+        </tr>
+        <tr>
+          <td><strong>RPO</strong> (recovery point objective)</td>
+          <td>“How stale can our copy be?” — bounded by replication refresh lag</td>
+          <td>If refresh is every 15 minutes, you might lose up to ~15 minutes of writes at failover</td>
+        </tr>
+        <tr>
+          <td><strong>RTO</strong> (recovery time objective)</td>
+          <td>“How long until users can work again?” — DNS, promotion steps, app config, smoke tests</td>
+          <td>Not the same as RPO — you can have small RPO but a long RTO if the runbook is manual</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>Three different jobs — don’t swap the tool</h2>
+      <div class="flow-pipeline" aria-label="Share vs clone vs replication">
+        <div class="flow-node source">
+          <span class="flow-tag">Lab 10 · Partner read</span>
+          <strong>Share</strong>
+          <span class="flow-sub">Nora · live provider objects · her WH</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">Lab 09 · QA fork</span>
+          <strong>Clone</strong>
+          <span class="flow-sub">Dev · same account · fast sandbox</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">Lab 11 · Region loss</span>
+          <strong>Replication</strong>
+          <span class="flow-sub">Secondary account/region · failover</span>
+        </div>
+      </div>
+      <p>
+        <strong>Interview trap:</strong> “We already share with Nora, so we’re DR-ready.” No — share is cross-account <em>read</em>, not a promoted secondary region when the provider is down.
+      </p>
+    </section>
+
+    <section class="teach">
+      <h2>Decision tree Elena draws for Marcus</h2>
+      <p class="lede" style="font-size:1.05rem;margin-top:0">Start with the business question — not the Snowflake feature name.</p>
+
+      <table class="gloss">
+        <tr><th>Ask this first</th><th>If yes →</th><th>Meridian example</th></tr>
+        <tr>
+          <td>Does an <em>external partner</em> need read-only access to <em>our</em> curated metrics?</td>
+          <td><strong>Share</strong> (+ secure view, minimum columns)</td>
+          <td>Nora · <code>SHARE_MERIDIAN_TXNS</code></td>
+        </tr>
+        <tr>
+          <td>Does <em>our own team</em> need prod-like data today in the <em>same</em> account?</td>
+          <td><strong>Clone</strong> (or Time Travel for undo)</td>
+          <td>Dev · <code>CREATE TABLE … CLONE</code></td>
+        </tr>
+        <tr>
+          <td>Must we keep operating if an entire <em>region or account</em> is unavailable?</td>
+          <td><strong>Replication</strong> + failover group + tested runbook</td>
+          <td><code>MERIDIAN_BANK</code> enabled for replication to secondary</td>
+        </tr>
+      </table>
+
+      <div class="callout warn">
+        <strong>Wrong tool, right-sounding reason</strong>
+        Clone is fast QA — not geo-DR. Share is partner consumption — not your internal failover copy. Replication costs and ops — not for every sandbox.
+      </div>
+    </section>
+
+    <section class="teach">
+      <h2>RPO and RTO in one story</h2>
+      <div class="story">
+        <div class="story-label">Bookmark vs fire drill</div>
+        <p>
+          <strong>RPO</strong> is how far behind the secondary copy might be — like “our backup bookmark is 15 minutes old.”
+          Snowflake replication refresh lag is the honest input to that number.
+        </p>
+        <p>
+          <strong>RTO</strong> is the fire drill: who promotes the failover group, who repoints apps, who runs smoke tests on <code>WH_BANK_XS</code>, and how long that takes.
+          A trial account lets you <em>describe</em> the runbook; production must <em>rehearse</em> it.
+        </p>
+      </div>
+    </section>
+
     <div class="story">
-      <div class="story-label">Decision tree Elena draws for Marcus</div>
-      <p>Partner read → Share (Lab 10). QA fork today → Clone (Lab 09). Warm copy in another account/region → Replication (this lab).</p>
+      <div class="story-label">Saturday night in Marcus’s office</div>
+      <p>
+        Marcus: “Board wants numbers — RPO, RTO — not ‘we use Snowflake.’”
+        Elena: “Nora is share. Dev is clone. Region loss is replication on <code>MERIDIAN_BANK</code>. On trial I’ll SHOW what’s configured; prod gets a tested promotion checklist.”
+      </p>
     </div>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Safe introspection in one account</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Set session (Elena’s lab badge)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Uses <code>ROLE_BANK_LAB_ADMIN</code> and the cheap warehouse — same as other labs. <code>SHOW</code> commands are read-only catalog checks.</p>
+        <h4>Why Elena does it</h4>
+        <p>Marcus wants proof you know <em>where</em> to look before claiming replication exists.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · SHOW replication catalog</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Snowsight shows MERIDIAN_BANK as current database</div>
+    </article>
 
-SHOW REPLICATION DATABASES;
-SHOW FAILOVER GROUPS;
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>SHOW replication databases</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Lists databases in <em>this</em> account that participate in replication (as primary or secondary). Empty on a fresh trial is normal — you still explain what production would show.</p>
+        <h4>What you should see</h4>
+        <p>Either no rows, or a row for <code>MERIDIAN_BANK</code> with replication role/region columns populated in a real dual-account setup.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · catalog</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SHOW REPLICATION DATABASES;</code></pre>
+      </div>
+      <div class="callout warn">
+        <strong>Trial honesty</strong>
+        If the result is empty, say aloud: “No replication configured yet — here is the ALTER DATABASE line we would run on primary.”
+      </div>
+    </article>
 
--- May require org admin on personal trial — discuss aloud if empty/error:
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>SHOW failover groups</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Lists failover groups — the named bundle Marcus promotes during region loss. Again, empty on trial is OK for learning.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · failover catalog</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SHOW FAILOVER GROUPS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ You can point Marcus to this command in Snowsight after production setup</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Org accounts (discuss if blocked)</h3></div></div>
+      <div class="explain">
+        <h4>What this would do</h4>
+        <p>On an org admin role, lists accounts in the Snowflake organization — useful when wiring primary → secondary account IDs.</p>
+        <h4>Why we only mention it on trial</h4>
+        <p>Personal trials often lack org admin. Interview answer: “I’d use org admin or account metadata from infra, not guess account locators.”</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · optional (may error on trial)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Requires org admin on many setups:
 -- SHOW ORGANIZATION ACCOUNTS;</code></pre>
       </div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">2</div><div><h3>Reference pattern (explain — two accounts)</h3></div></div>
+      <div class="step-head"><div class="step-num">5</div><div><h3>Production pattern (explain — two accounts)</h3></div></div>
       <div class="explain">
-        <p>Production flow: <code>ALTER DATABASE MERIDIAN_BANK ENABLE REPLICATION TO ACCOUNTS = …</code>, failover group, refresh lag = RPO, promotion runbook = RTO.</p>
+        <h4>What each line means</h4>
+        <p>You will not run live failover on one trial account. Read these as Marcus’s architecture slide — primary enables replication, secondary refreshes, runbook promotes failover group.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · reference only</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>-- Primary: ALTER DATABASE MERIDIAN_BANK ENABLE REPLICATION TO ACCOUNTS = &lt;secondary_account_id&gt;;
--- Create REPLICATION / FAILOVER GROUP; secondary refreshes; controlled failover promotion</code></pre>
+        <div class="code-head"><span>SQL · primary — enable replication (reference)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- On PRIMARY account:
+-- ALTER DATABASE MERIDIAN_BANK ENABLE REPLICATION TO ACCOUNTS = &lt;secondary_account_id&gt;;</code></pre>
       </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · failover group + promotion (reference)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Create REPLICATION / FAILOVER GROUP including MERIDIAN_BANK
+-- Secondary account: refresh on schedule (lag → RPO)
+-- Controlled failover: promote secondary when primary region is down (steps → RTO)</code></pre>
+      </div>
+      <div class="badge-ok">✓ Out loud: lag minutes → RPO; runbook minutes → RTO</div>
     </article>
 
     <div class="soundbite">
@@ -94,13 +264,12 @@ SHOW FAILOVER GROUPS;
       <em>Outcome:</em> board hears an honest continuity plan.”
     </div>
 
-
     <div class="pager">
       <a class="btn ghost" href="lab-10.html">← Lab 10</a>
       <a class="btn primary" href="lab-12.html">Lab 12 →</a>
     </div>
   </div>
-  <footer class="footer">Diagram-first lab · safe SHOW on trial</footer>
+  <footer class="footer">Conceptual DR lab · safe SHOW on trial · picture lab11-dr.jpg</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

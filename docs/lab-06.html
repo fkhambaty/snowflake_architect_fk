@@ -33,76 +33,263 @@
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 06 · Thursday night · You are Elena</p>
+    <p class="eyebrow">Lab 06 · Thursday night · You are Elena · Jordan’s overnight files</p>
     <h1>Files arrive overnight — automate the dock</h1>
-    <p class="lede">Partner files land in FILE_IN. Elena stages and COPYs into LANDING. Snowpipe is the story of automated COPY — no invented AWS steps in this lab.</p>
+    <p class="lede">
+      Read every <strong>Teach first</strong> section before you run SQL.
+      You will build the same pattern Jordan needs for partner CSV drops: stage → file format → <code>COPY INTO</code> → <code>LANDING</code>.
+      Snowpipe is the <em>story</em> of automated COPY — this lab does not walk fake AWS wiring.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
       Morning desk finds CSV drops with no loader. Jordan begs for a repeatable pattern before Nora’s partner feed scales up.
+      Sam wants an audit trail: who loaded what, when.
     </div>
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Internal stage in <code>FILE_IN</code>, file format, <code>COPY INTO LANDING.TXN_LANDING</code>. In production Elena would attach Snowpipe — same COPY, triggered when files land.
+      Internal stage in schema <code>FILE_IN</code>, a CSV file format, manual <code>COPY INTO LANDING.TXN_LANDING</code>.
+      In production Elena would attach <strong>Snowpipe</strong> — same COPY semantics, triggered when files land on the stage.
     </div>
 
     <figure class="viz-panel">
       <img src="assets/lab06-landing.jpg" alt="Night truck bay: FILE_IN stage and COPY into LANDING; Snowpipe as automated COPY" width="1600" height="900" loading="eager" />
       <figcaption>
         <strong>Picture · Night truck bay</strong>
-        FILE_IN stage + COPY into LANDING; Snowpipe = automated COPY.
+        FILE_IN stage + COPY into LANDING; Snowpipe = automated COPY when the truck arrives.
       </figcaption>
     </figure>
 
+    <section class="teach">
+      <h2>Teach first — dictionary (no assumed knowledge)</h2>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
+        <tr>
+          <td><strong>Stage</strong></td>
+          <td>A named “parking lot” where files sit <em>before</em> Snowflake loads them into a table</td>
+          <td>Truck bay at the back of the bank — pallets aren’t on the ledger shelf yet</td>
+        </tr>
+        <tr>
+          <td><strong>Internal stage</strong></td>
+          <td>Storage inside Snowflake’s account (starts with <code>@</code> in SQL)</td>
+          <td>Bank-owned bay — no external cloud bucket required for this lab</td>
+        </tr>
+        <tr>
+          <td><strong>File format</strong></td>
+          <td>Reusable rules: CSV vs JSON, headers, quote character, etc.</td>
+          <td>The spec sheet: “these pallets are comma-separated with quotes”</td>
+        </tr>
+        <tr>
+          <td><strong>COPY INTO (table)</strong></td>
+          <td>Snowflake command: read files from a stage and insert rows into a table</td>
+          <td>Forklift from bay → official <code>LANDING</code> shelf</td>
+        </tr>
+        <tr>
+          <td><strong>COPY INTO (stage)</strong></td>
+          <td>Upload or create a file <em>on</em> the stage (we simulate a partner file in-lab)</td>
+          <td>Backing a truck into the bay with today’s CSV</td>
+        </tr>
+        <tr>
+          <td><code>LANDING.TXN_LANDING</code></td>
+          <td>Physical table for file-sourced txns (separate from Jordan’s <code>TXN_EVENTS</code> stream path)</td>
+          <td>Receiving dock ledger — raw rows from files before curation</td>
+        </tr>
+        <tr>
+          <td><strong>Snowpipe</strong></td>
+          <td>Serverless auto-loader: when a new file hits the stage, Snowflake runs the same COPY pipeline</td>
+          <td>Bay sensor + automatic forklift — not a different load language</td>
+        </tr>
+        <tr>
+          <td><code>ON_ERROR = 'ABORT_STATEMENT'</code></td>
+          <td>If one row is bad, stop the whole load (fail loud, don’t silently skip)</td>
+          <td>Reject the whole pallet if the manifest doesn’t match</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>The whole flow in one picture</h2>
+      <p>Four objects. Files never jump straight into LANDING — they pause on the stage first.</p>
+      <div class="flow-pipeline" aria-label="File load pipeline">
+        <div class="flow-node source">
+          <span class="flow-tag">1 · File</span>
+          <strong>txn_day1.csv.gz</strong>
+          <span class="flow-sub">Partner drop (simulated in lab)</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">2 · Stage</span>
+          <strong>@STG_TXN_INTERNAL</strong>
+          <span class="flow-sub">FILE_IN schema · uses FF_CSV_SIMPLE</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">3 · Loader</span>
+          <strong>COPY INTO table</strong>
+          <span class="flow-sub">Parse CSV → typed columns</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">4 · Table</span>
+          <strong>LANDING.TXN_LANDING</strong>
+          <span class="flow-sub">Queryable rows for downstream jobs</span>
+        </div>
+      </div>
+      <p>
+        <strong>Snowpipe (interview one-liner):</strong>
+        “We’d define a pipe with the same stage, file format, and target table.
+        Snowflake watches the stage and runs COPY when files arrive — Jordan doesn’t click Run at 3 a.m.”
+      </p>
+    </section>
+
     <div class="story">
-      <p>Sam asks about audit trails — COPY history in Snowflake answers who loaded what. Snowpipe = “COPY on autopilot when a file hits the stage,” not a different load semantics.</p>
+      <div class="story-label">Thursday night · loading dock</div>
+      <p>
+        Jordan: “Can we stop drag-and-drop in Snowsight?”
+        Elena: “Stage is the bay, file format is how we read commas, COPY is the loader.
+        Snowpipe is COPY on autopilot — I’ll prove the manual path first so Sam can audit loads in history.”
+      </p>
     </div>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Stage, format, COPY</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Set session + open FILE_IN</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Elena’s lab badge, cheap warehouse, bank database. <code>FILE_IN</code> is the schema where inbound file objects live (stage + format).</p>
+        <h4>Why Elena does it</h4>
+        <p>Keeps file plumbing separate from <code>LANDING</code> tables Jordan already owns.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/06_landing_copy.sql</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
 CREATE SCHEMA IF NOT EXISTS FILE_IN;
-USE SCHEMA FILE_IN;
+USE SCHEMA FILE_IN;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Snowsight shows schema <code>FILE_IN</code> under <code>MERIDIAN_BANK</code></div>
+    </article>
 
-CREATE OR REPLACE FILE FORMAT FF_CSV_SIMPLE TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 0;
-CREATE OR REPLACE STAGE STG_TXN_INTERNAL FILE_FORMAT = FF_CSV_SIMPLE;
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Define how to read CSV</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Creates <code>FF_CSV_SIMPLE</code>: CSV type, optional double-quote wrapping, no header row in our tiny lab file.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · file format</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE FILE FORMAT FF_CSV_SIMPLE
+  TYPE = CSV
+  FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+  SKIP_HEADER = 0;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Database → FILE_IN → File Formats → <code>FF_CSV_SIMPLE</code></div>
+    </article>
 
-CREATE OR REPLACE TABLE LANDING.TXN_LANDING (
-  TXN_ID NUMBER, CLIENT_ID NUMBER, STATUS STRING, AMOUNT NUMBER(12,2)
-);
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Create the internal stage</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p><code>STG_TXN_INTERNAL</code> defaults to the file format above so every file in the bay parses the same way.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · stage</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE STAGE STG_TXN_INTERNAL
+  FILE_FORMAT = FF_CSV_SIMPLE;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Stages list shows <code>STG_TXN_INTERNAL</code> (internal, not S3 URL)</div>
+    </article>
 
-COPY INTO @STG_TXN_INTERNAL/txn_day1.csv.gz FROM (
-  SELECT * FROM VALUES (2001, 1, 'POSTED', 10.00), (2002, 2, 'POSTED', 20.00), (2003, 3, 'SETTLED', 30.00)
-) OVERWRITE = TRUE SINGLE = TRUE;
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Create the landing table</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Target table with typed columns — COPY will map file fields into these slots.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · LANDING.TXN_LANDING</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE LANDING.TXN_LANDING (
+  TXN_ID NUMBER,
+  CLIENT_ID NUMBER,
+  STATUS STRING,
+  AMOUNT NUMBER(12,2)
+);</code></pre>
+      </div>
+      <div class="badge-ok">✓ Empty table <code>LANDING.TXN_LANDING</code> — 0 rows until COPY</div>
+    </article>
 
-COPY INTO LANDING.TXN_LANDING FROM @STG_TXN_INTERNAL
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Park a “partner file” on the stage</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>
+          In production Jordan would <code>PUT</code> a file from a laptop or sync from cloud storage.
+          Here we <code>COPY INTO @stage/…</code> <em>from</em> inline VALUES — same result: a gzip CSV named <code>txn_day1.csv.gz</code> on the stage.
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · simulate file on stage</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>COPY INTO @STG_TXN_INTERNAL/txn_day1.csv.gz FROM (
+  SELECT * FROM VALUES
+    (2001, 1, 'POSTED', 10.00),
+    (2002, 2, 'POSTED', 20.00),
+    (2003, 3, 'SETTLED', 30.00)
+) OVERWRITE = TRUE SINGLE = TRUE;</code></pre>
+      </div>
+      <div class="badge-ok">✓ <code>LIST @STG_TXN_INTERNAL;</code> shows <code>txn_day1.csv.gz</code></div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">6</div><div><h3>COPY from stage into LANDING</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>
+          Reads matching files from the stage, parses with <code>FF_CSV_SIMPLE</code>, inserts into <code>TXN_LANDING</code>.
+          <code>PATTERN</code> picks our file; <code>ON_ERROR = 'ABORT_STATEMENT'</code> fails the load if parsing breaks.
+        </p>
+        <h4>What you should see</h4>
+        <p>COPY result columns: file name, rows loaded, errors (0).</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · load into table</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>COPY INTO LANDING.TXN_LANDING
+FROM @STG_TXN_INTERNAL
 FILE_FORMAT = (FORMAT_NAME = 'FILE_IN.FF_CSV_SIMPLE')
-PATTERN = '.*txn_day1.csv.gz' ON_ERROR = 'ABORT_STATEMENT';
+PATTERN = '.*txn_day1.csv.gz'
+ON_ERROR = 'ABORT_STATEMENT';</code></pre>
+      </div>
+      <div class="badge-ok">✓ Status LOADED · 3 rows parsed</div>
+    </article>
 
-SELECT * FROM LANDING.TXN_LANDING ORDER BY TXN_ID;
+    <article class="step">
+      <div class="step-head"><div class="step-num">7</div><div><h3>Verify + interview close</h3></div></div>
+      <div class="explain">
+        <h4>What you should see</h4>
+        <p>Three txn ids 2001–2003 with amounts 10, 20, 30. Sam can later use load history / query history for audit.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · proof</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM LANDING.TXN_LANDING ORDER BY TXN_ID;
 SELECT 'Lab 06 landing COPY OK' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ Three rows in LANDING.TXN_LANDING</div>
+      <div class="badge-ok">✓ n = 3 · status row confirms lab script parity with <code>sql/06_landing_copy.sql</code></div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s overnight files needed a truck bay and a loader. I used FILE_IN stage + COPY INTO LANDING.TXN_LANDING and documented Snowpipe as automated COPY for the next phase.
-      <em>Outcome:</em> Jordan has a repeatable landing pattern; no manual spreadsheet imports.”
+      “Meridian’s overnight files needed a truck bay and a loader. I used schema FILE_IN for the internal stage and CSV file format,
+      parked txn_day1.csv.gz on @STG_TXN_INTERNAL, and COPY INTO LANDING.TXN_LANDING with abort-on-error.
+      Snowpipe is the same COPY path triggered when files land — not different semantics.
+      <em>Outcome:</em> Jordan has a repeatable landing pattern; Sam gets auditable loads; no manual spreadsheet imports.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-05.html">← Lab 05</a>
       <a class="btn primary" href="lab-07.html">Lab 07 →</a>
     </div>
   </div>
-  <footer class="footer">sql/06_landing_copy.sql</footer>
+  <footer class="footer">sql/06_landing_copy.sql · teach-first lab</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

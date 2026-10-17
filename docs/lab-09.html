@@ -35,71 +35,187 @@
   <div class="wrap">
     <p class="eyebrow">Lab 09 · Friday PM · You are Elena · Dev (QA)</p>
     <h1>Someone dropped a table — and Dev needs prod-like data</h1>
-    <p class="lede">Accidental DELETE and DROP panic the team. Elena uses Time Travel, UNDROP, and zero-copy clone for Dev’s QA sprint.</p>
+    <p class="lede">
+      Read <strong>Teach first</strong> before the demos.
+      Three small stories: recover a deleted row with <strong>Time Travel</strong>, resurrect a dropped table with <strong>UNDROP</strong>,
+      give Dev a <strong>zero-copy clone</strong> for QA — and know what is <em>not</em> geo-disaster recovery.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
-      A engineer dropped a curated demo table after a bad migration. Dev (QA) also wants prod-like data every sprint without paying double storage upfront.
+      An engineer deleted curated demo data after a bad migration. Separately, Dev (QA) wants prod-like tables every sprint without paying double storage on day one.
     </div>
 
     <div class="callout ok">
       <strong>Solution you will run</strong>
-      Query AT/OFFSET, UNDROP, and <code>CREATE TABLE … CLONE</code> for Dev’s sandbox copy.
+      Query past versions with <code>AT</code> / <code>OFFSET</code>, <code>UNDROP</code> a table, then <code>CREATE TABLE … CLONE</code> for Dev’s sandbox copy.
     </div>
 
     <figure class="viz-panel">
       <img src="assets/lab09-timetravel.jpg" alt="Time Travel, UNDROP, and Dev's CLONE for QA — not geo-DR" width="1600" height="900" loading="eager" />
       <figcaption>
         <strong>Picture · Undo + twin</strong>
-        Time Travel / UNDROP / Dev’s CLONE for QA (not geo-DR).
+        Time Travel / UNDROP / Dev’s CLONE for QA — not geo-DR (Lab 11 covers replication/fail-safe depth).
       </figcaption>
     </figure>
 
+    <section class="teach">
+      <h2>Teach first — dictionary</h2>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
+        <tr>
+          <td><strong>Time Travel</strong></td>
+          <td>Snowflake keeps recent history of table changes; you can SELECT an older version</td>
+          <td>Security camera replay on the vault shelf — “show me Tuesday 3 p.m.”</td>
+        </tr>
+        <tr>
+          <td><code>AT (OFFSET => …)</code></td>
+          <td>Read the table as it was N seconds ago (negative offset = look backward)</td>
+          <td>Rewind the tape by 2 minutes</td>
+        </tr>
+        <tr>
+          <td><strong>UNDROP</strong></td>
+          <td>Restore a dropped table if still inside the Time Travel retention window</td>
+          <td>Undo “we removed that shelf” before the shredder window closes</td>
+        </tr>
+        <tr>
+          <td><strong>CLONE</strong></td>
+          <td>New table that shares underlying storage with the source (zero-copy at create time)</td>
+          <td>Dev gets a twin shelf pointing at the same boxes until someone edits the clone</td>
+        </tr>
+        <tr>
+          <td><strong>Fail-safe</strong></td>
+          <td>Extra post-retention window for Snowflake support recovery — not a self-service button</td>
+          <td>Bank-wide disaster tape — you don’t browse it in SQL class</td>
+        </tr>
+        <tr>
+          <td><strong>Replication / geo-DR</strong></td>
+          <td>Copy account/database objects to another region/account for outage recovery</td>
+          <td>Second branch vault — Lab 11; not the same as Dev’s same-account clone</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>Three tools — don’t mix them up</h2>
+      <div class="flow-pipeline" aria-label="Time Travel vs UNDROP vs CLONE">
+        <div class="flow-node stg">
+          <span class="flow-tag">Time Travel</span>
+          <strong>Row still “there” in history</strong>
+          <span class="flow-sub">SELECT AT … after DELETE/UPDATE</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">UNDROP</span>
+          <strong>Whole table vanished</strong>
+          <span class="flow-sub">DROP TABLE → UNDROP TABLE</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">CLONE</span>
+          <strong>Dev needs a fork</strong>
+          <span class="flow-sub">Same data snapshot · QA writes don’t touch prod</span>
+        </div>
+      </div>
+    </section>
+
     <div class="story">
-      <p>Clone is same-account fast fork — not geo-DR (Lab 11). Dev runs tests on WH_BANK_XS while prod keeps serving Marcus.</p>
+      <div class="story-label">Friday PM · QA lane</div>
+      <p>
+        Dev runs tests on <code>WH_BANK_XS</code> against a clone while prod keeps serving Marcus.
+        Clone is same-account fast fork — not geo-DR. Fail-safe is last-resort retention after Time Travel expires.
+      </p>
     </div>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Time Travel, UNDROP, clone</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Set session</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/09_timetravel_clone.sql</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
-USE SCHEMA CURATED;
+USE SCHEMA CURATED;</code></pre>
+      </div>
+    </article>
 
-CREATE OR REPLACE TABLE TT_DEMO (ID NUMBER, NOTE STRING);
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Demo A — Time Travel after DELETE</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Create tiny table, mutate it, delete the row, then SELECT with <code>AT (OFFSET => -60*2)</code> (~2 minutes back) to see the row again.</p>
+        <h4>What you should see</h4>
+        <p>Current table empty (or no row 1); time-travel query shows <code>NOTE = 'after'</code> or earlier state depending on timing — proves history exists.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · build TT_DEMO</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE TT_DEMO (ID NUMBER, NOTE STRING);
 INSERT INTO TT_DEMO VALUES (1, 'before');
 UPDATE TT_DEMO SET NOTE = 'after' WHERE ID = 1;
-DELETE FROM TT_DEMO WHERE ID = 1;
-SELECT * FROM TT_DEMO AT (OFFSET => -60*2);
+DELETE FROM TT_DEMO WHERE ID = 1;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · rewind ~2 minutes</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM TT_DEMO AT (OFFSET => -60*2);</code></pre>
+      </div>
+      <div class="badge-ok">✓ At least one historical row visible — interview: “restore via INSERT…SELECT from AT”</div>
+    </article>
 
-CREATE OR REPLACE TABLE TT_DEMO2 (ID NUMBER, NOTE STRING);
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Demo B — UNDROP after DROP TABLE</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Second table, one row, drop it, then <code>UNDROP TABLE</code> while retention allows.</p>
+        <h4>What you should see</h4>
+        <p><code>SELECT * FROM TT_DEMO2</code> returns <code>keep me</code> again.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · drop then undrop</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE TT_DEMO2 (ID NUMBER, NOTE STRING);
 INSERT INTO TT_DEMO2 VALUES (1, 'keep me');
 DROP TABLE TT_DEMO2;
-UNDROP TABLE TT_DEMO2;
-SELECT * FROM TT_DEMO2;
-
-CREATE OR REPLACE TABLE TT_DEMO_CLONE CLONE TT_DEMO2;
-SELECT * FROM TT_DEMO_CLONE;
-SELECT 'Lab 09 Time Travel / UNDROP / CLONE OK' AS status;</code></pre>
+UNDROP TABLE TT_DEMO2;</code></pre>
       </div>
-      <div class="badge-ok">✓ Dev can refresh QA via re-clone on a schedule</div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · proof</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM TT_DEMO2;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Table and row back — object restored, not just one row</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Demo C — zero-copy CLONE for Dev</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p><code>CREATE TABLE TT_DEMO_CLONE CLONE TT_DEMO2</code> — Dev gets identical data; storage shared until clone diverges.</p>
+        <h4>What you should see</h4>
+        <p>Clone returns same row as source. Dev can refresh QA by re-cloning on a schedule.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · clone</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE TT_DEMO_CLONE CLONE TT_DEMO2;
+SELECT * FROM TT_DEMO_CLONE;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · status</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'Lab 09 Time Travel / UNDROP / CLONE OK' AS status;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Status row · parity with <code>sql/09_timetravel_clone.sql</code></div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian had operator panic and QA freshness needs. I recovered rows with Time Travel, put dropped tables back with UNDROP, and gave Dev a zero-copy clone of TT_DEMO2.
+      “Meridian had operator panic and QA freshness needs.
+      I recovered deleted history with Time Travel AT OFFSET, put a dropped table back with UNDROP, and gave Dev a zero-copy CLONE of TT_DEMO2 for sprint testing.
+      Fail-safe and cross-region replication are the longer DR story — not what Dev’s same-account clone replaces.
       <em>Outcome:</em> minutes to recover mistakes; QA without duplicating full storage on day one.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-08.html">← Lab 08</a>
       <a class="btn primary" href="lab-10.html">Lab 10 →</a>
     </div>
   </div>
-  <footer class="footer">sql/09_timetravel_clone.sql</footer>
+  <footer class="footer">sql/09_timetravel_clone.sql · teach-first lab</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

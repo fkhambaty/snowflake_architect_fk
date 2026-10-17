@@ -35,7 +35,10 @@
   <div class="wrap">
     <p class="eyebrow">Lab 13 · Sunday night · You are Elena · Finance forwarded the bill</p>
     <h1>Surprise Snowflake credits</h1>
-    <p class="lede">Finance asks which team burned credits. Elena uses ACCOUNT_USAGE and a resource monitor on WH_BANK_XS.</p>
+    <p class="lede">
+      Read the <strong>Teach first</strong> sections before you query billing views.
+      Finance wants names on the invoice spike; Marcus wants brakes before the next weekend of ad hoc queries on <code>WH_BANK_XS</code>.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
@@ -44,7 +47,7 @@
 
     <div class="callout ok">
       <strong>Solution you will run</strong>
-      Warehouse metering + query history from ACCOUNT_USAGE; attach resource monitor <code>RM_BANK_LAB</code> to <code>WH_BANK_XS</code>.
+      Warehouse metering + query history from <code>SNOWFLAKE.ACCOUNT_USAGE</code>; attach resource monitor <code>RM_BANK_LAB</code> to <code>WH_BANK_XS</code> with notify and suspend triggers.
     </div>
 
     <figure class="viz-panel">
@@ -55,38 +58,165 @@
       </figcaption>
     </figure>
 
+    <section class="teach">
+      <h2>Teach first — FinOps dictionary</h2>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>Meridian use</th></tr>
+        <tr>
+          <td><strong>Credit</strong></td>
+          <td>Snowflake’s billing unit — warehouses consume credits while they run (size × time × policy)</td>
+          <td>Marcus’s invoice line item Finance forwarded</td>
+        </tr>
+        <tr>
+          <td><strong>ACCOUNT_USAGE</strong></td>
+          <td>Read-only views in the <code>SNOWFLAKE</code> database — usage history for the whole account</td>
+          <td>Where Elena proves who burned credits after the fact</td>
+        </tr>
+        <tr>
+          <td><strong>Lag (~3 hours)</strong></td>
+          <td>Usage views are not real-time — new queries may take hours to appear</td>
+          <td>Set Finance’s expectation: “directionally correct today, not second-by-second”</td>
+        </tr>
+        <tr>
+          <td><strong>WAREHOUSE_METERING_HISTORY</strong></td>
+          <td>Rollup of credits by warehouse over time windows</td>
+          <td>“WH_BANK_XS vs others this week”</td>
+        </tr>
+        <tr>
+          <td><strong>QUERY_HISTORY</strong></td>
+          <td>One row per query — user, role, warehouse, runtime, bytes scanned</td>
+          <td>Dispute resolution: “which SQL burned the weekend?”</td>
+        </tr>
+        <tr>
+          <td><strong>Resource monitor</strong></td>
+          <td>Credit budget on a warehouse (or account) with triggers — email notify and/or suspend</td>
+          <td><code>RM_BANK_LAB</code> stops runaway ad hoc before Marcus forwards another surprise</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>Visibility vs guardrails — two moves</h2>
+      <div class="flow-pipeline" aria-label="FinOps flow">
+        <div class="flow-node source">
+          <span class="flow-tag">1 · After the fact</span>
+          <strong>ACCOUNT_USAGE</strong>
+          <span class="flow-sub">attribute credits · teach lag</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">2 · Before next spike</span>
+          <strong>Resource monitor</strong>
+          <span class="flow-sub">NOTIFY 75% · SUSPEND 100%</span>
+        </div>
+      </div>
+      <p>
+        Sam wants auditability (who ran what). Marcus wants spend caps (stop the warehouse).
+        Elena uses ACCOUNTADMIN only for these account-level reads and monitor setup — then returns to <code>ROLE_BANK_LAB_ADMIN</code> for daily lab work.
+      </p>
+    </section>
+
     <div class="story">
-      <p>Sam wants auditability; Marcus wants guardrails. Elena tells Finance views lag ~3 hours — set expectations.</p>
+      <div class="story-label">Sunday night with Finance</div>
+      <p>
+        Finance: “Which team?” Elena: “Metering by warehouse first, then QUERY_HISTORY for the worst queries — views lag about three hours.”
+        Marcus: “And something that stops the next all-weekend job.” Elena: “Resource monitor on WH_BANK_XS.”
+      </p>
     </div>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Visibility + guardrails</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Switch to ACCOUNTADMIN</h3></div></div>
       <div class="explain">
-        <h4>ACCOUNTADMIN for account views</h4>
-        <p>Switch to ACCOUNTADMIN only for ACCOUNT_USAGE reads and resource monitor creation — then back to ROLE_BANK_LAB_ADMIN for daily work.</p>
+        <h4>What this does</h4>
+        <p>Account usage views and creating resource monitors require elevated role — not Elena’s normal lab badge alone.</p>
+        <h4>Why Elena does it</h4>
+        <p>Interview answer: separate “run analytics as FR_/lab admin” from “read billing views as account admin.”</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/13_finops.sql</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ACCOUNTADMIN;
+        <div class="code-head"><span>SQL · sql/13_finops.sql (part 1)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;</code></pre>
+      </div>
+    </article>
 
-SELECT WAREHOUSE_NAME, SUM(CREDITS_USED) AS CREDITS
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Credits by warehouse (last 7 days)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Sums <code>CREDITS_USED</code> from metering history, grouped by <code>WAREHOUSE_NAME</code>, last seven days.</p>
+        <h4>What you should see</h4>
+        <p><code>WH_BANK_XS</code> near the top if the spike was ad hoc on the lab warehouse. Empty or small totals on a quiet trial are OK.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · metering (matches sql/13_finops.sql)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT WAREHOUSE_NAME, SUM(CREDITS_USED) AS CREDITS
 FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
 WHERE START_TIME >= DATEADD('day', -7, CURRENT_TIMESTAMP())
-GROUP BY 1 ORDER BY 2 DESC NULLS LAST;
+GROUP BY 1 ORDER BY 2 DESC NULLS LAST;</code></pre>
+      </div>
+      <div class="callout warn">
+        <strong>Tell Finance about lag</strong>
+        Rows may stop ~3 hours before “now.” Do not promise live billing from this view alone.
+      </div>
+    </article>
 
-SELECT QUERY_ID, USER_NAME, ROLE_NAME, WAREHOUSE_NAME,
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Top queries by runtime (last 24 hours)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Lists the 20 longest queries — who (<code>USER_NAME</code>, <code>ROLE_NAME</code>), which warehouse, seconds elapsed, bytes scanned.</p>
+        <h4>Why Elena does it</h4>
+        <p>Metering says <em>where</em> credits went; query history says <em>which SQL</em> to fix (join Lab 07 Profile story).</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · query history</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT QUERY_ID, USER_NAME, ROLE_NAME, WAREHOUSE_NAME,
   TOTAL_ELAPSED_TIME/1000 AS SECONDS, BYTES_SCANNED
 FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
 WHERE START_TIME >= DATEADD('day', -1, CURRENT_TIMESTAMP())
-ORDER BY TOTAL_ELAPSED_TIME DESC NULLS LAST LIMIT 20;
-
-CREATE RESOURCE MONITOR IF NOT EXISTS RM_BANK_LAB
-  WITH CREDIT_QUOTA = 10
-  TRIGGERS ON 75 PERCENT DO NOTIFY ON 100 PERCENT DO SUSPEND;
-
-ALTER WAREHOUSE WH_BANK_XS SET RESOURCE_MONITOR = RM_BANK_LAB;
-SELECT 'Lab 13 FinOps OK' AS status;</code></pre>
+ORDER BY TOTAL_ELAPSED_TIME DESC NULLS LAST LIMIT 20;</code></pre>
       </div>
+      <div class="badge-ok">✓ Pick one row and narrate: “I’d open this QUERY_ID in Query History → Profile”</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Create resource monitor RM_BANK_LAB</h3></div></div>
+      <div class="explain">
+        <h4>Read the triggers like English</h4>
+        <p><code>CREDIT_QUOTA = 10</code> is a small lab budget. At <strong>75%</strong> Snowflake can <code>NOTIFY</code> (email/account alert). At <strong>100%</strong> <code>SUSPEND</code> stops the warehouse from consuming more credits until someone resets the monitor.</p>
+        <h4>Why Elena picks SUSPEND for Marcus</h4>
+        <p>Notify alone still allows a runaway job to finish — suspend is the hard brake Finance asked for.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · resource monitor</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE RESOURCE MONITOR IF NOT EXISTS RM_BANK_LAB
+  WITH CREDIT_QUOTA = 10
+  TRIGGERS ON 75 PERCENT DO NOTIFY ON 100 PERCENT DO SUSPEND;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Attach monitor to WH_BANK_XS</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Links the monitor to Meridian’s lab warehouse — triggers apply to credit use on that warehouse.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · alter warehouse</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>ALTER WAREHOUSE WH_BANK_XS SET RESOURCE_MONITOR = RM_BANK_LAB;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">6</div><div><h3>Smoke status</h3></div></div>
+      <div class="explain">
+        <h4>What you should see</h4>
+        <p>One row confirming the lab FinOps script completed — same as the full <code>sql/13_finops.sql</code> file.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · status</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'Lab 13 FinOps OK' AS status;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Optional: <code>SHOW RESOURCE MONITORS LIKE 'RM_BANK_LAB';</code> in Snowsight to see triggers</div>
     </article>
 
     <div class="soundbite">
@@ -95,13 +225,12 @@ SELECT 'Lab 13 FinOps OK' AS status;</code></pre>
       <em>Outcome:</em> Finance sees who spent credits; runaway ad hoc jobs get stopped before Marcus forwards another surprise invoice.”
     </div>
 
-
     <div class="pager">
       <a class="btn ghost" href="lab-12.html">← Lab 12</a>
       <a class="btn primary" href="lab-14.html">Lab 14 →</a>
     </div>
   </div>
-  <footer class="footer">sql/13_finops.sql · ACCOUNTADMIN required</footer>
+  <footer class="footer">sql/13_finops.sql · ACCOUNTADMIN · teach-first FinOps</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

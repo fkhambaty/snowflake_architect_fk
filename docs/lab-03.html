@@ -35,103 +35,207 @@
   <div class="wrap">
     <p class="eyebrow">Lab 03 · Wednesday AM · You are Elena · Sam vs Alex</p>
     <h1>Even clean tables still leak email</h1>
-    <p class="lede">Lab 01 stopped Alex from the LANDING vault. Sam (Compliance) still needs masked vs full views on governed clients. Pattern: problem → SQL → wrap-up. Uses <code>CURATED.CLIENTS_GOV</code> and policies in <code>RISK_CTRL</code>.</p>
-    <article class="step">
-      <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if policies or tasks fail)</h3></div></div>
-      <div class="story">
-        <p>Marcus escalated: “Elena, your role can’t apply policies or run tasks.” Only ACCOUNTADMIN can stamp those powers on <code>ROLE_BANK_LAB_ADMIN</code>. Skip if Lab 00 smoke test already passed.</p>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>SQL · sql/00_privilege_repair.sql</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ACCOUNTADMIN;
-
-GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
-GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
-GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-
-SET uname = (SELECT CURRENT_USER());
-GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);
-
-USE ROLE ROLE_BANK_LAB_ADMIN;
-CREATE ROLE IF NOT EXISTS ROLE_BANK_SMOKE_TMP COMMENT = 'temp smoke test';
-DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;
-
-USE DATABASE MERIDIAN_BANK;
-CREATE SCHEMA IF NOT EXISTS LANDING;
-CREATE SCHEMA IF NOT EXISTS CURATED;
-CREATE SCHEMA IF NOT EXISTS RISK_CTRL;
-CREATE SCHEMA IF NOT EXISTS FINANCE_MART;
-CREATE SCHEMA IF NOT EXISTS FILE_IN;
-CREATE SCHEMA IF NOT EXISTS UTILS;
-
-SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
-      </div>
-    </article>
+    <p class="lede">
+      Read every <strong>Teach first</strong> box before you run SQL.
+      Lab 01 locked the vault door. This lab puts <em>rules on a glass window</em> so the same table looks different for Alex vs Sam.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
-      Alex has <code>AR_CURATED_READ</code> now. Sam discovers analysts can still SELECT plain email from a curated copy of clients.
-      Regulators want one table, role-based masking — not two forked views.
+      Alex can read curated clients — but he still sees full email addresses.
+      Sam (Compliance) needs the real email for audits. Marcus refuses two copy-paste tables (“analyst_clients” vs “audit_clients”).
+      Regulator: <em>one table, different what-you-see by job.</em>
     </div>
 
     <div class="callout ok">
-      <strong>Solution you will build</strong>
-      <code>CURATED.CLIENTS_GOV</code> with email masking policy and country row access policy in <code>RISK_CTRL</code>.
-      Prove <code>FR_ANALYST</code> vs <code>FR_COMPLIANCE</code> on identical SQL.
+      <strong>Solution (plain English)</strong>
+      Build one table <code>CLIENTS_GOV</code>. Hang two automatic rules on it:
+      (1) blur email unless you’re Compliance, (2) hide whole rows for countries you’re not allowed to see.
+      Same <code>SELECT</code> for Alex and Sam — Snowflake changes the answer.
     </div>
 
     <figure class="viz-panel">
-      <img src="assets/lab03-masking.jpg" alt="Same CURATED table: Alex sees masked email and US-only rows; Sam sees full email and more countries via RISK_CTRL policies" width="1600" height="900" loading="eager" />
+      <img src="assets/lab03-masking.jpg" alt="Alex sees masked email and US-only; Sam sees full email and more countries" width="1600" height="900" loading="eager" />
       <figcaption>
         <strong>Picture · Same table, two truths</strong>
-        Alex sees masked email/US-only; Sam sees full email + more countries (RISK_CTRL policies).
+        One shelf of clients. Alex’s glasses blur email and hide non-US. Sam’s glasses show full detail.
       </figcaption>
     </figure>
 
+    <!-- TEACH -->
+    <section class="teach">
+      <h2>Teach first — dictionary (no assumed knowledge)</h2>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
+        <tr>
+          <td><strong>Policy</strong></td>
+          <td>A reusable rule Snowflake runs automatically when someone queries</td>
+          <td>A posted bank regulation, not a handwritten sticky note</td>
+        </tr>
+        <tr>
+          <td><strong>Masking policy</strong></td>
+          <td>Changes <em>what a column looks like</em> (still one row)</td>
+          <td>Frosted glass on the email field — you see a row, not the real address</td>
+        </tr>
+        <tr>
+          <td><strong>Row access policy (RAP)</strong></td>
+          <td>Hides <em>entire rows</em> you shouldn’t see</td>
+          <td>Country drawers locked — CA/UK clients vanish for Alex</td>
+        </tr>
+        <tr>
+          <td><code>CURRENT_ROLE()</code></td>
+          <td>Snowflake function: “which job badge is active right now?”</td>
+          <td>Looks at the badge on your chest (primary role)</td>
+        </tr>
+        <tr>
+          <td><code>RISK_CTRL</code></td>
+          <td>Schema = folder where we store policy objects</td>
+          <td>The compliance / policy office</td>
+        </tr>
+        <tr>
+          <td><code>CLIENTS_GOV</code></td>
+          <td>Governed copy of clients (GOV = under policy control)</td>
+          <td>The public client shelf with rules attached</td>
+        </tr>
+        <tr>
+          <td><strong>Entitlement table</strong></td>
+          <td>Simple lookup: which role may see which country</td>
+          <td>A paper list taped in the policy office</td>
+        </tr>
+        <tr>
+          <td><code>REGEXP_REPLACE</code></td>
+          <td>Text find-and-replace with a pattern</td>
+          <td>Turn <code>asha@…</code> into <code>***@…</code></td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>Two different problems — don’t mix them up</h2>
+      <div class="flow-pipeline">
+        <div class="flow-node stg">
+          <span class="flow-tag">Masking</span>
+          <strong>Column disguise</strong>
+          <span class="flow-sub">Email → ***@domain · row still there</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">Row access</span>
+          <strong>Row filter</strong>
+          <span class="flow-sub">Whole client disappears if country not allowed</span>
+        </div>
+      </div>
+      <p>
+        Lab 01 was “Alex can’t open the vault at all.”  
+        Lab 03 is “Alex <em>can</em> open this shelf, but rules change what he sees.”
+      </p>
+    </section>
+
     <div class="story">
-      <div class="story-label">FR_ vs AR_ reminder</div>
-      <p>Alex wears <code>FR_ANALYST</code> (job badge) with <code>AR_CURATED_READ</code> (key-ring). Sam wears <code>FR_COMPLIANCE</code> with <code>AR_PII_READ</code>. Policies evaluate <code>CURRENT_ROLE()</code> — humans still only get FR_.</p>
+      <div class="story-label">Badge reminder (from Lab 01)</div>
+      <p>
+        Humans wear <strong>FR_</strong> job badges only.
+        Policies check <code>CURRENT_ROLE()</code> — so we list <code>FR_ANALYST</code> / <code>FR_COMPLIANCE</code> inside the rule,
+        not the AR_ key-rings.
+      </p>
     </div>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Create governed table + policies</h3></div></div>
+      <div class="step-head"><div class="step-num">0</div><div><h3>Only if CREATE POLICY fails</h3></div></div>
       <div class="explain">
-        <h4>Masking vs row access</h4>
-        <p>Masking hides column values (email → ***@). Row access policy filters which countries each role may see.</p>
+        <h4>What “APPLY MASKING POLICY” means</h4>
+        <p>
+          It’s a power ACCOUNTADMIN can give Elena’s lab badge: “you may hang masking/row rules on tables.”
+          Skip this step if Lab 00 already worked.
+        </p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/03_masking_rap.sql</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · give Elena policy powers</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Then switch back to ROLE_BANK_LAB_ADMIN for the rest</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">1</div><div><h3>Set session + make the policy office</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Put on Elena’s badge, pick the cheap warehouse, open the bank DB, ensure <code>RISK_CTRL</code> / <code>CURATED</code> folders exist.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
 
 CREATE SCHEMA IF NOT EXISTS RISK_CTRL;
-CREATE SCHEMA IF NOT EXISTS CURATED;
+CREATE SCHEMA IF NOT EXISTS CURATED;</code></pre>
+      </div>
+    </article>
 
-CREATE OR REPLACE TABLE CURATED.CLIENTS_GOV AS
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Build the one governed table</h3></div></div>
+      <div class="explain">
+        <h4>Why a copy from LANDING?</h4>
+        <p>
+          Landing stays raw for Jordan. <code>CLIENTS_GOV</code> is the shelf we hang rules on for consumers.
+          (In production you might use a secure view — table is clearer for learning.)
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · CLIENTS_GOV</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE CURATED.CLIENTS_GOV AS
 SELECT CLIENT_ID, FULL_NAME, EMAIL, PHONE, COUNTRY, SSN_LAST4, CREATED_AT
-FROM LANDING.CLIENTS;
+FROM LANDING.CLIENTS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Same 5 clients as Lab 00 — policies not attached yet</div>
+    </article>
 
-USE SCHEMA RISK_CTRL;
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Write the email “frosted glass” rule</h3></div></div>
+      <div class="explain">
+        <h4>Read the CASE like English</h4>
+        <p>
+          “When the active badge is Compliance or Lab Admin → show the real email.
+          Otherwise → replace everything before <code>@</code> with <code>***</code>.”
+        </p>
+        <p><code>AS (val STRING) RETURNS STRING</code> = this rule takes one email string in, returns one string out.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · masking policy</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE SCHEMA RISK_CTRL;
 
 CREATE OR REPLACE MASKING POLICY MP_EMAIL_MASK AS (val STRING)
   RETURNS STRING ->
   CASE
     WHEN CURRENT_ROLE() IN ('FR_COMPLIANCE', 'ROLE_BANK_LAB_ADMIN') THEN val
     ELSE REGEXP_REPLACE(val, '.+@', '***@')
-  END;
+  END;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Policy object exists — not yet stuck on the EMAIL column</div>
+    </article>
 
-CREATE OR REPLACE TABLE RAP_COUNTRY_ENTITLEMENT (
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Country permission list (entitlements)</h3></div></div>
+      <div class="explain">
+        <h4>Why a table?</h4>
+        <p>
+          Hard-coding countries inside the policy is brittle. A small table is the “who may see which country” checklist.
+          Alex → US only. Sam → US, CA, UK.
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · entitlement table</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE RISK_CTRL.RAP_COUNTRY_ENTITLEMENT (
   ROLE_NAME STRING,
   COUNTRY   STRING
 );
 
-DELETE FROM RAP_COUNTRY_ENTITLEMENT;
-INSERT INTO RAP_COUNTRY_ENTITLEMENT VALUES
+DELETE FROM RISK_CTRL.RAP_COUNTRY_ENTITLEMENT;
+
+INSERT INTO RISK_CTRL.RAP_COUNTRY_ENTITLEMENT VALUES
   ('FR_ANALYST', 'US'),
   ('FR_COMPLIANCE', 'US'),
   ('FR_COMPLIANCE', 'CA'),
@@ -141,70 +245,129 @@ INSERT INTO RAP_COUNTRY_ENTITLEMENT VALUES
   ('ROLE_BANK_LAB_ADMIN', 'UK'),
   ('FR_DATA_ENGINEER', 'US'),
   ('FR_DATA_ENGINEER', 'CA'),
-  ('FR_DATA_ENGINEER', 'UK');
+  ('FR_DATA_ENGINEER', 'UK');</code></pre>
+      </div>
+    </article>
 
-CREATE OR REPLACE ROW ACCESS POLICY RAP_CLIENT_COUNTRY
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Write the “hide whole rows” rule</h3></div></div>
+      <div class="explain">
+        <h4>What RETURNS BOOLEAN means</h4>
+        <p>
+          For each row, Snowflake asks the policy: “May this role see this country?”
+          <code>TRUE</code> = keep the row · <code>FALSE</code> = hide it.
+          <code>EXISTS (…)</code> = “is there a matching line on the entitlement list?”
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · row access policy</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE ROW ACCESS POLICY RISK_CTRL.RAP_CLIENT_COUNTRY
 AS (country_code STRING) RETURNS BOOLEAN ->
   EXISTS (
-    SELECT 1 FROM RISK_CTRL.RAP_COUNTRY_ENTITLEMENT e
-    WHERE e.ROLE_NAME = CURRENT_ROLE() AND e.COUNTRY = country_code
-  );
+    SELECT 1
+    FROM RISK_CTRL.RAP_COUNTRY_ENTITLEMENT e
+    WHERE e.ROLE_NAME = CURRENT_ROLE()
+      AND e.COUNTRY = country_code
+  );</code></pre>
+      </div>
+    </article>
 
-USE SCHEMA CURATED;
-ALTER TABLE CLIENTS_GOV MODIFY COLUMN EMAIL SET MASKING POLICY RISK_CTRL.MP_EMAIL_MASK;
-ALTER TABLE CLIENTS_GOV ADD ROW ACCESS POLICY RISK_CTRL.RAP_CLIENT_COUNTRY ON (COUNTRY);
+    <article class="step">
+      <div class="step-head"><div class="step-num">6</div><div><h3>Hang both rules on CLIENTS_GOV</h3></div></div>
+      <div class="explain">
+        <h4>Attach ≠ create</h4>
+        <p>Until you <code>ALTER TABLE</code>, policies are unused paperwork. These two lines stick them on EMAIL and COUNTRY.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · attach policies</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>ALTER TABLE CURATED.CLIENTS_GOV
+  MODIFY COLUMN EMAIL
+  SET MASKING POLICY RISK_CTRL.MP_EMAIL_MASK;
 
-GRANT SELECT ON TABLE CURATED.CLIENTS_GOV TO ROLE AR_CURATED_READ;
+ALTER TABLE CURATED.CLIENTS_GOV
+  ADD ROW ACCESS POLICY RISK_CTRL.RAP_CLIENT_COUNTRY ON (COUNTRY);</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">7</div><div><h3>Let Alex’s and Sam’s key-rings read the shelf</h3></div></div>
+      <div class="explain">
+        <h4>Grants vs policies</h4>
+        <p>
+          Grant = “may you query this table at all?”  
+          Policy = “given that you can, what do you see?”  
+          Both are required.
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · grants</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON TABLE CURATED.CLIENTS_GOV TO ROLE AR_CURATED_READ;
 GRANT SELECT ON TABLE CURATED.CLIENTS_GOV TO ROLE AR_PII_READ;
 
-SELECT 'Lab 03 policies on CURATED.CLIENTS_GOV' AS status;</code></pre>
+SELECT 'Lab 03 policies attached' AS status;</code></pre>
       </div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">2</div><div><h3>Proof: Alex — masked email, US rows only</h3></div></div>
-      <div class="ui-mock">
-        <div class="ui-mock-bar">
-          <div class="ui-chip glow"><span class="dot"></span> Role: FR_ANALYST ▾</div>
-        </div>
+      <div class="step-head"><div class="step-num">8</div><div><h3>Proof as Alex</h3></div></div>
+      <div class="explain">
+        <h4>Why SECONDARY ROLES NONE again?</h4>
+        <p>
+          Same Lab 01 trap: without it, your lab-admin coat stays on and you see unmasked email.
+          Policies look at <code>CURRENT_ROLE()</code> — primary badge only.
+        </p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Alex</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · become Alex</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_ANALYST;
-USE SECONDARY ROLES NONE;   -- so CURRENT_ROLE() / privileges match Alex only
+USE SECONDARY ROLES NONE;
 USE WAREHOUSE WH_BANK_XS;
-USE DATABASE MERIDIAN_BANK;
-SELECT CLIENT_ID, EMAIL, COUNTRY FROM CURATED.CLIENTS_GOV ORDER BY CLIENT_ID;</code></pre>
+USE DATABASE MERIDIAN_BANK;</code></pre>
       </div>
-      <div class="badge-ok">✓ Email shows ***@ · CA/UK rows hidden by row policy</div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · same SELECT everyone will run</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT CLIENT_ID, EMAIL, COUNTRY
+FROM CURATED.CLIENTS_GOV
+ORDER BY CLIENT_ID;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Email like ***@example.com · only US rows (no CA/UK)</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">3</div><div><h3>Proof: Sam — real email, more countries</h3></div></div>
-      <div class="code-block">
-        <div class="code-head"><span>SQL · Sam (FR_COMPLIANCE)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE FR_COMPLIANCE;
-USE SECONDARY ROLES NONE;
-SELECT CLIENT_ID, EMAIL, COUNTRY FROM CURATED.CLIENTS_GOV ORDER BY CLIENT_ID;</code></pre>
+      <div class="step-head"><div class="step-num">9</div><div><h3>Proof as Sam — identical SQL</h3></div></div>
+      <div class="explain">
+        <h4>Interview soundbite</h4>
+        <p>“We didn’t give Alex a different table. We changed the result with policies evaluated on CURRENT_ROLE().”</p>
       </div>
-      <div class="badge-ok">✓ Plain email for compliance · US/CA/UK rows visible</div>
-      <p class="hint">Full script: <code>sql/smoke_lab03_policies.sql</code> (statement-by-statement).</p>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · become Sam</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE FR_COMPLIANCE;
+USE SECONDARY ROLES NONE;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · identical SELECT</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT CLIENT_ID, EMAIL, COUNTRY
+FROM CURATED.CLIENTS_GOV
+ORDER BY CLIENT_ID;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Real emails · US + CA + UK rows</div>
+      <p class="hint">Optional full smoke: <code>sql/smoke_lab03_policies.sql</code> (one statement at a time).</p>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian needed one governed client table, not shadow copies. I built CURATED.CLIENTS_GOV and hung policies in RISK_CTRL: MP_EMAIL_MASK for role-based email, RAP_CLIENT_COUNTRY for country entitlements.
-      Same SELECT for Alex and Sam — masking and row access change the result by FR_ANALYST vs FR_COMPLIANCE.
-      <em>Outcome:</em> auditors see centralized policy; Alex stays blind to full email and non-US clients per entitlement.”
+      “Meridian needed one client shelf, not shadow copies. I built CURATED.CLIENTS_GOV, stored rules in RISK_CTRL,
+      masked EMAIL unless FR_COMPLIANCE, and filtered rows with a country entitlement list plus a row access policy.
+      Alex and Sam run the same SELECT — masking and RAP change the answer by CURRENT_ROLE().
+      <em>Outcome:</em> regulators see centralized policy; analysts don’t see full email or out-of-scope countries.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-02.html">← Lab 02</a>
       <a class="btn primary" href="lab-04.html">Lab 04 →</a>
     </div>
   </div>
-  <footer class="footer">sql/03_masking_rap.sql · needs Lab 01 FR_/AR_ roles</footer>
+  <footer class="footer">Full script still in sql/03_masking_rap.sql · learn from chunks above</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

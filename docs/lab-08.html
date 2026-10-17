@@ -33,67 +33,201 @@
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 08 · Friday noon · You are Elena</p>
+    <p class="eyebrow">Lab 08 · Friday noon · You are Elena · Risk dashboards</p>
     <h1>Stop scanning a year when Alex wants 7 days</h1>
-    <p class="lede">Huge event history makes ‘last 7 days’ expensive. Elena clusters <code>CURATED.BIG_EVENTS</code> on <code>EVENT_DATE</code>.</p>
+    <p class="lede">
+      Read <strong>Teach first</strong> before you build <code>BIG_EVENTS</code>.
+      Risk filters on recent dates; without clustering Snowflake may read huge swaths of history.
+      You will cluster on <code>EVENT_DATE</code> and re-run the last-7-days aggregate.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
-      Risk team filters BIG_EVENTS to recent weeks; queries scan hundreds of thousands of micro-partitions. Finance sees the credit line move.
+      Risk team filters <code>BIG_EVENTS</code> to recent weeks; at production scale queries scan hundreds of thousands of micro-partitions.
+      Finance sees the credit line move when every “last 7 days” report reads a year of junk.
     </div>
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Synthetic big table, inspect <code>SYSTEM$CLUSTERING_INFORMATION</code>, <code>CLUSTER BY (EVENT_DATE)</code>, re-run filtered aggregate.
+      Synthetic 200k-row table, read <code>SYSTEM$CLUSTERING_INFORMATION</code>, run <code>ALTER TABLE … CLUSTER BY (EVENT_DATE)</code>,
+      then prove the same filtered aggregate (Profile in Lab 07 vocabulary: better pruning on real volume).
     </div>
 
     <figure class="viz-panel">
       <img src="assets/lab08-clustering.jpg" alt="Neat shelves: CLUSTER BY EVENT_DATE so scans prune instead of reading the whole history" width="1600" height="900" loading="eager" />
       <figcaption>
         <strong>Picture · Neat shelves</strong>
-        CLUSTER BY EVENT_DATE so scans prune instead of reading the whole history.
+        CLUSTER BY EVENT_DATE so date filters skip whole shelves instead of the full warehouse.
       </figcaption>
     </figure>
 
+    <section class="teach">
+      <h2>Teach first — layman picture</h2>
+      <div class="story">
+        <div class="story-label">Library metaphor</div>
+        <p>
+          Imagine a year of risk events thrown into one pile (random dates). Alex asks for “books from the last 7 days.”
+          A librarian must flip through <em>every</em> book to check dates — that’s a full micro-partition scan.
+        </p>
+        <p>
+          <strong>Clustering</strong> is the librarian re-shelving: keep nearby dates on nearby shelves inside the table.
+          Snowflake still stores micro-partitions automatically, but a <strong>clustering key</strong> (<code>EVENT_DATE</code> here)
+          tells the service to co-locate similar values so <strong>pruning</strong> skips irrelevant shelves.
+        </p>
+      </div>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>Not the same as…</th></tr>
+        <tr>
+          <td><strong>Micro-partition</strong></td>
+          <td>Automatic storage slice inside a table (Snowflake-managed)</td>
+          <td>Manual Hive partitions you name in path</td>
+        </tr>
+        <tr>
+          <td><strong>Clustering key</strong></td>
+          <td>Column(s) Snowflake tries to sort/co-locate over time (<code>CLUSTER BY</code>)</td>
+          <td>Primary key — uniqueness vs scan efficiency</td>
+        </tr>
+        <tr>
+          <td><strong>Pruning</strong></td>
+          <td>Skip micro-partitions whose min/max metadata proves they can’t match your filter</td>
+          <td>Deleting rows — data still there, just unread</td>
+        </tr>
+        <tr>
+          <td><code>SYSTEM$CLUSTERING_INFORMATION</code></td>
+          <td>Health report: how “well sorted” the table is on the clustering key</td>
+          <td>Query Profile — this is table maintenance metrics</td>
+        </tr>
+        <tr>
+          <td><strong>Search optimization</strong></td>
+          <td>Snowflake feature for point lookups on high-cardinality IDs</td>
+          <td>Date-range reports — Elena mentions it in interviews; clustering fits risk date filters</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>When Elena picks clustering</h2>
+      <div class="flow-pipeline" aria-label="Clustering decision">
+        <div class="flow-node source">
+          <span class="flow-tag">Query pattern</span>
+          <strong>WHERE EVENT_DATE ≥ …</strong>
+          <span class="flow-sub">Repeated date-window aggregates</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">Problem</span>
+          <strong>Random insert order</strong>
+          <span class="flow-sub">Dates scattered across micro-partitions</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">Fix</span>
+          <strong>CLUSTER BY (EVENT_DATE)</strong>
+          <span class="flow-sub">Background re-cluster · better pruning</span>
+        </div>
+      </div>
+    </section>
+
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Clustering demo</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Set session + CURATED</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Lab admin context; curated schema holds the demo fact table.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/08_clustering.sql</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
-USE SCHEMA CURATED;
+USE SCHEMA CURATED;</code></pre>
+      </div>
+    </article>
 
-CREATE OR REPLACE TABLE BIG_EVENTS AS
-SELECT SEQ4() AS EVENT_ID, UNIFORM(1, 5, RANDOM()) AS CLIENT_ID,
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Create BIG_EVENTS (synthetic history)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>200k rows with random dates across ~365 days — mimics messy event history at lab scale.</p>
+        <h4>What you should see</h4>
+        <p>Table <code>CURATED.BIG_EVENTS</code> with columns EVENT_ID, CLIENT_ID, EVENT_DATE, AMOUNT.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · generate rows</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE BIG_EVENTS AS
+SELECT
+  SEQ4() AS EVENT_ID,
+  UNIFORM(1, 5, RANDOM()) AS CLIENT_ID,
   DATEADD('day', -UNIFORM(0, 364, RANDOM()), CURRENT_DATE()) AS EVENT_DATE,
   UNIFORM(1, 100, RANDOM()) / 1 AS AMOUNT
-FROM TABLE(GENERATOR(ROWCOUNT => 200000));
+FROM TABLE(GENERATOR(ROWCOUNT => 200000));</code></pre>
+      </div>
+      <div class="badge-ok">✓ ~200k rows — date column spans roughly a year</div>
+    </article>
 
-SELECT SYSTEM$CLUSTERING_INFORMATION('CURATED.BIG_EVENTS', '(EVENT_DATE)');
-ALTER TABLE BIG_EVENTS CLUSTER BY (EVENT_DATE);
-SELECT COUNT(*), SUM(AMOUNT) FROM BIG_EVENTS
-WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());
-SELECT 'Lab 08 clustering demo ready' AS status;</code></pre>
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Read clustering health (before)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Asks Snowflake how well rows align on <code>EVENT_DATE</code> before we declare a clustering key.</p>
+        <h4>What you should see</h4>
+        <p>JSON-ish stats — overlap / depth numbers. Interview: “I’d track this after loads; re-cluster if overlap drifts.”</p>
       </div>
-      <div class="story">
-        <p>Search optimization is for point lookups on IDs — Elena mentions it in interviews; clustering fits date-filtered risk reports.</p>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · clustering information</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT SYSTEM$CLUSTERING_INFORMATION(
+  'CURATED.BIG_EVENTS', '(EVENT_DATE)'
+);</code></pre>
       </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Declare the clustering key</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p><code>ALTER TABLE … CLUSTER BY (EVENT_DATE)</code> tells Snowflake to maintain better date locality over time (automatic background work).</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · cluster key</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>ALTER TABLE BIG_EVENTS CLUSTER BY (EVENT_DATE);</code></pre>
+      </div>
+      <div class="badge-ok">✓ Table DDL shows clustering key EVENT_DATE in Snowsight</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Run Alex’s “last 7 days” aggregate</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Same business filter Risk runs daily — count and sum only recent events.</p>
+        <h4>What you should see</h4>
+        <p>One result row (count + sum). On tiny lab WH it’s fast either way; tie back to Lab 07 Profile for bytes/pruning at scale.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · filtered aggregate</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT COUNT(*), SUM(AMOUNT)
+FROM BIG_EVENTS
+WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · status</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'Lab 08 clustering demo ready' AS status;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Status row · matches <code>sql/08_clustering.sql</code></div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s last-7-days reports were scanning the whole year. I clustered CURATED.BIG_EVENTS on EVENT_DATE and validated overlap with SYSTEM$CLUSTERING_INFORMATION.
-      <em>Outcome:</em> fewer bytes scanned on date filters — better speed and FinOps story for Marcus.”
+      “Meridian’s last-7-days reports were scanning too much history because dates were scattered across micro-partitions.
+      I built CURATED.BIG_EVENTS, checked SYSTEM$CLUSTERING_INFORMATION, and set CLUSTER BY (EVENT_DATE) so date filters prune shelves instead of reading the whole year.
+      Search optimization is for ID point lookups; clustering fits our date-window risk pattern.
+      <em>Outcome:</em> fewer bytes scanned at scale — better speed and FinOps story for Marcus.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-07.html">← Lab 07</a>
       <a class="btn primary" href="lab-09.html">Lab 09 →</a>
     </div>
   </div>
-  <footer class="footer">sql/08_clustering.sql</footer>
+  <footer class="footer">sql/08_clustering.sql · teach-first lab</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

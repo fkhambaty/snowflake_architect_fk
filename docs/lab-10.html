@@ -35,14 +35,99 @@
   <div class="wrap">
     <p class="eyebrow">Lab 10 · Saturday · You are Elena · Nora Patel</p>
     <h1>Nora’s credit union needs a window — not a USB dump</h1>
-    <p class="lede">Partner Nora needs read-only txn metrics in her Snowflake account. Elena publishes a secure view and share — minimum columns, no LANDING vault.</p>
+    <p class="lede">
+      Read <strong>Teach first</strong> before provider SQL.
+      Partner Nora needs read-only txn metrics in <em>her</em> Snowflake account.
+      Elena publishes a <strong>secure view</strong> and a <strong>share</strong> — minimum columns, no LANDING vault, Nora pays her own compute.
+    </p>
+
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Nora Patel’s credit union asked for a weekly CSV of transactions. Marcus refuses email attachments — compliance nightmare, stale by Friday, no audit trail.
+    </div>
+
+    <div class="callout ok">
+      <strong>Solution you will build</strong>
+      <code>CURATED.V_SHARE_TXNS</code> (secure, column-trimmed) + share object <code>SHARE_MERIDIAN_TXNS</code>
+      with grants on database, schema, and view. Production adds Nora’s account locator to the share.
+    </div>
+
+    <figure class="viz-panel">
+      <img src="assets/lab10-share.jpg" alt="Sealed window for Nora: secure share of live transactions, not a raw dump" width="1600" height="900" loading="eager" />
+      <figcaption>
+        <strong>Picture · Sealed window for Nora</strong>
+        Live read-only view through a share — not a USB dump of LANDING.
+      </figcaption>
+    </figure>
+
+    <section class="teach">
+      <h2>Teach first — share vs copy vs clone</h2>
+      <table class="gloss">
+        <tr><th>Pattern</th><th>What moves</th><th>When Elena picks it</th></tr>
+        <tr>
+          <td><strong>CSV / COPY export</strong></td>
+          <td>File leaves the bank; partner stores a copy</td>
+          <td>Never for regulated partner feeds Marcus cares about</td>
+        </tr>
+        <tr>
+          <td><strong>CLONE</strong> (Lab 09)</td>
+          <td>Same account, zero-copy fork for Dev/QA</td>
+          <td>Internal sandbox — not cross-org sharing</td>
+        </tr>
+        <tr>
+          <td><strong>Secure share</strong></td>
+          <td>Live read access to selected objects in consumer’s account</td>
+          <td>Nora queries with her warehouse; provider governs columns</td>
+        </tr>
+        <tr>
+          <td><strong>Secure view</strong></td>
+          <td>View definition hidden from consumer; only result columns exposed</td>
+          <td>Hide join logic and block extra columns vs sharing base table</td>
+        </tr>
+      </table>
+      <div class="flow-pipeline" aria-label="Provider to consumer share">
+        <div class="flow-node source">
+          <span class="flow-tag">Provider · Meridian</span>
+          <strong>LANDING.TXN_EVENTS</strong>
+          <span class="flow-sub">Never in the share</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">Governed lens</span>
+          <strong>V_SHARE_TXNS</strong>
+          <span class="flow-sub">TXN_ID · CLIENT_ID · STATUS · AMOUNT</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">Share object</span>
+          <strong>SHARE_MERIDIAN_TXNS</strong>
+          <span class="flow-sub">Grants → Nora’s account</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">Consumer · Nora</span>
+          <strong>Her WH + roles</strong>
+          <span class="flow-sub">SELECT live data · she pays compute</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="story">
+      <div class="story-label">Saturday · partner call</div>
+      <p>
+        Nora: “We just need txn counts by status — not your client vault.”
+        Elena: “Secure view trims columns; share is the sealed window. You run queries in your account — Meridian doesn’t burn credits for your dashboards.”
+      </p>
+    </div>
+
     <article class="step">
-      <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if policies or tasks fail)</h3></div></div>
-      <div class="story">
-        <p>Marcus escalated: “Elena, your role can’t apply policies or run tasks.” Only ACCOUNTADMIN can stamp those powers on <code>ROLE_BANK_LAB_ADMIN</code>. Skip if Lab 00 smoke test already passed.</p>
+      <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if CREATE SHARE fails)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Only ACCOUNTADMIN can grant <code>CREATE SHARE</code> and related powers to <code>ROLE_BANK_LAB_ADMIN</code>. Skip if Lab 00 smoke test already passed.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/00_privilege_repair.sql</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · ACCOUNTADMIN grants (part 1)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
 
 GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
@@ -51,16 +136,20 @@ GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPT
 GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
 GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
 GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-
-SET uname = (SELECT CURRENT_USER());
+GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · bind role to you + smoke test</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SET uname = (SELECT CURRENT_USER());
 GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);
 
 USE ROLE ROLE_BANK_LAB_ADMIN;
 CREATE ROLE IF NOT EXISTS ROLE_BANK_SMOKE_TMP COMMENT = 'temp smoke test';
-DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;
-
-USE DATABASE MERIDIAN_BANK;
+DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · ensure schemas exist</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE DATABASE MERIDIAN_BANK;
 CREATE SCHEMA IF NOT EXISTS LANDING;
 CREATE SCHEMA IF NOT EXISTS CURATED;
 CREATE SCHEMA IF NOT EXISTS RISK_CTRL;
@@ -70,66 +159,91 @@ CREATE SCHEMA IF NOT EXISTS UTILS;
 
 SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
       </div>
+      <div class="badge-ok">✓ Matches <code>sql/00_privilege_repair.sql</code> — then continue as ROLE_BANK_LAB_ADMIN</div>
     </article>
 
-    <div class="callout bad">
-      <strong>Business problem</strong>
-      Nora Patel’s credit union asked for a weekly CSV of transactions. Marcus refuses email attachments — compliance nightmare.
-    </div>
-
-    <div class="callout ok">
-      <strong>Solution you will build</strong>
-      <code>CURATED.V_SHARE_TXNS</code> + <code>SHARE_MERIDIAN_TXNS</code> with grants on database, schema, and view.
-    </div>
-
-    <figure class="viz-panel">
-      <img src="assets/lab10-share.jpg" alt="Sealed window for Nora: secure share of live transactions, not a raw dump" width="1600" height="900" loading="eager" />
-      <figcaption>
-        <strong>Picture · Sealed window for Nora</strong>
-        secure share of live txns, not a raw dump.
-      </figcaption>
-    </figure>
-
-    <div class="story">
-      <p>Nora consumes with her own warehouse — provider doesn’t pay her compute. Elena never shares LANDING.CLIENTS or SSN columns.</p>
-    </div>
-
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Secure view + share</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Set provider session</h3></div></div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/10_share_provider.sql</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
-USE DATABASE MERIDIAN_BANK;
+USE DATABASE MERIDIAN_BANK;</code></pre>
+      </div>
+    </article>
 
-CREATE OR REPLACE SECURE VIEW CURATED.V_SHARE_TXNS AS
-SELECT TXN_ID, CLIENT_ID, STATUS, AMOUNT FROM LANDING.TXN_EVENTS;
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Create the secure view (column minimum)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Exposes only txn fields Nora needs — no <code>LANDING.CLIENTS</code>, no SSN, no email.</p>
+        <h4>Why SECURE</h4>
+        <p>Consumers cannot inspect view SQL to reverse-engineer hidden joins or columns.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · V_SHARE_TXNS</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE SECURE VIEW CURATED.V_SHARE_TXNS AS
+SELECT TXN_ID, CLIENT_ID, STATUS, AMOUNT
+FROM LANDING.TXN_EVENTS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ View under CURATED — four columns only</div>
+    </article>
 
-DROP SHARE IF EXISTS SHARE_MERIDIAN_TXNS;
-CREATE SHARE SHARE_MERIDIAN_TXNS;
-GRANT USAGE ON DATABASE MERIDIAN_BANK TO SHARE SHARE_MERIDIAN_TXNS;
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Create the share object</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Empty share container — grants in the next step attach Meridian objects to it.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · share container</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>DROP SHARE IF EXISTS SHARE_MERIDIAN_TXNS;
+CREATE SHARE SHARE_MERIDIAN_TXNS;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Grant database + schema + view to the share</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Consumers need USAGE on database and schema, then SELECT on the view. Without all three, Nora sees nothing.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · share grants</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT USAGE ON DATABASE MERIDIAN_BANK TO SHARE SHARE_MERIDIAN_TXNS;
 GRANT USAGE ON SCHEMA CURATED TO SHARE SHARE_MERIDIAN_TXNS;
-GRANT SELECT ON VIEW CURATED.V_SHARE_TXNS TO SHARE SHARE_MERIDIAN_TXNS;
+GRANT SELECT ON VIEW CURATED.V_SHARE_TXNS TO SHARE SHARE_MERIDIAN_TXNS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Share lists granted objects in Snowsight (provider account)</div>
+    </article>
 
-SHOW SHARES LIKE 'SHARE_MERIDIAN_TXNS';
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Verify + Nora’s next step</h3></div></div>
+      <div class="explain">
+        <h4>What you should see</h4>
+        <p><code>SHOW SHARES</code> returns <code>SHARE_MERIDIAN_TXNS</code>. Production: <code>ALTER SHARE … ADD ACCOUNTS = NoraOrgAccount</code>; Nora creates a database from the share in her account.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · proof</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SHOW SHARES LIKE 'SHARE_MERIDIAN_TXNS';
 SELECT 'Lab 10 share ready for Nora (add consumer account next)' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ Share object exists — ADD ACCOUNTS = Nora’s locator in prod</div>
+      <div class="badge-ok">✓ Status row · parity with <code>sql/10_share_provider.sql</code></div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Nora needed partner metrics without USB-era leaks. I published CURATED.V_SHARE_TXNS through SHARE_MERIDIAN_TXNS with least columns — no PII vault.
-      <em>Outcome:</em> Nora queries live data with her compute; Meridian keeps governance on the provider side.”
+      “Nora needed partner metrics without USB-era leaks. I built CURATED.V_SHARE_TXNS as a secure view with least columns — no PII vault — and published it through SHARE_MERIDIAN_TXNS with database, schema, and view grants.
+      Share beats weekly CSV because data stays live and Nora pays her own warehouse; clone is for internal QA, not cross-org delivery.
+      <em>Outcome:</em> Nora queries governed txns in her account; Meridian keeps control on the provider side.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-09.html">← Lab 09</a>
       <a class="btn primary" href="lab-11.html">Lab 11 →</a>
     </div>
   </div>
-  <footer class="footer">sql/10_share_provider.sql</footer>
+  <footer class="footer">sql/10_share_provider.sql · sql/00_privilege_repair.sql · teach-first lab</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

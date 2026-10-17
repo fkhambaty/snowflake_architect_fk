@@ -35,7 +35,10 @@
   <div class="wrap">
     <p class="eyebrow">Lab 12 · Sunday · You are Elena · Alex’s broken metric</p>
     <h1>Silent dbt changes broke the board deck</h1>
-    <p class="lede">Lab 02 proved incremental merge. Now many developers change models — sources, contracts, Slim CI so PRs don’t rebuild the world.</p>
+    <p class="lede">
+      Read the <strong>Teach first</strong> sections before you edit YAML.
+      Lab 02 proved incremental merge — this lab governs what Alex’s dashboards may depend on: declared sources, enforced contracts on published marts, and Slim CI so pull requests do not rebuild all of Meridian.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
@@ -44,7 +47,7 @@
 
     <div class="callout ok">
       <strong>Solution you will design</strong>
-      Declare <code>landing.txn_events</code> in sources, enforce contract on <code>fct_orders_incremental</code>, Slim CI with <code>state:modified+</code> and defer.
+      Declare <code>landing.txn_events</code> in sources, enforce a contract on <code>fct_orders_incremental</code>, and describe Slim CI with <code>state:modified+</code> and <code>--defer</code> against a saved production manifest.
     </div>
 
     <figure class="viz-panel">
@@ -56,93 +59,161 @@
     </figure>
 
     <div class="story">
-      <p>Jordan owns git; Elena owns what may break Alex — contracts on published marts, not every staging view.
-      Refresh Lab 02 if watermark / incremental is fuzzy — this lab builds on that fact table.</p>
+      <div class="story-label">Sunday planning</div>
+      <p>Jordan owns git; Elena owns what may break Alex — contracts on <strong>published marts</strong>, not every staging view.
+      Refresh <a href="lab-02.html">Lab 02</a> if watermark / incremental is fuzzy — this lab builds on that fact table.</p>
     </div>
 
     <section class="teach">
       <h2>Teach first — words Lab 02 did not need yet</h2>
       <table class="gloss">
-        <tr><th>Term</th><th>Plain English</th></tr>
+        <tr><th>Term</th><th>Plain English</th><th>Bank metaphor</th></tr>
         <tr>
           <td><strong>dbt source</strong></td>
-          <td>A declaration that “this Snowflake table already exists outside dbt” (our <code>LANDING.TXN_EVENTS</code>). Models use <code>{{ source(...) }}</code> so renames are tracked.</td>
+          <td>A YAML declaration: “this Snowflake table already exists outside dbt.” Models reference <code>{{ source('landing', 'txn_events') }}</code> instead of hard-coded <code>LANDING.TXN_EVENTS</code>.</td>
+          <td>Jordan’s dock on the map — dbt knows the address and lineage</td>
         </tr>
         <tr>
           <td><strong>Contract</strong></td>
-          <td>A promise about column names + types on a published model. If a PR renames <code>order_total</code>, dbt fails the build instead of silently blanking Alex’s tile.</td>
+          <td>A published promise: these column names and types must match what dbt builds. Break the promise → dbt fails the build before Alex’s tile goes blank.</td>
+          <td>Board deck column headers taped to the wall — engineers cannot rename silently</td>
         </tr>
         <tr>
           <td><strong>Slim CI</strong></td>
-          <td>In pull requests, only build models that changed (and downstream), using a saved prod manifest — not the entire Meridian graph every time.</td>
+          <td>In pull requests, build only models that changed (plus downstream), using a saved prod manifest — not the entire graph every time.</td>
+          <td>Inspect only the floor that was renovated, not the whole branch</td>
         </tr>
         <tr>
           <td><code>state:modified+</code></td>
-          <td>Selector: “models that differ from the saved state, plus everything that depends on them.”</td>
+          <td>Selector meaning: “models different from saved prod state, <em>plus</em> everything that depends on them.”</td>
+          <td>Renamed fact → rebuild fact and any mart that reads it</td>
         </tr>
         <tr>
           <td><code>--defer</code></td>
-          <td>For parents you didn’t rebuild in CI, read the already-built prod relation instead of rebuilding the world.</td>
+          <td>Parents you did not rebuild in CI are read from prod’s already-built tables (via manifest), so CI does not reconstruct the whole bank.</td>
+          <td>CI borrows prod’s finished vault shelf instead of re-pouring concrete</td>
+        </tr>
+        <tr>
+          <td><code>prod_artifact/</code></td>
+          <td>Folder holding <code>manifest.json</code> from last prod deploy — the “saved state” for Slim CI</td>
+          <td>Yesterday’s as-built blueprint</td>
         </tr>
       </table>
+
       <div class="flow-pipeline" aria-label="Governed dbt flow">
         <div class="flow-node source">
-          <span class="flow-tag">Source</span>
+          <span class="flow-tag">Source (YAML)</span>
           <strong>TXN_EVENTS</strong>
-          <span class="flow-sub">declared in YAML</span>
+          <span class="flow-sub">Jordan lands rows · dbt declares dock</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node stg">
-          <span class="flow-tag">Staging</span>
+          <span class="flow-tag">Staging view</span>
           <strong>stg_orders</strong>
-          <span class="flow-sub">view · no contract required</span>
+          <span class="flow-sub">rename columns · no contract required</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node fct">
           <span class="flow-tag">Published mart</span>
-          <strong>fct_… + contract</strong>
-          <span class="flow-sub">Alex depends on this shape</span>
+          <strong>fct_orders_incremental</strong>
+          <span class="flow-sub">contract enforced · Alex’s tile</span>
         </div>
       </div>
     </section>
 
+    <section class="teach">
+      <h2>Where contracts belong (and where they don’t)</h2>
+      <p>
+        <code>stg_orders</code> is an internal translator — Elena does not contract it.
+        <code>fct_orders_incremental</code> is what Alex and Looker treat as stable — that gets <code>contract.enforced: true</code> and explicit <code>data_type</code> on each column.
+      </p>
+      <div class="callout warn">
+        <strong>Classic mistake</strong>
+        Enforcing contracts on every staging view slows the team without protecting consumers. Contract the <em>published</em> boundary.
+      </div>
+    </section>
+
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Sources boundary — LANDING.TXN_EVENTS</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Sources file — header and landing database</h3></div></div>
       <div class="explain">
-        <p>Without a source entry, dbt still can query the table via raw SQL — but you lose lineage and freshness hooks. Meridian declares the dock explicitly.</p>
+        <h4>What this does</h4>
+        <p><code>version: 2</code> tells dbt this is modern YAML schema. The <code>sources:</code> list begins the landing dock definition.</p>
+        <h4>Why Elena does it</h4>
+        <p>Without a source entry, dbt can still query via raw SQL — but lineage breaks and renames hide from the graph.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>YAML · dbt_project/models/staging/_sources.yml</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>YAML · dbt_project/models/staging/_sources.yml (part 1)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>version: 2
 
 sources:
   - name: landing
     database: MERIDIAN_BANK
-    schema: LANDING
-    tables:
-      - name: txn_events
-        description: "Meridian Bank txn events for incremental merge demo"</code></pre>
+    schema: LANDING</code></pre>
       </div>
+      <div class="badge-ok">✓ <code>name: landing</code> is the logical name in <code>source('landing', …)</code> — not the schema name by itself</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">2</div><div><h3>Contract on the published mart</h3></div></div>
+      <div class="step-head"><div class="step-num">2</div><div><h3>Sources file — table txn_events</h3></div></div>
+      <div class="explain">
+        <h4>What each line does</h4>
+        <p><code>tables:</code> lists physical tables at that dock. <code>name: txn_events</code> matches Snowflake object <code>TXN_EVENTS</code> (dbt lowercases in docs; Snowflake stores uppercase unless quoted).</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>YAML · contract example</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>YAML · _sources.yml (part 2) — matches repo</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>    tables:
+      - name: txn_events
+        description: "Meridian Bank txn events for incremental merge demo"</code></pre>
+      </div>
+      <div class="badge-ok">✓ In Snowsight you still created <code>LANDING.TXN_EVENTS</code> in Lab 02 — dbt does not create it</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Contract — turn enforcement on</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Under <code>models:</code>, target <code>fct_orders_incremental</code>. <code>contract.enforced: true</code> tells dbt to compare built columns to the YAML contract before succeeding.</p>
+        <h4>Why Elena does it</h4>
+        <p>A PR that renames <code>order_total</code> fails in CI instead of shipping a silent NULL tile for Marcus.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>YAML · models/marts/schema.yml (part 1)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>version: 2
 
 models:
   - name: fct_orders_incremental
     config:
       contract:
-        enforced: true
-    columns:
+        enforced: true</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Contract — column order_id</h3></div></div>
+      <div class="explain">
+        <h4>Read the column block</h4>
+        <p><code>data_type: number</code> must match Snowflake. <code>tests: [unique, not_null]</code> keeps the txn key trustworthy — same as Lab 02’s merge key.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>YAML · schema.yml (part 2)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>    columns:
       - name: order_id
         data_type: number
         tests: [unique, not_null]
       - name: customer_id
-        data_type: number
-      - name: status
+        data_type: number</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Contract — status, order_total, updated_at</h3></div></div>
+      <div class="explain">
+        <h4>Why list every published column</h4>
+        <p>Contract mode requires the YAML to be complete. <code>updated_at</code> is the watermark column — if its type drifts, incremental logic and Alex’s “last refresh” both break.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>YAML · schema.yml (part 3)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>      - name: status
         data_type: varchar
       - name: order_total
         data_type: number
@@ -150,15 +221,49 @@ models:
         data_type: timestamp_ntz
         tests: [not_null]</code></pre>
       </div>
+      <div class="badge-ok">✓ After edits: <code>dbt run --select fct_orders_incremental</code> should pass or fail loudly on mismatch</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">3</div><div><h3>Slim CI commands (illustration)</h3></div></div>
+      <div class="step-head"><div class="step-num">6</div><div><h3>Slim CI — install packages</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p><code>dbt deps</code> pulls package dependencies (if any) before CI compiles the graph — same as local dev.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>Shell</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>dbt deps
-dbt ls --select state:modified+ --resource-type model --state ./prod_artifact/
-dbt build --select state:modified+ --defer --state ./prod_artifact/</code></pre>
+        <div class="code-head"><span>Shell · step 1</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>cd dbt_project
+dbt deps</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">7</div><div><h3>Slim CI — list what would run</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p><code>dbt ls --select state:modified+</code> prints model names that differ from <code>prod_artifact/manifest.json</code>, plus downstream. No Snowflake build yet — cheap sanity check for Jordan’s PR.</p>
+        <h4>What you should see</h4>
+        <p>On a small change to <code>stg_orders</code>, both staging and <code>fct_orders_incremental</code> appear — downstream of the edit.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Shell · step 2</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>dbt ls --select state:modified+ --resource-type model --state ./prod_artifact/</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">8</div><div><h3>Slim CI — build with defer</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p><code>dbt build</code> runs models and tests for the selected slice. <code>--defer</code> reads unchanged parents from prod relations named in the manifest — so CI does not rebuild the entire Meridian graph on every PR.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Shell · step 3</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>dbt build --select state:modified+ --defer --state ./prod_artifact/</code></pre>
+      </div>
+      <div class="callout warn">
+        <strong>CI prerequisite</strong>
+        Your pipeline must upload <code>manifest.json</code> from prod into <code>prod_artifact/</code> each deploy. Without it, <code>state:</code> selectors have nothing to compare.
       </div>
     </article>
 
@@ -168,13 +273,12 @@ dbt build --select state:modified+ --defer --state ./prod_artifact/</code></pre>
       <em>Outcome:</em> Alex’s dashboards get stable columns; Jordan’s team ships faster without full-graph builds every time.”
     </div>
 
-
     <div class="pager">
       <a class="btn ghost" href="lab-11.html">← Lab 11</a>
       <a class="btn primary" href="lab-13.html">Lab 13 →</a>
     </div>
   </div>
-  <footer class="footer">dbt_project/ · read Lab 02 incremental SQL</footer>
+  <footer class="footer">dbt_project/ · _sources.yml · teach-first contracts & Slim CI</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

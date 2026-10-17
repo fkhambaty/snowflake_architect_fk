@@ -35,11 +35,14 @@
   <div class="wrap">
     <p class="eyebrow">Lab 04 · Wednesday PM · You are Elena · Marcus is lost</p>
     <h1>Name the shelves: LANDING → CURATED → FINANCE_MART</h1>
-    <p class="lede">Marcus asked why Alex’s report pointed at the loading dock. Elena draws medallion layers and builds silver + gold tables from <code>LANDING.TXN_EVENTS</code>.</p>
+    <p class="lede">
+      Read <strong>Teach first</strong> before SQL.
+      Marcus asked why Alex’s report pointed at the loading dock. You’ll map medallion bronze/silver/gold to Meridian’s real schema names and build one silver table + one gold summary from <code>LANDING.TXN_EVENTS</code> (Lab 02 data).
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
-      Teams argue about “bronze vs gold.” Alex built a board metric on LANDING.TXN_EVENTS — wrong layer, no guardrails, Marcus can’t trust the number.
+      Teams argue about “bronze vs gold.” Alex built a board metric on <code>LANDING.TXN_EVENTS</code> — wrong layer, no guardrails, Marcus can’t trust the number.
     </div>
 
     <div class="callout ok">
@@ -55,50 +58,182 @@
       </figcaption>
     </figure>
 
-    <div class="story">
-      <div class="story-label">Medallion at Meridian</div>
-      <p><code>LANDING</code> = dock (Jordan loads). <code>CURATED</code> = cleaned shelves. <code>FINANCE_MART</code> = Alex’s report wall. Data Vault is optional later — today we keep three layers obvious.</p>
+    <section class="teach">
+      <h2>Teach first — dictionary</h2>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>At Meridian Bank</th></tr>
+        <tr>
+          <td><strong>Medallion architecture</strong></td>
+          <td>Pattern: raw → cleaned → business-ready layers</td>
+          <td>Everyone agrees which floor a metric may read</td>
+        </tr>
+        <tr>
+          <td><strong>Bronze</strong></td>
+          <td>Raw or lightly typed landing — source-shaped</td>
+          <td><code>LANDING</code> — Jordan’s dock, <code>TXN_EVENTS</code></td>
+        </tr>
+        <tr>
+          <td><strong>Silver</strong></td>
+          <td>Cleaned, conformed, deduped-ish — trusted for engineering</td>
+          <td><code>CURATED.SILVER_TXNS</code> — rules applied (e.g. no negative amounts)</td>
+        </tr>
+        <tr>
+          <td><strong>Gold</strong></td>
+          <td>Aggregated or dimensional — built for a business question</td>
+          <td><code>FINANCE_MART.GOLD_CLIENT_SUMMARY</code> — Alex’s board metrics</td>
+        </tr>
+        <tr>
+          <td><strong>Lineage</strong></td>
+          <td>Which table fed which — audit story</td>
+          <td>LANDING → CURATED → FINANCE_MART (say it in interviews)</td>
+        </tr>
+        <tr>
+          <td><strong>CTAS</strong></td>
+          <td><code>CREATE TABLE AS SELECT</code> — snapshot copy from a query</td>
+          <td>How we build silver/gold tables in this lab</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>Three floors — animated path</h2>
+      <div class="flow-pipeline" aria-label="Medallion flow at Meridian">
+        <div class="flow-node source">
+          <span class="flow-tag">Bronze · dock</span>
+          <strong>LANDING.TXN_EVENTS</strong>
+          <span class="flow-sub">Jordan loads · status as-is</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">Silver · shelves</span>
+          <strong>CURATED.SILVER_TXNS</strong>
+          <span class="flow-sub">UPPER(status) · amount ≥ 0</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">Gold · report wall</span>
+          <strong>FINANCE_MART.GOLD_CLIENT_SUMMARY</strong>
+          <span class="flow-sub">counts &amp; lifetime value by client</span>
+        </div>
+      </div>
+      <p>
+        <strong>Interview line:</strong> “Analysts consume gold in FINANCE_MART; they don’t point BI at LANDING unless they’re debugging with engineer approval.”
+      </p>
+    </section>
+
+    <section class="teach">
+      <h2>Data Vault — talk-track only (not today’s build)</h2>
+      <div class="story">
+        <div class="story-label">If Marcus asks “what about Data Vault?”</div>
+        <p>
+          Data Vault is a <em>modeling style</em> for enterprise warehouses: hubs (business keys), links (relationships), satellites (attributes that change over time).
+          Meridian’s lab stays on a simple three-layer medallion so the story is obvious in one whiteboard.
+        </p>
+        <p>
+          <strong>When Elena mentions it in an interview:</strong> “We’d use Vault-style hubs/satellites inside silver if we had many sources and late-arriving keys;
+          for this bank lab, CURATED silver tables plus FINANCE_MART gold keep lineage clear without a fourth naming scheme.”
+        </p>
+        <p>No Vault DDL in this lab — you’re proving you can name layers and point Alex at the right shelf.</p>
+      </div>
+    </section>
+
+    <div class="callout warn">
+      <strong>Prerequisite</strong>
+      Run Lab 02 so <code>LANDING.TXN_EVENTS</code> exists (Day 1 + Day 2 rows are fine). Empty dock = empty gold.
     </div>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Build silver and gold</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Set session as Elena</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Architect badge, cheap warehouse, bank database — same context as every build lab.</p>
+      </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sql/04_medallion.sql</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
-USE DATABASE MERIDIAN_BANK;
-CREATE SCHEMA IF NOT EXISTS FINANCE_MART;
+USE DATABASE MERIDIAN_BANK;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Worksheet shows MERIDIAN_BANK + WH_BANK_XS</div>
+    </article>
 
-CREATE OR REPLACE TABLE CURATED.SILVER_TXNS AS
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Ensure the report-wall schema exists</h3></div></div>
+      <div class="explain">
+        <h4>Why FINANCE_MART?</h4>
+        <p>Gold lives on Alex’s floor — separate from engineering’s CURATED shelves so RBAC and naming stay crisp.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · gold floor</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE SCHEMA IF NOT EXISTS FINANCE_MART;</code></pre>
+      </div>
+      <div class="badge-ok">✓ FINANCE_MART appears under MERIDIAN_BANK</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Build silver — clean txns from the dock</h3></div></div>
+      <div class="explain">
+        <h4>What changed from bronze?</h4>
+        <ul class="checklist">
+          <li><code>UPPER(STATUS)</code> — one spelling convention</li>
+          <li><code>WHERE AMOUNT &gt;= 0</code> — drop bad rows before analysts aggregate</li>
+        </ul>
+        <p>Matches <code>sql/04_medallion.sql</code> silver definition.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · CURATED.SILVER_TXNS</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE CURATED.SILVER_TXNS AS
 SELECT TXN_ID, CLIENT_ID, UPPER(STATUS) AS STATUS, AMOUNT, UPDATED_AT
 FROM LANDING.TXN_EVENTS
-WHERE AMOUNT >= 0;
+WHERE AMOUNT >= 0;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Table under CURATED — row count ≤ LANDING (reversals with negative amount drop if any)</div>
+    </article>
 
-CREATE OR REPLACE TABLE FINANCE_MART.GOLD_CLIENT_SUMMARY AS
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Build gold — client-level board metrics</h3></div></div>
+      <div class="explain">
+        <h4>Why aggregate here?</h4>
+        <p>Alex wants lifetime value and txn counts — that’s a business question, not a raw feed. Gold reads silver only, never LANDING directly.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · FINANCE_MART.GOLD_CLIENT_SUMMARY</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE FINANCE_MART.GOLD_CLIENT_SUMMARY AS
 SELECT CLIENT_ID, COUNT(*) AS TXN_COUNT, SUM(AMOUNT) AS LIFETIME_VALUE, MAX(UPDATED_AT) AS LAST_UPDATE
 FROM CURATED.SILVER_TXNS
-GROUP BY CLIENT_ID;
+GROUP BY CLIENT_ID;</code></pre>
+      </div>
+      <div class="badge-ok">✓ One row per client_id that appears in silver</div>
+    </article>
 
-SELECT 'landing' AS layer, COUNT(*) AS n FROM LANDING.TXN_EVENTS
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Prove layer row counts</h3></div></div>
+      <div class="explain">
+        <h4>What you should see</h4>
+        <p>Three layers, three counts — landing ≥ silver ≥ gold row cardinality (gold is grouped by client).</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · layer counts</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'landing' AS layer, COUNT(*) AS n FROM LANDING.TXN_EVENTS
 UNION ALL SELECT 'silver', COUNT(*) FROM CURATED.SILVER_TXNS
 UNION ALL SELECT 'gold', COUNT(*) FROM FINANCE_MART.GOLD_CLIENT_SUMMARY;</code></pre>
       </div>
-      <div class="badge-ok">✓ Row counts per layer — Alex should query FINANCE_MART, not LANDING</div>
+      <div class="badge-ok">✓ Three rows — Alex should query FINANCE_MART, not LANDING</div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Marcus needed a vocabulary. I documented LANDING → CURATED → FINANCE_MART and built SILVER_TXNS plus GOLD_CLIENT_SUMMARY so Alex’s board deck reads from the report wall, not the dock.
+      “Marcus needed a vocabulary. Bronze is LANDING where Jordan loads TXN_EVENTS; silver is CURATED.SILVER_TXNS with status normalized and bad amounts filtered;
+      gold is FINANCE_MART.GOLD_CLIENT_SUMMARY for client-level metrics. Data Vault is the answer if he asks about hub-and-satellite modeling at scale — today we kept three obvious layers.
       <em>Outcome:</em> one agreed lineage story; engineers land raw, analysts consume gold.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-03.html">← Lab 03</a>
       <a class="btn primary" href="lab-05.html">Lab 05 →</a>
     </div>
   </div>
-  <footer class="footer">sql/04_medallion.sql · run Lab 02 txn data first</footer>
+  <footer class="footer">Source SQL: sql/04_medallion.sql · Run Lab 02 txn data first</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

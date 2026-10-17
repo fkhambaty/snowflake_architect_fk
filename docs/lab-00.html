@@ -16,6 +16,18 @@
         <a class="active" href="lab-00.html">00</a>
         <a href="lab-01.html">01</a>
         <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a href="lab-11.html">11</a>
+        <a href="lab-12.html">12</a>
+        <a href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
@@ -24,8 +36,9 @@
     <p class="eyebrow">Lab 00 · Monday morning · You are Elena</p>
     <h1>Build Meridian Bank’s workshop</h1>
     <p class="lede">
-      Read <a href="story.html">the bank story</a> if you haven’t.
-      Pattern every lab: <strong>Problem → Solution (SQL) → Elena’s wrap-up</strong>.
+      Read every <strong>Teach first</strong> section before you copy SQL.
+      This lab is the empty bank building — warehouse, database, folders (schemas), and Elena’s architect badge.
+      <a href="story.html">Story</a> optional but Marcus makes more sense if you skim it.
     </p>
 
     <div class="callout bad">
@@ -37,7 +50,7 @@
     <div class="callout ok">
       <strong>Solution you will build</strong>
       Database <code>MERIDIAN_BANK</code>, warehouse <code>WH_BANK_XS</code>, architect role
-      <code>ROLE_BANK_LAB_ADMIN</code>, schemas for landing/curated/risk/marts, and 5 sample <code>LANDING.CLIENTS</code>.
+      <code>ROLE_BANK_LAB_ADMIN</code>, schemas for landing through utils, and five sample <code>LANDING.CLIENTS</code> rows with PII for tomorrow’s security lab.
     </div>
 
     <figure class="viz-panel">
@@ -48,50 +61,135 @@
       </figcaption>
     </figure>
 
-    <div class="story">
-      <div class="story-label">Rooms Elena labels</div>
+    <section class="teach">
+      <h2>Teach first — dictionary (no assumed knowledge)</h2>
+      <table class="gloss">
+        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
+        <tr>
+          <td><strong>Account</strong></td>
+          <td>Your whole Snowflake tenant (one bill, many users)</td>
+          <td>The city Meridian Bank rents space in</td>
+        </tr>
+        <tr>
+          <td><strong>Database</strong></td>
+          <td>Top-level container for related data</td>
+          <td>The bank building — <code>MERIDIAN_BANK</code></td>
+        </tr>
+        <tr>
+          <td><strong>Schema</strong></td>
+          <td>Folder inside a database (groups tables/views)</td>
+          <td>Floor or room — <code>LANDING</code> = loading dock</td>
+        </tr>
+        <tr>
+          <td><strong>Table</strong></td>
+          <td>Stored rows and columns you query with SELECT</td>
+          <td>Filing cabinet — e.g. <code>LANDING.CLIENTS</code></td>
+        </tr>
+        <tr>
+          <td><strong>Warehouse</strong></td>
+          <td>Compute cluster that runs queries (you pay when it’s on)</td>
+          <td>Engine room — <code>WH_BANK_XS</code> is a small, auto-sleeping motor</td>
+        </tr>
+        <tr>
+          <td><strong>Role</strong></td>
+          <td>Bundle of permissions — what you’re allowed to do</td>
+          <td>Job badge — who you are for this session</td>
+        </tr>
+        <tr>
+          <td><code>ACCOUNTADMIN</code></td>
+          <td>Snowflake’s built-in “mayor” role — can create anything account-wide</td>
+          <td>City mayor — use for five minutes, not daily work</td>
+        </tr>
+        <tr>
+          <td><code>ROLE_BANK_LAB_ADMIN</code></td>
+          <td>Elena’s custom architect badge — owns the lab objects we create</td>
+          <td>Head of facilities — builds rooms, not god-mode on the whole city</td>
+        </tr>
+        <tr>
+          <td><strong>GRANT</strong></td>
+          <td>Give a permission from one role to another</td>
+          <td>Hand someone a key or stamp a badge</td>
+        </tr>
+        <tr>
+          <td><strong>OWNERSHIP</strong></td>
+          <td>Full control over an object (alter, drop, re-grant)</td>
+          <td>Elena’s name on the building deed</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="teach">
+      <h2>ACCOUNTADMIN vs lab admin — why both?</h2>
+      <p>
+        Snowflake separates <em>who can spin up account-wide powers</em> from <em>who runs the bank day to day</em>.
+        Only <code>ACCOUNTADMIN</code> can create warehouses, stamp “CREATE ROLE” on Elena’s badge, and transfer database ownership.
+        After bootstrap, Elena wears <code>ROLE_BANK_LAB_ADMIN</code> for Labs 01–14 — same person, narrower powers (interview-realistic).
+      </p>
+      <div class="flow-pipeline" aria-label="Bootstrap flow">
+        <div class="flow-node source">
+          <span class="flow-tag">1 · Mayor</span>
+          <strong>ACCOUNTADMIN</strong>
+          <span class="flow-sub">create WH + DB + stamp lab admin</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">2 · Architect</span>
+          <strong>ROLE_BANK_LAB_ADMIN</strong>
+          <span class="flow-sub">schemas, tables, policies, tasks</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">3 · Tomorrow</span>
+          <strong>FR_* job badges</strong>
+          <span class="flow-sub">Alex, Jordan, Sam — Lab 01</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="teach">
+      <h2>Rooms Elena labels inside MERIDIAN_BANK</h2>
       <table class="gloss">
         <tr><th>Schema</th><th>Bank meaning</th></tr>
-        <tr><td><code>LANDING</code></td><td>Loading dock — raw client/txn files land here</td></tr>
+        <tr><td><code>LANDING</code></td><td>Loading dock — raw client/txn files land here (not “RAW”)</td></tr>
         <tr><td><code>CURATED</code></td><td>Clean shelves — safe for broader read</td></tr>
-        <tr><td><code>RISK_CTRL</code></td><td>Policy office — masking / entitlements</td></tr>
-        <tr><td><code>FINANCE_MART</code></td><td>Report wall for Finance / Alex</td></tr>
-        <tr><td><code>FILE_IN</code></td><td>Truck bay for file stages</td></tr>
-        <tr><td><code>UTILS</code></td><td>Toolbox</td></tr>
+        <tr><td><code>RISK_CTRL</code></td><td>Policy office — masking / entitlements (Lab 03)</td></tr>
+        <tr><td><code>FINANCE_MART</code></td><td>Report wall for Finance / Alex (Lab 04 gold)</td></tr>
+        <tr><td><code>FILE_IN</code></td><td>Truck bay for file stages (later labs)</td></tr>
+        <tr><td><code>UTILS</code></td><td>Toolbox — helpers, UDFs</td></tr>
       </table>
-      <p>Snowflake also shows <code>PUBLIC</code> + <code>INFORMATION_SCHEMA</code> — ignore those; they’re automatic.</p>
-    </div>
+      <p>Snowflake also shows <code>PUBLIC</code> and <code>INFORMATION_SCHEMA</code> — automatic; ignore for this course.</p>
+    </section>
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Open Snowsight as ACCOUNTADMIN</h3></div></div>
       <div class="explain">
-        <h4>Why ACCOUNTADMIN for five minutes?</h4>
-        <p>Only the “mayor” can create warehouses/databases and stamp Elena’s role with CREATE ROLE power.
-        Day-to-day Elena will wear <code>ROLE_BANK_LAB_ADMIN</code>, not ACCOUNTADMIN.</p>
+        <h4>What this step is</h4>
+        <p>
+          You are not “being Elena” yet. You are the mayor long enough to pour the foundation.
+          In Snowsight, open <strong>Admin → Users &amp; Roles</strong> or the worksheet role dropdown and pick <code>ACCOUNTADMIN</code>.
+        </p>
+        <h4>Why Elena does not stay here</h4>
+        <p>Interview answer: least privilege — architects own the bank DB, they don’t need permanent god-mode on the account.</p>
       </div>
       <div class="ui-mock">
         <div class="ui-mock-bar">
           <div class="ui-chip glow"><span class="dot"></span> Role: ACCOUNTADMIN ▾</div>
         </div>
       </div>
+      <div class="badge-ok">✓ Worksheet context shows ACCOUNTADMIN before Step 2</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">2</div><div><h3>Bootstrap the bank workshop</h3></div></div>
+      <div class="step-head"><div class="step-num">2</div><div><h3>Create the cheap engine (warehouse)</h3></div></div>
       <div class="explain">
-        <h4>What this SQL does (plain English)</h4>
-        <table class="gloss">
-          <tr><th>Part</th><th>Meaning</th></tr>
-          <tr><td>Create <code>WH_BANK_XS</code></td><td>Tiny engine; auto-sleeps to save money</td></tr>
-          <tr><td>Create <code>ROLE_BANK_LAB_ADMIN</code></td><td>Elena’s lab badge</td></tr>
-          <tr><td>Account grants</td><td>Create roles, apply policies, run tasks, create shares (later labs)</td></tr>
-          <tr><td>Create <code>MERIDIAN_BANK</code></td><td>The bank’s database building</td></tr>
-          <tr><td>Ownership → lab admin</td><td>Elena owns the objects she builds</td></tr>
-          <tr><td>Smoke create+drop role</td><td>Proves CREATE ROLE works before Lab 01</td></tr>
-        </table>
+        <h4>What this does</h4>
+        <p>
+          <code>WH_BANK_XS</code> is XSMALL compute. <code>AUTO_SUSPEND = 60</code> turns it off after a minute idle;
+          <code>INITIALLY_SUSPENDED = TRUE</code> means you don’t burn credits until the first query wakes it.
+        </p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Lab 00 bootstrap</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · warehouse</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
 
 CREATE WAREHOUSE IF NOT EXISTS WH_BANK_XS
@@ -99,56 +197,148 @@ CREATE WAREHOUSE IF NOT EXISTS WH_BANK_XS
   AUTO_SUSPEND = 60
   AUTO_RESUME = TRUE
   INITIALLY_SUSPENDED = TRUE
-  COMMENT = 'Meridian Bank lab warehouse';
+  COMMENT = 'Meridian Bank lab warehouse — interview prep';</code></pre>
+      </div>
+      <div class="badge-ok">✓ Admin → Warehouses lists WH_BANK_XS (may show Suspended)</div>
+    </article>
 
-CREATE ROLE IF NOT EXISTS ROLE_BANK_LAB_ADMIN
-  COMMENT = 'Lab architect role — owns Meridian Bank lab objects';
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Print Elena’s architect badge</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Creates an empty custom role. It has no powers until the next grants — like a blank ID before HR activates it.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · lab admin role</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE ROLE IF NOT EXISTS ROLE_BANK_LAB_ADMIN
+  COMMENT = 'Lab architect role — owns Meridian Bank lab objects';</code></pre>
+      </div>
+      <div class="badge-ok">✓ Role appears under Account → Roles</div>
+    </article>
 
-GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Account-level powers Elena will need later</h3></div></div>
+      <div class="explain">
+        <h4>Read each grant like English</h4>
+        <ul class="checklist">
+          <li><code>CREATE ROLE</code> — print FR_/AR_ badges (Lab 01)</li>
+          <li><code>APPLY MASKING / ROW ACCESS POLICY</code> — hang rules on tables (Lab 03)</li>
+          <li><code>EXECUTE TASK</code> — run scheduled stream workers (Lab 05)</li>
+          <li><code>CREATE SHARE</code> — outbound data shares (later labs)</li>
+        </ul>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · account grants (1/2)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
 GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
-GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · account grants (2/2)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;</code></pre>
+      </div>
+      <div class="badge-ok">✓ No errors — Elena can run later labs without ACCOUNTADMIN</div>
+    </article>
 
-GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
-GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Let the lab admin turn the engine on</h3></div></div>
+      <div class="explain">
+        <h4>USAGE vs OPERATE</h4>
+        <p><code>USAGE</code> = run queries on the warehouse. <code>OPERATE</code> = resume/suspend it. <code>WITH GRANT OPTION</code> lets Elena pass warehouse access to FR_ roles in Lab 01.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · warehouse grants</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPTION;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Lab admin can USE WAREHOUSE WH_BANK_XS after you switch roles</div>
+    </article>
 
-CREATE DATABASE IF NOT EXISTS MERIDIAN_BANK
-  COMMENT = 'Meridian Bank — interview prep';
+    <article class="step">
+      <div class="step-head"><div class="step-num">6</div><div><h3>Create the bank building (database)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Creates <code>MERIDIAN_BANK</code> and transfers ownership to Elena’s role so she controls schemas and tables inside it.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · database + ownership</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE DATABASE IF NOT EXISTS MERIDIAN_BANK
+  COMMENT = 'Meridian Bank — Snowflake Architect interview prep';
 
-GRANT OWNERSHIP ON DATABASE MERIDIAN_BANK TO ROLE ROLE_BANK_LAB_ADMIN COPY CURRENT GRANTS;
+GRANT OWNERSHIP ON DATABASE MERIDIAN_BANK TO ROLE ROLE_BANK_LAB_ADMIN COPY CURRENT GRANTS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Data → Databases shows MERIDIAN_BANK owned by ROLE_BANK_LAB_ADMIN</div>
+    </article>
 
-SET uname = (SELECT CURRENT_USER());
-GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);
+    <article class="step">
+      <div class="step-head"><div class="step-num">7</div><div><h3>Give your user the architect badge</h3></div></div>
+      <div class="explain">
+        <h4>Why SET uname?</h4>
+        <p>Snowflake needs your login name to attach the role. <code>CURRENT_USER()</code> avoids typing it wrong.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · grant role to you</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SET uname = (SELECT CURRENT_USER());
+GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);</code></pre>
+      </div>
+      <div class="badge-ok">✓ Your user can switch to ROLE_BANK_LAB_ADMIN in the dropdown</div>
+    </article>
 
-USE ROLE ROLE_BANK_LAB_ADMIN;
+    <article class="step">
+      <div class="step-head"><div class="step-num">8</div><div><h3>Smoke test: CREATE ROLE works</h3></div></div>
+      <div class="explain">
+        <h4>Why before Lab 01?</h4>
+        <p>If this create+drop fails, Lab 01’s FR_/AR_ roles will fail — fix grants now, not mid-RBAC drama.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · switch + smoke</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 CREATE ROLE IF NOT EXISTS ROLE_BANK_SMOKE_TMP COMMENT = 'temp smoke test';
-DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;
+DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Both statements succeed — CREATE ROLE grant is real</div>
+    </article>
 
-USE WAREHOUSE WH_BANK_XS;
-USE DATABASE MERIDIAN_BANK;
-
-CREATE SCHEMA IF NOT EXISTS LANDING;
+    <article class="step">
+      <div class="step-head"><div class="step-num">9</div><div><h3>Label the rooms (schemas)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Empty folders inside <code>MERIDIAN_BANK</code>. Tables you create later land in one schema at a time via <code>USE SCHEMA</code> or fully qualified names like <code>LANDING.CLIENTS</code>.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · session context</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · create schemas</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE SCHEMA IF NOT EXISTS LANDING;
 CREATE SCHEMA IF NOT EXISTS CURATED;
 CREATE SCHEMA IF NOT EXISTS RISK_CTRL;
 CREATE SCHEMA IF NOT EXISTS FINANCE_MART;
 CREATE SCHEMA IF NOT EXISTS FILE_IN;
-CREATE SCHEMA IF NOT EXISTS UTILS;
-
-SELECT 'Lab 00 Meridian Bank bootstrap OK' AS status;
+CREATE SCHEMA IF NOT EXISTS UTILS;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · verify bootstrap</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'Lab 00 Meridian Bank bootstrap OK' AS status;
 SHOW SCHEMAS IN DATABASE MERIDIAN_BANK;</code></pre>
       </div>
-      <div class="badge-ok">✓ Status message + schemas LANDING, CURATED, RISK_CTRL, FINANCE_MART, FILE_IN, UTILS</div>
+      <div class="badge-ok">✓ Status row + LANDING, CURATED, RISK_CTRL, FINANCE_MART, FILE_IN, UTILS in the list</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">3</div><div><h3>Load five sample clients into the vault</h3></div></div>
+      <div class="step-head"><div class="step-num">10</div><div><h3>Load five sample clients into the vault</h3></div></div>
       <div class="explain">
         <h4>Why clients with SSN last-4?</h4>
-        <p>Lab 01’s whole drama needs real-looking PII so Elena can prove Alex cannot see it.</p>
+        <p>
+          Lab 01’s whole drama needs realistic PII in <code>LANDING.CLIENTS</code> so Elena can prove Alex cannot SELECT it.
+          Matches <code>sql/00_sample_data.sql</code>.
+        </p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · sample clients</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context + table DDL</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
@@ -162,25 +352,29 @@ CREATE OR REPLACE TABLE CLIENTS (
   COUNTRY       STRING,
   SSN_LAST4     STRING,
   CREATED_AT    TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
-);
-
-INSERT INTO CLIENTS (CLIENT_ID, FULL_NAME, EMAIL, PHONE, COUNTRY, SSN_LAST4) VALUES
+);</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · insert five clients</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>INSERT INTO CLIENTS (CLIENT_ID, FULL_NAME, EMAIL, PHONE, COUNTRY, SSN_LAST4) VALUES
   (1, 'Asha Patel',  'asha.patel@example.com',  '+1-555-0101', 'US', '1234'),
   (2, 'Ben Okonkwo', 'ben.okonkwo@example.com', '+1-555-0102', 'US', '5678'),
   (3, 'Chen Wei',    'chen.wei@example.com',    '+1-555-0103', 'CA', '9012'),
   (4, 'Diana Rossi', 'diana.rossi@example.com', '+1-555-0104', 'US', '3456'),
-  (5, 'Evan Ng',     'evan.ng@example.com',     '+1-555-0105', 'UK', '7890');
-
-SELECT * FROM CLIENTS ORDER BY CLIENT_ID;</code></pre>
+  (5, 'Evan Ng',     'evan.ng@example.com',     '+1-555-0105', 'UK', '7890');</code></pre>
       </div>
-      <div class="badge-ok">✓ 5 rows in LANDING.CLIENTS</div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · proof</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM CLIENTS ORDER BY CLIENT_ID;</code></pre>
+      </div>
+      <div class="badge-ok">✓ 5 rows — emails and SSN_LAST4 visible while you’re still lab admin</div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian had no Snowflake home. I created database MERIDIAN_BANK, a cheap auto-suspend warehouse,
-      an architect role that owns the lab, and clear schemas — LANDING for raw, CURATED for clean, RISK_CTRL for policies,
-      FINANCE_MART for reports. I loaded five sample clients with PII so we can prove security tomorrow.
+      “Meridian had no Snowflake home. As ACCOUNTADMIN I poured the foundation: warehouse WH_BANK_XS with auto-suspend,
+      database MERIDIAN_BANK owned by ROLE_BANK_LAB_ADMIN, and labeled schemas — LANDING for raw, CURATED for clean,
+      RISK_CTRL for policies, FINANCE_MART for reports. I loaded five sample clients with PII so we can prove security tomorrow.
       <em>Outcome:</em> one owned playground, near-zero idle cost, ready for RBAC.”
     </div>
 
@@ -195,7 +389,7 @@ SELECT * FROM CLIENTS ORDER BY CLIENT_ID;</code></pre>
       <a class="btn primary" href="lab-01.html">Lab 01 — lock the vault →</a>
     </div>
   </div>
-  <footer class="footer">Cleanup later: sql/cleanup_lab00_lab01.sql</footer>
+  <footer class="footer">Source SQL: sql/00_bootstrap.sql · sql/00_sample_data.sql</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

@@ -35,7 +35,7 @@
   <div class="wrap">
     <p class="eyebrow">Lab 14 · Interview Monday · You are Elena</p>
     <h1>Retell the Meridian week in 60–90 seconds</h1>
-    <p class="lede">Twelve scenarios from Marcus, Sam, Nora, and Finance — each maps to a lab. Drill aloud: context → decision → proof → outcome.</p>
+    <p class="lede">Twelve scenarios from Marcus, Sam, Nora, and Finance — each maps to a lab. Drill aloud: context → decision → proof → outcome. Read <strong>Why this answer</strong> before you open <strong>Say this</strong>.</p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
@@ -57,13 +57,18 @@
 
     <div class="story">
       <div class="story-label">Drill loop</div>
-      <p>Read scenario → answer aloud → open “Say this” → diff → repeat until structure is automatic: <em>context → decision → verify → outcome</em>.</p>
+      <p>Read scenario → answer aloud → read <em>Why this answer</em> → open “Say this” → diff → repeat until structure is automatic: <em>context → decision → verify → outcome</em>.</p>
     </div>
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Alex must not see SSN on clients</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-01.html">Lab 01</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Lab 01 is about <em>structural</em> access: Alex gets a curated view without PII columns, not a second copy of clients. Functional roles (FR_) hold job badges; access roles (AR_) are key-rings granted to those badges.</p>
+        <p>Snowsight keeps secondary roles active, so any proof as FR_ANALYST must include <code>USE SECONDARY ROLES NONE</code> or the vault still opens via lab admin.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>At Meridian I use FR_ANALYST with AR_CURATED_READ only — Alex queries CURATED.V_CLIENT_DIRECTORY, not LANDING.CLIENTS. I prove the vault fails with USE SECONDARY ROLES NONE so lab-admin power is not still attached. Sam keeps FR_COMPLIANCE with AR_PII_READ for audits.</p>
@@ -74,6 +79,11 @@
       <div class="step-head"><div class="step-num">2</div><div><h3>Same SQL — Sam sees real email, Alex sees masked</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-03.html">Lab 03</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Marcus refused duplicate tables — one governed shelf (<code>CLIENTS_GOV</code>) with policies that change query results by role. Masking alters column appearance; row access hides whole countries.</p>
+        <p>Policies read <code>CURRENT_ROLE()</code> (primary badge), so proofs switch to FR_ANALYST vs FR_COMPLIANCE with secondary roles cleared.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>One table CURATED.CLIENTS_GOV; MP_EMAIL_MASK in RISK_CTRL checks CURRENT_ROLE(). I run identical SELECT as FR_ANALYST vs FR_COMPLIANCE — masked vs plain email, row policy limits countries for Alex.</p>
@@ -84,6 +94,11 @@
       <div class="step-head"><div class="step-num">3</div><div><h3>Txn fact too big for nightly full refresh</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-02.html">Lab 02</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Jordan owns the landing table; dbt owns the curated ledger. Incremental merge with <code>unique_key</code> upserts changed txns instead of rebuilding history — the watermark on <code>updated_at</code> limits each run’s input.</p>
+        <p>Day 2 proof (new rows + status change on 1001) is the interview evidence that MERGE happened, not a full-table rewrite.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>Jordan lands LANDING.TXN_EVENTS; dbt incremental merge on fct_orders_incremental with unique_key order_id and updated_at watermark on WH_BANK_XS. Day 2 MERGE proves we didn’t rebuild history.</p>
@@ -94,6 +109,11 @@
       <div class="step-head"><div class="step-num">4</div><div><h3>Streams vs dbt incremental for landing CDC</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-05.html">Lab 05</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Streams + tasks are Snowflake-native “what changed since last run?” — good when ops owns latency and scheduling inside the account. dbt incremental is git-tested analytics DAG — good when Elena’s team owns transformations and CI.</p>
+        <p>Meridian uses both on purpose: speed on the silver path, governance on published marts — not either/or religion.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>Streams + tasks for ops-owned near-real-time into CURATED.TXN_SILVER_CDC; dbt incremental when analytics owns the DAG in git. Meridian uses both: task for speed, dbt for tested marts.</p>
@@ -104,6 +124,11 @@
       <div class="step-head"><div class="step-num">5</div><div><h3>Board query scans too much — slow and costly</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-07.html">Lab 07</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Interviewers want a method: reproduce Alex’s SQL, open Query Profile, read bytes scanned and partition pruning before blaming the warehouse. Upsizing WH_BANK_XS is a meeting-window lever, not the first permanent fix.</p>
+        <p>Naming <code>WH_BANK_XS</code> ties cost (Lab 13) to performance — same warehouse Marcus pays for.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>I reproduce Alex’s join in Snowsight, open Query Profile for bytes scanned and spill, check WH_BANK_XS. Fix SQL and clustering before permanently upsizing the warehouse.</p>
@@ -114,6 +139,11 @@
       <div class="step-head"><div class="step-num">6</div><div><h3>Query Profile shows massive remote spill</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-08.html">Lab 08</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Spill means the warehouse ran out of local memory for sort/join steps and wrote to remote storage — expensive and slow. Fix data layout (cluster on filter columns like <code>EVENT_DATE</code>) and SQL shape before jumping warehouse size.</p>
+        <p>Re-measure in Query History closes the loop — Profile is diagnosis, clustering/SQL is treatment.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>Spill means warehouse RAM wasn’t enough — I right-size one step, narrow rows early, cluster BIG_EVENTS on EVENT_DATE so filters prune partitions. Measure again in Query History.</p>
@@ -124,6 +154,11 @@
       <div class="step-head"><div class="step-num">7</div><div><h3>Dev needs prod-like QA without double storage day one</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-09.html">Lab 09</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Clone is a metadata pointer in the same account — fast QA fork without copying all bytes upfront. Dev refreshes by re-cloning on a schedule; prod keeps serving Marcus on the original table.</p>
+        <p>Explicitly contrast Lab 11: clone is not geo-DR when a region dies — replication is.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>Zero-copy clone TT_DEMO2 for Dev’s sprint — metadata pointer, same account. Refresh by re-clone; not geo-DR — that’s replication in Lab 11.</p>
@@ -134,6 +169,11 @@
       <div class="step-head"><div class="step-num">8</div><div><h3>Nora’s credit union needs read-only txn metrics</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-10.html">Lab 10</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Share lets Nora query from her account with her warehouse — no CSV email, no copy of LANDING. A secure view hides columns and blocks unsafe joins so PII never enters the share object list.</p>
+        <p>Minimum columns is compliance design — same pattern as Alex’s view in Lab 01, but cross-account.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>SECURE VIEW CURATED.V_SHARE_TXNS — minimum columns — inside SHARE_MERIDIAN_TXNS. Nora uses her warehouse; no LANDING CLIENTS or SSN.</p>
@@ -144,6 +184,11 @@
       <div class="step-head"><div class="step-num">9</div><div><h3>Board asks share vs replicate for DR</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-11.html">Lab 11</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Three tools, three questions: partner read (share), same-account QA (clone), region/account survival (replication + failover). Share does not replace a warm secondary when the provider region is down.</p>
+        <p>Name RPO/RTO from replication lag and promotion runbook — Marcus wants numbers, not feature names.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>Share is cross-account read of live provider objects for Nora. Replication copies MERIDIAN_BANK to a secondary region/account for RPO/RTO. Clone is same-account QA for Dev — three different tools.</p>
@@ -154,6 +199,11 @@
       <div class="step-head"><div class="step-num">10</div><div><h3>Finance needs credit chargeback by team</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-13.html">Lab 13</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>ACCOUNT_USAGE views attribute spend after the fact — warehouse metering for totals, query history for “who ran the expensive SQL.” Mention ~3 hour lag so Finance does not expect live pennies.</p>
+        <p>Map warehouses to teams in Meridian’s chargeback model; resource monitors are the forward-looking guardrail (scenario 12).</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY by WH_BANK_XS mapped to teams; QUERY_HISTORY for disputes. Resource monitors NOTIFY at 75%, SUSPEND at 100%.</p>
@@ -164,6 +214,11 @@
       <div class="step-head"><div class="step-num">11</div><div><h3>Engineer dropped a production table — Slack panic</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-09.html">Lab 09</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>Time Travel and UNDROP recover operator mistakes inside retention — different problem from region loss. Point-in-time queries (<code>AT/OFFSET</code>) fix bad updates without restoring the whole table.</p>
+        <p>Least privilege limits who can DROP; replication is for geography, not replacing UNDROP for typos.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>Inside retention: UNDROP TABLE. Point-in-time: AT/OFFSET or clone before bad UPDATE. Least privilege so DROP is rare; replication for region loss not operator typos.</p>
@@ -172,8 +227,13 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">12</div><div><h3>Control runaway ad hoc warehouse spend</h3>
-        <p class="hint">Meridian Bank · maps to <a href="lab-13.html">Lab 13</a></p></div></div>
+        <p class="hint">Meridian Bank · maps to <a href="lab-13.html">Lab 13</a>, <a href="lab-12.html">Lab 12</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
+      <div class="explain">
+        <h4>Why this answer</h4>
+        <p>FinOps is guardrails plus engineering: resource monitor suspend stops the warehouse; auto-suspend reduces idle burn; Slim CI stops full dbt rebuilds in every PR.</p>
+        <p>Clustering and incremental facts reduce bytes scanned — same dollars story as Labs 02, 07, and 08, not monitors alone.</p>
+      </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
         <p>RM_BANK_LAB on WH_BANK_XS, aggressive auto-suspend, Slim CI so PRs don’t full-build dbt. Clustering and incremental facts cut bytes scanned — FinOps is guardrails plus engineering discipline.</p>
@@ -204,7 +264,6 @@
       tuned WH_BANK_XS with Profile and clustering, recovered mistakes with Time Travel and clones for Dev, shared secure views with Nora, and explained DR and FinOps to Marcus.
       <em>Outcome:</em> I can answer scenario questions with names, objects, and proof — not generic Snowflake slides.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-13.html">← Lab 13</a>
