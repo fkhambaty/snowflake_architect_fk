@@ -55,66 +55,64 @@
       (no email/phone/SSN). Prove Alex is blocked from <code>LANDING.CLIENTS</code> with <code>USE SECONDARY ROLES NONE</code>.
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab01-before.jpg" alt="BEFORE: Alex can SELECT SSN from LANDING.CLIENTS" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Alex sees SSN — vault and window look the same.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab01-after.jpg" alt="AFTER: Alex reads V_CLIENT_DIRECTORY; vault blocked" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Window yes — names only. Vault locked for Alex.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Humans wear job badges. Badges inherit key-rings. Alex never gets the vault key.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Job badge</div>
+          <strong><code>FR_*</code> — who you are</strong>
+          <p>What Alex switches to in Snowsight.</p>
+          <div class="see-example"><code>FR_ANALYST</code><br><code>FR_DATA_ENGINEER</code></div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Key-ring</div>
+          <strong><code>AR_*</code> — what you can open</strong>
+          <p>Privileges clip onto FR badges — staff don’t wear AR directly.</p>
+          <div class="see-example">Alex: <code>AR_CURATED_READ</code> only<br>Jordan: <code>AR_LANDING_READ</code></div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Proof gotcha</div>
+          <strong>Secondary roles</strong>
+          <p>UI can say FR_ANALYST while lab admin still opens the vault.</p>
+          <div class="see-example">USE ROLE FR_ANALYST;<br>USE SECONDARY ROLES NONE;</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Window</div>
+          <strong>View = saved SELECT</strong>
+          <p>Not a second copy of clients — a safe projection.</p>
+          <div class="see-example"><code>V_CLIENT_DIRECTORY</code><br>names · no SSN</div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab01-rbac-map.jpg" alt="Meridian Bank: Alex, Jordan, and Sam with FR_ badges, AR_ keyrings, vault LANDING.CLIENTS and glass window V_CLIENT_DIRECTORY" width="1600" height="900" loading="eager" />
+      <img src="assets/lab01-rbac-map.jpg" alt="Meridian Bank: Alex, Jordan, and Sam with FR_ badges, AR_ keyrings, vault LANDING.CLIENTS and glass window V_CLIENT_DIRECTORY" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture 1 · Burn this in</strong>
         Humans wear only <em>job badges</em> (FR_). Badges clip onto <em>key-rings</em> (AR_).
         Alex’s ring opens the glass window — never the SSN vault.
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — dictionary</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
-        <tr>
-          <td><code>FR_</code> (functional role)</td>
-          <td>Job badge — what humans switch to in Snowsight</td>
-          <td>Alex = <code>FR_ANALYST</code>, Jordan = <code>FR_DATA_ENGINEER</code>, Sam = <code>FR_COMPLIANCE</code></td>
-        </tr>
-        <tr>
-          <td><code>AR_</code> (access role)</td>
-          <td>Key-ring of object privileges — not worn directly by staff</td>
-          <td><code>AR_LANDING_READ</code>, <code>AR_CURATED_READ</code>, <code>AR_PII_READ</code></td>
-        </tr>
-        <tr>
-          <td><strong>GRANT ROLE</strong></td>
-          <td>Clip a key-ring onto a job badge (inheritance)</td>
-          <td>AR_CURATED_READ hangs on FR_ANALYST’s lanyard</td>
-        </tr>
-        <tr>
-          <td><strong>USAGE</strong></td>
-          <td>“Enter this building/floor” — required before SELECT</td>
-          <td>Database + schema door pass</td>
-        </tr>
-        <tr>
-          <td><strong>SELECT grant</strong></td>
-          <td>Read rows from a table or view</td>
-          <td>Key to a specific cabinet</td>
-        </tr>
-        <tr>
-          <td><strong>FUTURE TABLES</strong></td>
-          <td>Auto-grant on tables created later in that schema</td>
-          <td>“Any new landing cabinet gets the same lock policy”</td>
-        </tr>
-        <tr>
-          <td><strong>View</strong></td>
-          <td>Saved SELECT — a window, not a second vault copy</td>
-          <td><code>V_CLIENT_DIRECTORY</code> — names only</td>
-        </tr>
-        <tr>
-          <td><strong>Secondary roles</strong></td>
-          <td>Extra roles Snowsight keeps active in the background</td>
-          <td>Second coat — lab admin still on while UI says FR_ANALYST</td>
-        </tr>
-        <tr>
-          <td><code>USE SECONDARY ROLES NONE</code></td>
-          <td>Hang the extra coats — only primary badge counts</td>
-          <td>Required before every privilege proof in this course</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>The grant chain — build keys before you clip badges</h2>
@@ -145,19 +143,20 @@
 
     <section class="teach">
       <h2>Vault vs window — two different doors</h2>
-      <table class="gloss">
-        <tr><th>Object</th><th>Layer</th><th>Who should query it?</th></tr>
-        <tr>
-          <td><code>LANDING.CLIENTS</code></td>
-          <td>Vault (bronze dock)</td>
-          <td>Jordan, Sam — not Alex</td>
-        </tr>
-        <tr>
-          <td><code>CURATED.V_CLIENT_DIRECTORY</code></td>
-          <td>Window (safe projection)</td>
-          <td>Alex for board decks</td>
-        </tr>
-      </table>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Vault</div>
+          <strong><code>LANDING.CLIENTS</code></strong>
+          <p>Bronze dock — PII columns live here.</p>
+          <div class="see-example">Jordan · Sam ✓<br>Alex ✗</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Window</div>
+          <strong><code>CURATED.V_CLIENT_DIRECTORY</code></strong>
+          <p>Safe projection for board decks.</p>
+          <div class="see-example">Alex SELECT → names only<br>SSN column not in view</div>
+        </div>
+      </div>
     </section>
 
     <figure class="viz-panel">

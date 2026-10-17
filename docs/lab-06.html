@@ -53,60 +53,63 @@
       In production Elena would attach <strong>Snowpipe</strong> — same COPY semantics, triggered when files land on the stage.
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab06-before.jpg" alt="BEFORE: CSV files arrive with no loader pattern" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Files arrive overnight — chaos, no repeatable dock.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab06-after.jpg" alt="AFTER: Stage, file format, COPY INTO LANDING" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Stage + file format + COPY — pallets to <code>LANDING</code>.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Files pause on the stage first — never jump straight into a table.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Stage</div>
+          <strong><code>FILE_IN</code> truck bay</strong>
+          <p>Internal stage — <code>@</code> in SQL, bank-owned parking.</p>
+          <div class="see-example">txn_day1.csv.gz on stage<br>not on ledger yet</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">File format</div>
+          <strong>CSV rules once</strong>
+          <p>Headers, quotes — reuse every load.</p>
+          <div class="see-example">TYPE = CSV<br>SKIP_HEADER = 1</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Load</div>
+          <strong>COPY INTO table</strong>
+          <p>Forklift bay → <code>LANDING.TXN_LANDING</code>.</p>
+          <div class="see-example">ON_ERROR = ABORT_STATEMENT<br>bad row stops load</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Production</div>
+          <strong>Snowpipe</strong>
+          <p>Same COPY — triggered when file lands.</p>
+          <div class="see-example">manual COPY (lab)<br>→ auto sensor (prod)</div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab06-landing.jpg" alt="Night truck bay: FILE_IN stage and COPY into LANDING; Snowpipe as automated COPY" width="1600" height="900" loading="eager" />
+      <img src="assets/lab06-landing.jpg" alt="Night truck bay: FILE_IN stage and COPY into LANDING; Snowpipe as automated COPY" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Night truck bay</strong>
         FILE_IN stage + COPY into LANDING; Snowpipe = automated COPY when the truck arrives.
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — dictionary (no assumed knowledge)</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
-        <tr>
-          <td><strong>Stage</strong></td>
-          <td>A named “parking lot” where files sit <em>before</em> Snowflake loads them into a table</td>
-          <td>Truck bay at the back of the bank — pallets aren’t on the ledger shelf yet</td>
-        </tr>
-        <tr>
-          <td><strong>Internal stage</strong></td>
-          <td>Storage inside Snowflake’s account (starts with <code>@</code> in SQL)</td>
-          <td>Bank-owned bay — no external cloud bucket required for this lab</td>
-        </tr>
-        <tr>
-          <td><strong>File format</strong></td>
-          <td>Reusable rules: CSV vs JSON, headers, quote character, etc.</td>
-          <td>The spec sheet: “these pallets are comma-separated with quotes”</td>
-        </tr>
-        <tr>
-          <td><strong>COPY INTO (table)</strong></td>
-          <td>Snowflake command: read files from a stage and insert rows into a table</td>
-          <td>Forklift from bay → official <code>LANDING</code> shelf</td>
-        </tr>
-        <tr>
-          <td><strong>COPY INTO (stage)</strong></td>
-          <td>Upload or create a file <em>on</em> the stage (we simulate a partner file in-lab)</td>
-          <td>Backing a truck into the bay with today’s CSV</td>
-        </tr>
-        <tr>
-          <td><code>LANDING.TXN_LANDING</code></td>
-          <td>Physical table for file-sourced txns (separate from Jordan’s <code>TXN_EVENTS</code> stream path)</td>
-          <td>Receiving dock ledger — raw rows from files before curation</td>
-        </tr>
-        <tr>
-          <td><strong>Snowpipe</strong></td>
-          <td>Serverless auto-loader: when a new file hits the stage, Snowflake runs the same COPY pipeline</td>
-          <td>Bay sensor + automatic forklift — not a different load language</td>
-        </tr>
-        <tr>
-          <td><code>ON_ERROR = 'ABORT_STATEMENT'</code></td>
-          <td>If one row is bad, stop the whole load (fail loud, don’t silently skip)</td>
-          <td>Reject the whole pallet if the manifest doesn’t match</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>The whole flow in one picture</h2>

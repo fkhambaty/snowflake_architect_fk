@@ -1,24 +1,24 @@
 # Teaching standard (every lab)
 
-Students can copy-paste and finish without learning. **That is a fail.** Each lab must make mindless running hard and understanding easy.
+Students can copy-paste and finish without learning. **That is a fail.** Prefer **seeing** over theory tables.
 
 ## Required shape
 
-1. Business problem / Solution / hero picture  
-2. **Teach-first** (`.teach`): every new term in plain English + metaphor  
-3. **Small code chunks** — prefer ≤12 lines per Copy block  
-4. Before each chunk: *What this does* + *Why Elena does it*  
-5. After each chunk: *What you should see*  
-6. Visual flow (`.flow-pipeline` or SVG) when ≥2 objects interact  
+1. Business problem / Solution (short)  
+2. **BEFORE / AFTER** screens (`.ba-grid` + `labXX-before.jpg` / `labXX-after.jpg`) — first thing after Solution  
+3. Optional extra concept art (`.viz-panel` JPG/SVG) **after** see-cards — not instead of BEFORE/AFTER  
+4. **See it** cards (`.see-grid` / `.see-card`) — concrete examples, not Word/Layman/Metaphor dictionaries  
+5. Contrast visuals like Lab 03 “two different problems” / `.flow-pipeline` when ideas can be mixed up  
+6. **Small code chunks** (≤12 lines) — *what / why / what you should see*  
 7. Elena wrap-up  
 
 ## Forbidden
 
-- One giant `sql/*.sql` dump with no explanation  
-- Jargon without a definition (masking policy, RAP, stream, task, clustering, Time Travel, Slim CI, …)  
-- “Run this” before the student knows what each piece is  
+- Giant unexplained SQL dumps  
+- Long theoretical dictionaries as the main teaching device  
+- Jargon with no concrete before→after example  
 
-## Reference labs
+## Reference
 
-- Lab 02 — watermark / materialization / dbt flow  
-- Lab 03 — masking vs row access / policy SQL broken into pieces  
+- Lab 03 — BEFORE/AFTER + see-cards + “don’t mix them up”  
+- Lab 02 — animated pipeline + watermark as bookmark (with examples)  

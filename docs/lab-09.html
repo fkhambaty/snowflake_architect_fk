@@ -51,50 +51,63 @@
       Query past versions with <code>AT</code> / <code>OFFSET</code>, <code>UNDROP</code> a table, then <code>CREATE TABLE … CLONE</code> for Dev’s sandbox copy.
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab09-before.jpg" alt="BEFORE: Accidental delete — table or rows gone" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Accidental delete panic — data “gone.”
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab09-after.jpg" alt="AFTER: Time Travel, UNDROP, and zero-copy clone for Dev" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Time Travel / UNDROP / clone — undo + Dev QA fork.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Three different “undo” tools — pick by what broke.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Rows changed</div>
+          <strong>Time Travel SELECT</strong>
+          <p>Table still exists — read an older version.</p>
+          <div class="see-example">AT (OFFSET => -120)<br>deleted row reappears in result</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Table dropped</div>
+          <strong>UNDROP</strong>
+          <p>Whole object vanished — restore inside retention.</p>
+          <div class="see-example">DROP TABLE …<br>UNDROP TABLE …</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Dev QA</div>
+          <strong>CREATE … CLONE</strong>
+          <p>Zero-copy twin — edits on clone don’t touch prod.</p>
+          <div class="see-example">TT_DEMO2_CLONE<br>same account sandbox</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Not this lab</div>
+          <strong>Replication · fail-safe</strong>
+          <p>Region failover — Lab 11. Fail-safe = support-only tape.</p>
+          <div class="see-example">geo-DR ≠ clone</div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab09-timetravel.jpg" alt="Time Travel, UNDROP, and Dev's CLONE for QA — not geo-DR" width="1600" height="900" loading="eager" />
+      <img src="assets/lab09-timetravel.jpg" alt="Time Travel, UNDROP, and Dev's CLONE for QA — not geo-DR" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Undo + twin</strong>
         Time Travel / UNDROP / Dev’s CLONE for QA — not geo-DR (Lab 11 covers replication/fail-safe depth).
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — dictionary</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
-        <tr>
-          <td><strong>Time Travel</strong></td>
-          <td>Snowflake keeps recent history of table changes; you can SELECT an older version</td>
-          <td>Security camera replay on the vault shelf — “show me Tuesday 3 p.m.”</td>
-        </tr>
-        <tr>
-          <td><code>AT (OFFSET => …)</code></td>
-          <td>Read the table as it was N seconds ago (negative offset = look backward)</td>
-          <td>Rewind the tape by 2 minutes</td>
-        </tr>
-        <tr>
-          <td><strong>UNDROP</strong></td>
-          <td>Restore a dropped table if still inside the Time Travel retention window</td>
-          <td>Undo “we removed that shelf” before the shredder window closes</td>
-        </tr>
-        <tr>
-          <td><strong>CLONE</strong></td>
-          <td>New table that shares underlying storage with the source (zero-copy at create time)</td>
-          <td>Dev gets a twin shelf pointing at the same boxes until someone edits the clone</td>
-        </tr>
-        <tr>
-          <td><strong>Fail-safe</strong></td>
-          <td>Extra post-retention window for Snowflake support recovery — not a self-service button</td>
-          <td>Bank-wide disaster tape — you don’t browse it in SQL class</td>
-        </tr>
-        <tr>
-          <td><strong>Replication / geo-DR</strong></td>
-          <td>Copy account/database objects to another region/account for outage recovery</td>
-          <td>Second branch vault — Lab 11; not the same as Dev’s same-account clone</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>Three tools — don’t mix them up</h2>

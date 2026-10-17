@@ -53,13 +53,22 @@
       (only new/changed rows, keyed by txn id, filtered by an <code>updated_at</code> watermark).
     </div>
 
-    <figure class="viz-panel">
-      <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on LANDING.TXN_EVENTS" width="1600" height="900" loading="eager" />
-      <figcaption>
-        <strong>Picture · Only change the ledger</strong>
-        Full refresh = rebuild everything. Incremental = touch only what changed since last run.
-      </figcaption>
-    </figure>
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab02-before.jpg" alt="BEFORE: Full refresh rebuilds entire txn fact every night" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Full refresh ~45 min — rewrites all history nightly.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab02-after.jpg" alt="AFTER: Incremental MERGE touches only deltas" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Only deltas — MERGE rows newer than the watermark.
+        </figcaption>
+      </figure>
+    </div>
 
     <!-- ========== TEACH FIRST ========== -->
     <section class="teach">
@@ -88,27 +97,33 @@
         </div>
       </div>
 
-      <table class="gloss">
-        <tr><th>Object</th><th>Who creates it</th><th>What it is</th><th>You “own” it how?</th></tr>
-        <tr>
-          <td><code>TXN_EVENTS</code></td>
-          <td>You, in Snowsight SQL</td>
-          <td>Physical table — the main event log</td>
-          <td>Inserts / updates land here first</td>
-        </tr>
-        <tr>
-          <td><code>stg_orders</code></td>
-          <td>dbt (<code>stg_orders.sql</code>)</td>
-          <td>A <em>view</em> — a saved SELECT, not a second copy of data</td>
-          <td>Always shows latest TXN_EVENTS with friendlier names</td>
-        </tr>
-        <tr>
-          <td><code>fct_orders_incremental</code></td>
-          <td>dbt (<code>fct_orders_incremental.sql</code>)</td>
-          <td>A <em>table</em> that dbt keeps up to date</td>
-          <td>This is what “the pipeline built” for Alex</td>
-        </tr>
-      </table>
+      <div class="see-grid three">
+        <div class="see-card">
+          <div class="see-label">1 · Source</div>
+          <strong><code>LANDING.TXN_EVENTS</code></strong>
+          <p>You create in SQL — Jordan’s dock log.</p>
+          <div class="see-example">inserts land here first</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">2 · Staging</div>
+          <strong><code>stg_orders</code> view</strong>
+          <p>dbt saved SELECT — no second copy.</p>
+          <div class="see-example">txn_id → order_id<br>always fresh upstream</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">3 · Fact</div>
+          <strong><code>fct_orders_incremental</code></strong>
+          <p>dbt table Alex queries — MERGE keeps it current.</p>
+          <div class="see-example">Day 2: rows 1006–1007 + update 1001</div>
+        </div>
+      </div>
+      <figure class="viz-panel" style="margin-top:1rem">
+        <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on LANDING.TXN_EVENTS" width="1600" height="900" loading="lazy" />
+        <figcaption>
+          <strong>Picture · Only change the ledger</strong>
+          Full refresh = rebuild everything. Incremental = touch only what changed since last run.
+        </figcaption>
+      </figure>
       <p>
         <strong>Folders</strong> <code>models/staging/</code> and <code>models/marts/</code> are only how files sit on disk.
         In Snowflake both models land in schema <code>CURATED</code> (see <code>dbt_project.yml</code>).
@@ -167,34 +182,34 @@
         <code>materialized=…</code> tells dbt <em>how to store</em> the result of a model’s SELECT in Snowflake.
         It is not a Snowflake keyword — it is a dbt config that compiles to CREATE VIEW / CREATE TABLE / MERGE, etc.
       </p>
-      <table class="gloss">
-        <tr><th>materialized</th><th>What Snowflake gets</th><th>When Elena picks it</th></tr>
-        <tr>
-          <td><code>view</code></td>
-          <td>CREATE VIEW — no stored copy; query always hits upstream</td>
-          <td>Lightweight cleanup (<code>stg_orders</code>). Cheap, always fresh.</td>
-        </tr>
-        <tr>
-          <td><code>table</code></td>
-          <td>CREATE TABLE AS SELECT — full rebuild every run</td>
-          <td>Small dims, or when “always rebuild” is OK. Bad for huge growing facts.</td>
-        </tr>
-        <tr>
-          <td><code>incremental</code></td>
-          <td>First run: build table. Later runs: only new/changed rows (MERGE here)</td>
-          <td><strong>Our choice for the txn fact</strong> — history is large; only deltas matter.</td>
-        </tr>
-        <tr>
-          <td><code>ephemeral</code></td>
-          <td>No object — CTE inlined into downstream SQL</td>
-          <td>Tiny helpers you never query alone (not used in this lab).</td>
-        </tr>
-        <tr>
-          <td><code>materialized_view</code></td>
-          <td>Snowflake MV (adapter/support dependent)</td>
-          <td>Advanced; Lab 05 talks Dynamic Tables as the Snowflake-native cousin.</td>
-        </tr>
-      </table>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label"><code>view</code></div>
+          <strong>Staging — always fresh</strong>
+          <p>No stored copy; hits upstream every query.</p>
+          <div class="see-example"><code>stg_orders</code> ✓<br>cheap cleanup</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label"><code>table</code></div>
+          <strong>Full rebuild each run</strong>
+          <p>CREATE TABLE AS SELECT — OK for small dims.</p>
+          <div class="see-example">5M txns nightly ✗<br>45 min burn</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label"><code>incremental</code></div>
+          <strong>Meridian fact choice</strong>
+          <p>First run builds; later runs MERGE deltas only.</p>
+          <div class="see-example">watermark on <code>updated_at</code><br>unique_key = order_id</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Not this lab</div>
+          <strong>ephemeral · materialized_view</strong>
+          <p>Inlined CTEs; Snowflake MVs — see Lab 05 dynamic tables.</p>
+          <div class="see-example">—</div>
+        </div>
+      </div>
       <p>
         <strong>Why incremental + merge for Meridian:</strong>
         Marcus won’t pay for rewriting millions of settled txns every night.
@@ -232,16 +247,20 @@ from {{ source('landing', 'txn_events') }}</code></pre>
 
       <div class="explain">
         <h4>B) <code>fct_orders_incremental.sql</code> — the ledger keeper</h4>
-        <table class="gloss">
-          <tr><th>Piece</th><th>Plain English</th></tr>
-          <tr><td><code>materialized='incremental'</code></td><td>Don’t full-rebuild after the first run</td></tr>
-          <tr><td><code>unique_key='order_id'</code></td><td>One row per txn; updates overwrite that id</td></tr>
-          <tr><td><code>incremental_strategy='merge'</code></td><td>Compile to Snowflake MERGE (upsert)</td></tr>
-          <tr><td><code>{{ ref('stg_orders') }}</code></td><td>Read the staging view (never skip staging)</td></tr>
-          <tr><td><code>is_incremental()</code></td><td>False on first build; true on later runs</td></tr>
-          <tr><td><code>where updated_at &gt; (select max… from {{ this }})</code></td><td><strong>Watermark filter</strong> — only rows newer than the fact’s current max timestamp</td></tr>
-          <tr><td><code>{{ this }}</code></td><td>This model’s own table (the fact we’re updating)</td></tr>
-        </table>
+        <div class="see-grid two">
+          <div class="see-card">
+            <div class="see-label">Config</div>
+            <strong>incremental + merge</strong>
+            <p>One row per <code>order_id</code>; upsert via Snowflake MERGE.</p>
+            <div class="see-example"><code>unique_key='order_id'</code><br><code>incremental_strategy='merge'</code></div>
+          </div>
+          <div class="see-card">
+            <div class="see-label">Watermark</div>
+            <strong>Only rows after max <code>updated_at</code></strong>
+            <p><code>is_incremental()</code> adds filter on later runs; <code>{{ this }}</code> = the fact table.</p>
+            <div class="see-example">where updated_at &gt; (select max…)<br>from {{ this }}</div>
+          </div>
+        </div>
       </div>
       <div class="code-block">
         <div class="code-head"><span>dbt · fct_orders_incremental.sql</span><button type="button" class="copy-btn">Copy</button></div>

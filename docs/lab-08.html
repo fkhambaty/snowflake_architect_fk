@@ -53,57 +53,69 @@
       then prove the same filtered aggregate (Profile in Lab 07 vocabulary: better pruning on real volume).
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab08-before.jpg" alt="BEFORE: Last 7 days query scans whole year of micro-partitions" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Scan whole history — “last 7 days” reads a year.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab08-after.jpg" alt="AFTER: CLUSTER BY EVENT_DATE improves pruning" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Cluster prune — skip shelves that can’t match the date filter.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <div class="story">
+        <div class="story-label">Library metaphor</div>
+        <p>
+          Random dates in one pile → librarian checks every book for “last 7 days.”
+          <strong>Clustering</strong> re-shelves by <code>EVENT_DATE</code> so Snowflake skips whole micro-partitions via metadata.
+        </p>
+      </div>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Key</div>
+          <strong><code>CLUSTER BY (EVENT_DATE)</code></strong>
+          <p>Co-locate similar dates — not the same as primary key.</p>
+          <div class="see-example">WHERE EVENT_DATE ≥ today-7<br>→ fewer partitions read</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Health</div>
+          <strong><code>SYSTEM$CLUSTERING_INFORMATION</code></strong>
+          <p>How well sorted the table is — maintenance signal.</p>
+          <div class="see-example">before: poor depth<br>after: better clustering</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Pruning</div>
+          <strong>Skip unread chunks</strong>
+          <p>Data still there — query just doesn’t open those partitions.</p>
+          <div class="see-example">Profile: higher % partitions skipped</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Interview</div>
+          <strong>Search optimization</strong>
+          <p>Point lookups on IDs — date windows → clustering.</p>
+          <div class="see-example">txn_id = ? → search opt<br>last 7 days → cluster</div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab08-clustering.jpg" alt="Neat shelves: CLUSTER BY EVENT_DATE so scans prune instead of reading the whole history" width="1600" height="900" loading="eager" />
+      <img src="assets/lab08-clustering.jpg" alt="Neat shelves: CLUSTER BY EVENT_DATE so scans prune instead of reading the whole history" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Neat shelves</strong>
         CLUSTER BY EVENT_DATE so date filters skip whole shelves instead of the full warehouse.
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — layman picture</h2>
-      <div class="story">
-        <div class="story-label">Library metaphor</div>
-        <p>
-          Imagine a year of risk events thrown into one pile (random dates). Alex asks for “books from the last 7 days.”
-          A librarian must flip through <em>every</em> book to check dates — that’s a full micro-partition scan.
-        </p>
-        <p>
-          <strong>Clustering</strong> is the librarian re-shelving: keep nearby dates on nearby shelves inside the table.
-          Snowflake still stores micro-partitions automatically, but a <strong>clustering key</strong> (<code>EVENT_DATE</code> here)
-          tells the service to co-locate similar values so <strong>pruning</strong> skips irrelevant shelves.
-        </p>
-      </div>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Not the same as…</th></tr>
-        <tr>
-          <td><strong>Micro-partition</strong></td>
-          <td>Automatic storage slice inside a table (Snowflake-managed)</td>
-          <td>Manual Hive partitions you name in path</td>
-        </tr>
-        <tr>
-          <td><strong>Clustering key</strong></td>
-          <td>Column(s) Snowflake tries to sort/co-locate over time (<code>CLUSTER BY</code>)</td>
-          <td>Primary key — uniqueness vs scan efficiency</td>
-        </tr>
-        <tr>
-          <td><strong>Pruning</strong></td>
-          <td>Skip micro-partitions whose min/max metadata proves they can’t match your filter</td>
-          <td>Deleting rows — data still there, just unread</td>
-        </tr>
-        <tr>
-          <td><code>SYSTEM$CLUSTERING_INFORMATION</code></td>
-          <td>Health report: how “well sorted” the table is on the clustering key</td>
-          <td>Query Profile — this is table maintenance metrics</td>
-        </tr>
-        <tr>
-          <td><strong>Search optimization</strong></td>
-          <td>Snowflake feature for point lookups on high-cardinality IDs</td>
-          <td>Date-range reports — Elena mentions it in interviews; clustering fits risk date filters</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>When Elena picks clustering</h2>

@@ -50,13 +50,22 @@
       Declare <code>landing.txn_events</code> in sources, enforce a contract on <code>fct_orders_incremental</code>, and describe Slim CI with <code>state:modified+</code> and <code>--defer</code> against a saved production manifest.
     </div>
 
-    <figure class="viz-panel">
-      <img src="assets/lab12-dbt.jpg" alt="Contract the mart: silent dbt change breaks Alex's tile; contracts and Slim CI" width="1600" height="900" loading="eager" />
-      <figcaption>
-        <strong>Picture · Contract the mart</strong>
-        silent dbt breaks Alex’s tile; contracts + Slim CI.
-      </figcaption>
-    </figure>
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab12-before.jpg" alt="BEFORE: Silent column rename breaks Alex's Looker tile" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Silent dbt break — board tile blank.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab12-after.jpg" alt="AFTER: Contract enforced plus Slim CI on PRs" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Contract + Slim CI — fail before prod.
+        </figcaption>
+      </figure>
+    </div>
 
     <div class="story">
       <div class="story-label">Sunday planning</div>
@@ -65,40 +74,36 @@
     </div>
 
     <section class="teach">
-      <h2>Teach first — words Lab 02 did not need yet</h2>
-      <table class="gloss">
-        <tr><th>Term</th><th>Plain English</th><th>Bank metaphor</th></tr>
-        <tr>
-          <td><strong>dbt source</strong></td>
-          <td>A YAML declaration: “this Snowflake table already exists outside dbt.” Models reference <code>{{ source('landing', 'txn_events') }}</code> instead of hard-coded <code>LANDING.TXN_EVENTS</code>.</td>
-          <td>Jordan’s dock on the map — dbt knows the address and lineage</td>
-        </tr>
-        <tr>
-          <td><strong>Contract</strong></td>
-          <td>A published promise: these column names and types must match what dbt builds. Break the promise → dbt fails the build before Alex’s tile goes blank.</td>
-          <td>Board deck column headers taped to the wall — engineers cannot rename silently</td>
-        </tr>
-        <tr>
-          <td><strong>Slim CI</strong></td>
-          <td>In pull requests, build only models that changed (plus downstream), using a saved prod manifest — not the entire graph every time.</td>
-          <td>Inspect only the floor that was renovated, not the whole branch</td>
-        </tr>
-        <tr>
-          <td><code>state:modified+</code></td>
-          <td>Selector meaning: “models different from saved prod state, <em>plus</em> everything that depends on them.”</td>
-          <td>Renamed fact → rebuild fact and any mart that reads it</td>
-        </tr>
-        <tr>
-          <td><code>--defer</code></td>
-          <td>Parents you did not rebuild in CI are read from prod’s already-built tables (via manifest), so CI does not reconstruct the whole bank.</td>
-          <td>CI borrows prod’s finished vault shelf instead of re-pouring concrete</td>
-        </tr>
-        <tr>
-          <td><code>prod_artifact/</code></td>
-          <td>Folder holding <code>manifest.json</code> from last prod deploy — the “saved state” for Slim CI</td>
-          <td>Yesterday’s as-built blueprint</td>
-        </tr>
-      </table>
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Govern what Alex’s dashboards depend on — not every staging view.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Source</div>
+          <strong>YAML dock address</strong>
+          <p>Declares Jordan’s table — lineage in git.</p>
+          <div class="see-example">{{ source('landing', 'txn_events') }}<br>not hard-coded LANDING.*</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Contract</div>
+          <strong>Published mart promise</strong>
+          <p>Column names + types enforced on build.</p>
+          <div class="see-example">rename order_total ✗<br>dbt fails before Looker</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Slim CI</div>
+          <strong>PR builds less</strong>
+          <p>Only changed models + downstream.</p>
+          <div class="see-example">state:modified+<br>--defer to prod manifest</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Saved state</div>
+          <strong><code>prod_artifact/manifest.json</code></strong>
+          <p>Yesterday’s prod graph — compare in CI.</p>
+          <div class="see-example">skip full bank rebuild<br>borrow prod parents</div>
+        </div>
+      </div>
 
       <div class="flow-pipeline" aria-label="Governed dbt flow">
         <div class="flow-node source">
@@ -120,6 +125,14 @@
         </div>
       </div>
     </section>
+
+    <figure class="viz-panel">
+      <img src="assets/lab12-dbt.jpg" alt="Contract the mart: silent dbt change breaks Alex's tile; contracts and Slim CI" width="1600" height="900" loading="lazy" />
+      <figcaption>
+        <strong>Picture · Contract the mart</strong>
+        silent dbt breaks Alex’s tile; contracts + Slim CI.
+      </figcaption>
+    </figure>
 
     <section class="teach">
       <h2>Where contracts belong (and where they don’t)</h2>

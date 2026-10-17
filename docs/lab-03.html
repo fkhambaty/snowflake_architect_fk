@@ -43,71 +43,63 @@
     <div class="callout bad">
       <strong>Business problem</strong>
       Alex can read curated clients — but he still sees full email addresses.
-      Sam (Compliance) needs the real email for audits. Marcus refuses two copy-paste tables (“analyst_clients” vs “audit_clients”).
-      Regulator: <em>one table, different what-you-see by job.</em>
+      Sam needs real email for audits. Marcus refuses two copy-paste tables.
     </div>
 
     <div class="callout ok">
       <strong>Solution (plain English)</strong>
-      Build one table <code>CLIENTS_GOV</code>. Hang two automatic rules on it:
-      (1) blur email unless you’re Compliance, (2) hide whole rows for countries you’re not allowed to see.
-      Same <code>SELECT</code> for Alex and Sam — Snowflake changes the answer.
+      One table. Two automatic rules: blur email (unless Compliance), hide countries you’re not allowed to see.
+      Same <code>SELECT</code> — different answers for Alex vs Sam.
     </div>
 
-    <figure class="viz-panel">
-      <img src="assets/lab03-masking.jpg" alt="Alex sees masked email and US-only; Sam sees full email and more countries" width="1600" height="900" loading="eager" />
-      <figcaption>
-        <strong>Picture · Same table, two truths</strong>
-        One shelf of clients. Alex’s glasses blur email and hide non-US. Sam’s glasses show full detail.
-      </figcaption>
-    </figure>
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab03-before.jpg" alt="BEFORE: Alex sees full emails and all countries" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Same SELECT → everyone sees full email and every country. Leak.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab03-after.jpg" alt="AFTER: Alex masked US-only; Sam full email more countries" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Same SELECT → Alex masked + US only; Sam full email + more countries.
+        </figcaption>
+      </figure>
+    </div>
 
-    <!-- TEACH -->
     <section class="teach">
-      <h2>Teach first — dictionary (no assumed knowledge)</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
-        <tr>
-          <td><strong>Policy</strong></td>
-          <td>A reusable rule Snowflake runs automatically when someone queries</td>
-          <td>A posted bank regulation, not a handwritten sticky note</td>
-        </tr>
-        <tr>
-          <td><strong>Masking policy</strong></td>
-          <td>Changes <em>what a column looks like</em> (still one row)</td>
-          <td>Frosted glass on the email field — you see a row, not the real address</td>
-        </tr>
-        <tr>
-          <td><strong>Row access policy (RAP)</strong></td>
-          <td>Hides <em>entire rows</em> you shouldn’t see</td>
-          <td>Country drawers locked — CA/UK clients vanish for Alex</td>
-        </tr>
-        <tr>
-          <td><code>CURRENT_ROLE()</code></td>
-          <td>Snowflake function: “which job badge is active right now?”</td>
-          <td>Looks at the badge on your chest (primary role)</td>
-        </tr>
-        <tr>
-          <td><code>RISK_CTRL</code></td>
-          <td>Schema = folder where we store policy objects</td>
-          <td>The compliance / policy office</td>
-        </tr>
-        <tr>
-          <td><code>CLIENTS_GOV</code></td>
-          <td>Governed copy of clients (GOV = under policy control)</td>
-          <td>The public client shelf with rules attached</td>
-        </tr>
-        <tr>
-          <td><strong>Entitlement table</strong></td>
-          <td>Simple lookup: which role may see which country</td>
-          <td>A paper list taped in the policy office</td>
-        </tr>
-        <tr>
-          <td><code>REGEXP_REPLACE</code></td>
-          <td>Text find-and-replace with a pattern</td>
-          <td>Turn <code>asha@…</code> into <code>***@…</code></td>
-        </tr>
-      </table>
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Forget theory lists. Look at what actually changes on the screen.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Thing 1 · Masking</div>
+          <strong>Disguise one column</strong>
+          <p>The row is still there. Only the email looks different.</p>
+          <div class="see-example">asha.patel@example.com<br>→ ***@example.com</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Thing 2 · Row filter</div>
+          <strong>Hide whole rows</strong>
+          <p>CA and UK clients vanish for Alex. Not blurred — gone.</p>
+          <div class="see-example">Alex: US only<br>Sam: US + CA + UK</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Who decides?</div>
+          <strong>The badge you’re wearing</strong>
+          <p>Snowflake checks <code>CURRENT_ROLE()</code> — FR_ANALYST vs FR_COMPLIANCE.</p>
+          <div class="see-example">USE ROLE FR_ANALYST;<br>USE SECONDARY ROLES NONE;</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Where rules live</div>
+          <strong>RISK_CTRL office</strong>
+          <p>Rules are objects. We hang them on <code>CLIENTS_GOV</code> like stickers on a shelf.</p>
+          <div class="see-example">MP_EMAIL_MASK<br>RAP_CLIENT_COUNTRY</div>
+        </div>
+      </div>
     </section>
 
     <section class="teach">

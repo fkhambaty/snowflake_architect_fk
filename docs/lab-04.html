@@ -50,50 +50,55 @@
       Silver in <code>CURATED.SILVER_TXNS</code>, gold summary in <code>FINANCE_MART.GOLD_CLIENT_SUMMARY</code> — clear path from dock to report wall.
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab04-before.jpg" alt="BEFORE: Marcus lost — Alex pointed BI at LANDING" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Marcus lost in unlabeled tables — board metric on the dock.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab04-after.jpg" alt="AFTER: LANDING to CURATED to FINANCE_MART floors" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Named floors — LANDING → CURATED → FINANCE_MART.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Three floors — same data, different trust level. Alex reads gold, not the dock.</p>
+      <div class="see-grid three">
+        <div class="see-card">
+          <div class="see-label">Bronze</div>
+          <strong><code>LANDING</code></strong>
+          <p>Source-shaped — Jordan’s dock.</p>
+          <div class="see-example"><code>TXN_EVENTS</code><br>debug only</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Silver</div>
+          <strong><code>CURATED.SILVER_TXNS</code></strong>
+          <p>Rules applied — no negative amounts.</p>
+          <div class="see-example">UPPER(status)<br>engineers trust this</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Gold</div>
+          <strong><code>FINANCE_MART.GOLD_CLIENT_SUMMARY</code></strong>
+          <p>Aggregates for the board deck.</p>
+          <div class="see-example">counts · LTV by client<br>CTAS in this lab</div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab04-medallion.jpg" alt="Medallion three floors at Meridian: LANDING to CURATED to FINANCE_MART so Marcus stops getting lost" width="1600" height="900" loading="eager" />
+      <img src="assets/lab04-medallion.jpg" alt="Medallion three floors at Meridian: LANDING to CURATED to FINANCE_MART so Marcus stops getting lost" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Three floors</strong>
         LANDING → CURATED → FINANCE_MART so Marcus stops getting lost.
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — dictionary</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>At Meridian Bank</th></tr>
-        <tr>
-          <td><strong>Medallion architecture</strong></td>
-          <td>Pattern: raw → cleaned → business-ready layers</td>
-          <td>Everyone agrees which floor a metric may read</td>
-        </tr>
-        <tr>
-          <td><strong>Bronze</strong></td>
-          <td>Raw or lightly typed landing — source-shaped</td>
-          <td><code>LANDING</code> — Jordan’s dock, <code>TXN_EVENTS</code></td>
-        </tr>
-        <tr>
-          <td><strong>Silver</strong></td>
-          <td>Cleaned, conformed, deduped-ish — trusted for engineering</td>
-          <td><code>CURATED.SILVER_TXNS</code> — rules applied (e.g. no negative amounts)</td>
-        </tr>
-        <tr>
-          <td><strong>Gold</strong></td>
-          <td>Aggregated or dimensional — built for a business question</td>
-          <td><code>FINANCE_MART.GOLD_CLIENT_SUMMARY</code> — Alex’s board metrics</td>
-        </tr>
-        <tr>
-          <td><strong>Lineage</strong></td>
-          <td>Which table fed which — audit story</td>
-          <td>LANDING → CURATED → FINANCE_MART (say it in interviews)</td>
-        </tr>
-        <tr>
-          <td><strong>CTAS</strong></td>
-          <td><code>CREATE TABLE AS SELECT</code> — snapshot copy from a query</td>
-          <td>How we build silver/gold tables in this lab</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>Three floors — animated path</h2>

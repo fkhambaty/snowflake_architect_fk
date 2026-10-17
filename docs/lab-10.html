@@ -52,39 +52,54 @@
       with grants on database, schema, and view. Production adds Nora’s account locator to the share.
     </div>
 
-    <figure class="viz-panel">
-      <img src="assets/lab10-share.jpg" alt="Sealed window for Nora: secure share of live transactions, not a raw dump" width="1600" height="900" loading="eager" />
-      <figcaption>
-        <strong>Picture · Sealed window for Nora</strong>
-        Live read-only view through a share — not a USB dump of LANDING.
-      </figcaption>
-    </figure>
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab10-before.jpg" alt="BEFORE: Partner gets a dump truck CSV export" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Partner dump truck — weekly CSV, stale, no audit.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab10-after.jpg" alt="AFTER: Secure share window into Nora's account" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Secure share window — live read, Nora’s warehouse.
+        </figcaption>
+      </figure>
+    </div>
 
     <section class="teach">
-      <h2>Teach first — share vs copy vs clone</h2>
-      <table class="gloss">
-        <tr><th>Pattern</th><th>What moves</th><th>When Elena picks it</th></tr>
-        <tr>
-          <td><strong>CSV / COPY export</strong></td>
-          <td>File leaves the bank; partner stores a copy</td>
-          <td>Never for regulated partner feeds Marcus cares about</td>
-        </tr>
-        <tr>
-          <td><strong>CLONE</strong> (Lab 09)</td>
-          <td>Same account, zero-copy fork for Dev/QA</td>
-          <td>Internal sandbox — not cross-org sharing</td>
-        </tr>
-        <tr>
-          <td><strong>Secure share</strong></td>
-          <td>Live read access to selected objects in consumer’s account</td>
-          <td>Nora queries with her warehouse; provider governs columns</td>
-        </tr>
-        <tr>
-          <td><strong>Secure view</strong></td>
-          <td>View definition hidden from consumer; only result columns exposed</td>
-          <td>Hide join logic and block extra columns vs sharing base table</td>
-        </tr>
-      </table>
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Nora needs a window — not a file on a truck.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Avoid</div>
+          <strong>CSV email / export</strong>
+          <p>Data leaves Meridian — compliance nightmare.</p>
+          <div class="see-example">USB dump ✗<br>stale by Friday</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Internal only</div>
+          <strong>Clone (Lab 09)</strong>
+          <p>Same-account QA fork — not cross-org.</p>
+          <div class="see-example">Dev sandbox<br>≠ Nora’s credit union</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Lens</div>
+          <strong><code>V_SHARE_TXNS</code> secure view</strong>
+          <p>Trim columns — hide join logic from consumer.</p>
+          <div class="see-example">TXN_ID · STATUS · AMOUNT<br>no LANDING vault</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Window</div>
+          <strong><code>SHARE_MERIDIAN_TXNS</code></strong>
+          <p>Live SELECT in Nora’s account — she pays compute.</p>
+          <div class="see-example">grants on DB · schema · view</div>
+        </div>
+      </div>
       <div class="flow-pipeline" aria-label="Provider to consumer share">
         <div class="flow-node source">
           <span class="flow-tag">Provider · Meridian</span>
@@ -111,6 +126,14 @@
         </div>
       </div>
     </section>
+
+    <figure class="viz-panel">
+      <img src="assets/lab10-share.jpg" alt="Sealed window for Nora: secure share of live transactions, not a raw dump" width="1600" height="900" loading="lazy" />
+      <figcaption>
+        <strong>Picture · Sealed window for Nora</strong>
+        Live read-only view through a share — not a USB dump of LANDING.
+      </figcaption>
+    </figure>
 
     <div class="story">
       <div class="story-label">Saturday · partner call</div>

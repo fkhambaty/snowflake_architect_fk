@@ -51,50 +51,69 @@
       Name <strong>RPO</strong> (how much data you might lose) and <strong>RTO</strong> (how long until you’re back). Validate config with small <code>SHOW</code> commands.
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab11-before.jpg" alt="BEFORE: Region outage with no DR plan" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Region dies — no plan beyond “hope.”
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab11-after.jpg" alt="AFTER: Share vs clone vs replication mapped for Marcus" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Share vs clone vs replication — RPO/RTO story ready.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Three tools — three business questions. Don’t swap them in the interview.</p>
+      <div class="see-grid three">
+        <div class="see-card">
+          <div class="see-label">Lab 10</div>
+          <strong>Share</strong>
+          <p>Partner reads live objects in <em>their</em> account.</p>
+          <div class="see-example">Nora · <code>V_SHARE_TXNS</code><br>not geo-DR</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Lab 09</div>
+          <strong>Clone</strong>
+          <p>Same-account QA fork — zero-copy at create.</p>
+          <div class="see-example">Dev · CREATE CLONE<br>fast sandbox</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Lab 11</div>
+          <strong>Replication</strong>
+          <p>Secondary region/account — failover group promote.</p>
+          <div class="see-example"><code>MERIDIAN_BANK</code> replica<br>warm standby</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">RPO</div>
+          <strong>How stale is the copy?</strong>
+          <p>Bounded by replication refresh lag.</p>
+          <div class="see-example">15 min refresh → ~15 min data at risk</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">RTO</div>
+          <strong>How long until users back?</strong>
+          <p>DNS, promotion, smoke tests — not the same as RPO.</p>
+          <div class="see-example">small RPO · long manual RTO ✗</div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab11-dr.jpg" alt="Three tools for Marcus: Share for Nora, Clone for Dev, Replication for region failover" width="1600" height="900" loading="eager" />
+      <img src="assets/lab11-dr.jpg" alt="Three tools for Marcus: Share for Nora, Clone for Dev, Replication for region failover" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Three tools</strong>
         Share (Nora) vs Clone (Dev) vs Replication (region failover) for Marcus.
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — dictionary (share vs clone vs replication)</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Meridian cast</th></tr>
-        <tr>
-          <td><strong>Share</strong></td>
-          <td>Provider publishes read-only objects; consumer queries them from <em>their</em> account with <em>their</em> warehouse</td>
-          <td>Nora’s credit union sees <code>V_SHARE_TXNS</code> — not a copy of <code>MERIDIAN_BANK</code> in her vault (Lab 10)</td>
-        </tr>
-        <tr>
-          <td><strong>Clone</strong></td>
-          <td>Zero-copy fork in the <em>same</em> account — new table name, shared storage until someone changes data</td>
-          <td>Dev refreshes QA from <code>TT_DEMO2</code> without doubling storage on day one (Lab 09)</td>
-        </tr>
-        <tr>
-          <td><strong>Replication</strong></td>
-          <td>Snowflake copies databases (or other objects) to a <em>secondary account</em>, often another region, on a schedule</td>
-          <td>Warm standby if Marcus’s primary region fails — not for Nora’s weekly read</td>
-        </tr>
-        <tr>
-          <td><strong>Failover group</strong></td>
-          <td>Named bundle of replicated objects you can <em>promote</em> so the secondary becomes primary</td>
-          <td>Marcus’s runbook: “when we fail over, these DBs flip together”</td>
-        </tr>
-        <tr>
-          <td><strong>RPO</strong> (recovery point objective)</td>
-          <td>“How stale can our copy be?” — bounded by replication refresh lag</td>
-          <td>If refresh is every 15 minutes, you might lose up to ~15 minutes of writes at failover</td>
-        </tr>
-        <tr>
-          <td><strong>RTO</strong> (recovery time objective)</td>
-          <td>“How long until users can work again?” — DNS, promotion steps, app config, smoke tests</td>
-          <td>Not the same as RPO — you can have small RPO but a long RTO if the runbook is manual</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>Three different jobs — don’t swap the tool</h2>
@@ -126,24 +145,26 @@
       <h2>Decision tree Elena draws for Marcus</h2>
       <p class="lede" style="font-size:1.05rem;margin-top:0">Start with the business question — not the Snowflake feature name.</p>
 
-      <table class="gloss">
-        <tr><th>Ask this first</th><th>If yes →</th><th>Meridian example</th></tr>
-        <tr>
-          <td>Does an <em>external partner</em> need read-only access to <em>our</em> curated metrics?</td>
-          <td><strong>Share</strong> (+ secure view, minimum columns)</td>
-          <td>Nora · <code>SHARE_MERIDIAN_TXNS</code></td>
-        </tr>
-        <tr>
-          <td>Does <em>our own team</em> need prod-like data today in the <em>same</em> account?</td>
-          <td><strong>Clone</strong> (or Time Travel for undo)</td>
-          <td>Dev · <code>CREATE TABLE … CLONE</code></td>
-        </tr>
-        <tr>
-          <td>Must we keep operating if an entire <em>region or account</em> is unavailable?</td>
-          <td><strong>Replication</strong> + failover group + tested runbook</td>
-          <td><code>MERIDIAN_BANK</code> enabled for replication to secondary</td>
-        </tr>
-      </table>
+      <div class="see-grid three">
+        <div class="see-card">
+          <div class="see-label">Partner read?</div>
+          <strong>→ Share</strong>
+          <p>External org, live curated metrics.</p>
+          <div class="see-example">Nora · <code>SHARE_MERIDIAN_TXNS</code></div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Internal QA?</div>
+          <strong>→ Clone</strong>
+          <p>Same account prod-like fork today.</p>
+          <div class="see-example">Dev · CREATE … CLONE</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Region down?</div>
+          <strong>→ Replication</strong>
+          <p>Failover group + tested runbook.</p>
+          <div class="see-example"><code>MERIDIAN_BANK</code> → secondary</div>
+        </div>
+      </div>
 
       <div class="callout warn">
         <strong>Wrong tool, right-sounding reason</strong>

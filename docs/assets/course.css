@@ -849,6 +849,88 @@ html {
   }
 }
 
+/* BEFORE / AFTER problem→solution screens */
+.ba-grid {
+  display: grid;
+  gap: 1rem;
+  margin: 1.25rem 0 1.75rem;
+}
+@media (min-width: 860px) {
+  .ba-grid { grid-template-columns: 1fr 1fr; }
+}
+.ba-panel {
+  margin: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.ba-panel.before { border-color: rgba(224, 128, 134, 0.55); }
+.ba-panel.after { border-color: rgba(91, 191, 150, 0.55); }
+.ba-panel img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ba-panel figcaption {
+  padding: 0.7rem 1rem 0.9rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  line-height: 1.45;
+}
+.ba-panel figcaption strong {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+.ba-panel.before figcaption strong { color: var(--bad); }
+.ba-panel.after figcaption strong { color: var(--ok); }
+
+/* Visual “see it” cards instead of theory tables */
+.see-grid {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem 0;
+}
+@media (min-width: 720px) {
+  .see-grid.two { grid-template-columns: 1fr 1fr; }
+  .see-grid.three { grid-template-columns: repeat(3, 1fr); }
+}
+.see-card {
+  padding: 1rem 1.05rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+}
+.see-card .see-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin-bottom: 0.35rem;
+}
+.see-card strong {
+  display: block;
+  font-size: 1.05rem;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+.see-card p { margin: 0; font-size: 0.92rem; color: var(--muted); line-height: 1.45; }
+.see-card .see-example {
+  margin-top: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: var(--code-bg);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--code-inline-text);
+  line-height: 1.4;
+}
+
 /* Teach-first blocks (assume zero prior jargon) */
 .teach {
   margin: 1.75rem 0 2rem;

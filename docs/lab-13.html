@@ -50,50 +50,63 @@
       Warehouse metering + query history from <code>SNOWFLAKE.ACCOUNT_USAGE</code>; attach resource monitor <code>RM_BANK_LAB</code> to <code>WH_BANK_XS</code> with notify and suspend triggers.
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab13-before.jpg" alt="BEFORE: Surprise invoice — ad hoc queries all weekend" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Surprise bill — nobody attributed the spike.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab13-after.jpg" alt="AFTER: ACCOUNT_USAGE meters plus RM_BANK_LAB brake" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Meters + monitor brake — see spend, cap runaway.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <p>After-the-fact attribution, then a guardrail before the next weekend.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Visibility</div>
+          <strong><code>SNOWFLAKE.ACCOUNT_USAGE</code></strong>
+          <p>Warehouse metering + query history — ~3h lag.</p>
+          <div class="see-example">WH_BANK_XS credits ↑<br>QUERY_HISTORY → who ran what</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Guardrail</div>
+          <strong><code>RM_BANK_LAB</code></strong>
+          <p>Credit budget on the warehouse — notify then suspend.</p>
+          <div class="see-example">NOTIFY 75% · SUSPEND 100%<br>stop ad hoc burn</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Credit</div>
+          <strong>Billing unit</strong>
+          <p>Warehouse size × time while running.</p>
+          <div class="see-example">weekend WH on → invoice spike</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Engineering</div>
+          <strong>Not monitors alone</strong>
+          <p>Clustering + incremental cut bytes scanned (Labs 02, 07, 08).</p>
+          <div class="see-example">FinOps = meters + discipline</div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab13-finops.jpg" alt="Brake the bill: ACCOUNT_USAGE and RM_BANK_LAB on WH_BANK_XS after Marcus's surprise invoice" width="1600" height="900" loading="eager" />
+      <img src="assets/lab13-finops.jpg" alt="Brake the bill: ACCOUNT_USAGE and RM_BANK_LAB on WH_BANK_XS after Marcus's surprise invoice" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Brake the bill</strong>
         ACCOUNT_USAGE + RM_BANK_LAB on WH_BANK_XS after Marcus’s surprise invoice.
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — FinOps dictionary</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Meridian use</th></tr>
-        <tr>
-          <td><strong>Credit</strong></td>
-          <td>Snowflake’s billing unit — warehouses consume credits while they run (size × time × policy)</td>
-          <td>Marcus’s invoice line item Finance forwarded</td>
-        </tr>
-        <tr>
-          <td><strong>ACCOUNT_USAGE</strong></td>
-          <td>Read-only views in the <code>SNOWFLAKE</code> database — usage history for the whole account</td>
-          <td>Where Elena proves who burned credits after the fact</td>
-        </tr>
-        <tr>
-          <td><strong>Lag (~3 hours)</strong></td>
-          <td>Usage views are not real-time — new queries may take hours to appear</td>
-          <td>Set Finance’s expectation: “directionally correct today, not second-by-second”</td>
-        </tr>
-        <tr>
-          <td><strong>WAREHOUSE_METERING_HISTORY</strong></td>
-          <td>Rollup of credits by warehouse over time windows</td>
-          <td>“WH_BANK_XS vs others this week”</td>
-        </tr>
-        <tr>
-          <td><strong>QUERY_HISTORY</strong></td>
-          <td>One row per query — user, role, warehouse, runtime, bytes scanned</td>
-          <td>Dispute resolution: “which SQL burned the weekend?”</td>
-        </tr>
-        <tr>
-          <td><strong>Resource monitor</strong></td>
-          <td>Credit budget on a warehouse (or account) with triggers — email notify and/or suspend</td>
-          <td><code>RM_BANK_LAB</code> stops runaway ad hoc before Marcus forwards another surprise</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>Visibility vs guardrails — two moves</h2>

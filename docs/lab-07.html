@@ -52,60 +52,63 @@
       then open <strong>Query Profile</strong> on the join in Query History — narrate bytes scanned and pruning before blaming the warehouse.
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab07-before.jpg" alt="BEFORE: Board query crawling with no diagnosis" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Board query dying — “buy a bigger warehouse?”
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab07-after.jpg" alt="AFTER: Query Profile shows bytes scanned and pruning" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Query Profile shows waste — fix SQL/scan before upsizing.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Open the X-ray <em>after</em> the query finishes — then decide warehouse vs SQL.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Profile</div>
+          <strong>Query Profile</strong>
+          <p>Operators, time, bytes scanned, partitions touched.</p>
+          <div class="see-example">slow join → see TableScan bytes<br>not guess WH size</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Scan</div>
+          <strong>Bytes scanned · pruning</strong>
+          <p>Micro-partitions skipped when filters help.</p>
+          <div class="see-example">read 90% of table ✗<br>prune to 7 days → Lab 08</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Scale up</div>
+          <strong>Bigger one cluster</strong>
+          <p>XS → S → M — when plan is OK but compute-bound.</p>
+          <div class="see-example">won’t fix full table scan</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Scale out</div>
+          <strong>More clusters</strong>
+          <p>Multi-cluster WH — concurrent users, not one heavy query.</p>
+          <div class="see-example">remote spill → rewrite or WH+</div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab07-profile.jpg" alt="Elena opens Query Profile while Alex's board query crawls on WH_BANK_XS" width="1600" height="900" loading="eager" />
+      <img src="assets/lab07-profile.jpg" alt="Elena opens Query Profile while Alex's board query crawls on WH_BANK_XS" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Open the blueprint</strong>
         Elena uses Query Profile while Alex’s board query crawls — diagnose before upsizing.
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — dictionary (learn this before the UI)</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Why Marcus cares</th></tr>
-        <tr>
-          <td><strong>Query Profile</strong></td>
-          <td>Snowsight “X-ray” of one finished query: operators, time, bytes read, partitions touched</td>
-          <td>Proves whether slowness is scan volume vs join vs spill vs warehouse queue</td>
-        </tr>
-        <tr>
-          <td><strong>Bytes scanned</strong></td>
-          <td>How much compressed data Snowflake actually read from storage for that query</td>
-          <td>Big scans = bigger bill + longer runtime even on a large warehouse</td>
-        </tr>
-        <tr>
-          <td><strong>Micro-partition</strong></td>
-          <td>Snowflake’s tiny storage chunk (roughly MB-scale) inside a table — not visible as “partitions” you create manually</td>
-          <td>Queries skip chunks they don’t need (<em>pruning</em>); bad filters scan too many chunks</td>
-        </tr>
-        <tr>
-          <td><strong>Partition pruning</strong></td>
-          <td>Percentage of micro-partitions skipped because filters/clustering helped</td>
-          <td>Low pruning on a date filter → clustering or SQL fix (Lab 08) before “buy bigger WH”</td>
-        </tr>
-        <tr>
-          <td><strong>Warehouse size</strong></td>
-          <td>T-shirt size (XS, S, M, …) — more CPU/memory per cluster for the same query plan</td>
-          <td>Helps when the plan is sound but compute-bound; doesn’t fix reading the whole table</td>
-        </tr>
-        <tr>
-          <td><strong>Scale up</strong></td>
-          <td>Make one cluster bigger (XS → S → M)</td>
-          <td>“Stronger single engine” for tough queries</td>
-        </tr>
-        <tr>
-          <td><strong>Scale out</strong></td>
-          <td>Add clusters on a <em>multi-cluster</em> warehouse for concurrent users</td>
-          <td>“More checkout lanes” — not the same as making one query faster</td>
-        </tr>
-        <tr>
-          <td><strong>Remote spill</strong></td>
-          <td>Query ran out of memory and wrote temp data to remote storage mid-run</td>
-          <td>Profile red flag — often bigger WH or rewrite join/aggregate</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>Elena’s diagnosis order (interview script)</h2>

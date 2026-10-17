@@ -53,70 +53,63 @@
       <code>ROLE_BANK_LAB_ADMIN</code>, schemas for landing through utils, and five sample <code>LANDING.CLIENTS</code> rows with PII for tomorrow’s security lab.
     </div>
 
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab00-before.jpg" alt="BEFORE: No dedicated bank home — files and tables scattered" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          No bank home — files and half-built tables everywhere.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab00-after.jpg" alt="AFTER: MERIDIAN_BANK with labeled rooms and WH_BANK_XS" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          One building — <code>MERIDIAN_BANK</code> rooms + <code>WH_BANK_XS</code> engine.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — don’t memorize definitions</h2>
+      <p>Look at what you’re about to create in Snowsight — names you’ll reuse all week.</p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Container</div>
+          <strong>Database = the building</strong>
+          <p>Everything Meridian owns lives inside one named database.</p>
+          <div class="see-example">random tables →<br><code>MERIDIAN_BANK</code></div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Folder</div>
+          <strong>Schema = a room</strong>
+          <p>Groups related tables — like floors in the building.</p>
+          <div class="see-example"><code>LANDING</code> = loading dock<br><code>CURATED</code> = clean shelves</div>
+        </div>
+      </div>
+      <div class="see-grid two" style="margin-top:0.85rem">
+        <div class="see-card">
+          <div class="see-label">Engine</div>
+          <strong>Warehouse runs queries</strong>
+          <p>Compute you turn on — credits while it’s running.</p>
+          <div class="see-example"><code>USE WAREHOUSE WH_BANK_XS;</code><br>small · auto-suspend</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Badges</div>
+          <strong>Two roles today</strong>
+          <p>Mayor bootstraps; Elena wears architect badge for daily labs.</p>
+          <div class="see-example">ACCOUNTADMIN (5 min)<br>→ <code>ROLE_BANK_LAB_ADMIN</code></div>
+        </div>
+      </div>
+    </section>
+
     <figure class="viz-panel">
-      <img src="assets/lab00-workshop.jpg" alt="Meridian Bank building: Elena opens MERIDIAN_BANK with schemas LANDING through UTILS and warehouse WH_BANK_XS while Marcus watches" width="1600" height="900" loading="eager" />
+      <img src="assets/lab00-workshop.jpg" alt="Meridian Bank building: Elena opens MERIDIAN_BANK with schemas LANDING through UTILS and warehouse WH_BANK_XS while Marcus watches" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · The bank building</strong>
         Elena opens MERIDIAN_BANK; rooms LANDING→UTILS; engine WH_BANK_XS; Marcus watches.
       </figcaption>
     </figure>
-
-    <section class="teach">
-      <h2>Teach first — dictionary (no assumed knowledge)</h2>
-      <table class="gloss">
-        <tr><th>Word</th><th>Layman meaning</th><th>Bank metaphor</th></tr>
-        <tr>
-          <td><strong>Account</strong></td>
-          <td>Your whole Snowflake tenant (one bill, many users)</td>
-          <td>The city Meridian Bank rents space in</td>
-        </tr>
-        <tr>
-          <td><strong>Database</strong></td>
-          <td>Top-level container for related data</td>
-          <td>The bank building — <code>MERIDIAN_BANK</code></td>
-        </tr>
-        <tr>
-          <td><strong>Schema</strong></td>
-          <td>Folder inside a database (groups tables/views)</td>
-          <td>Floor or room — <code>LANDING</code> = loading dock</td>
-        </tr>
-        <tr>
-          <td><strong>Table</strong></td>
-          <td>Stored rows and columns you query with SELECT</td>
-          <td>Filing cabinet — e.g. <code>LANDING.CLIENTS</code></td>
-        </tr>
-        <tr>
-          <td><strong>Warehouse</strong></td>
-          <td>Compute cluster that runs queries (you pay when it’s on)</td>
-          <td>Engine room — <code>WH_BANK_XS</code> is a small, auto-sleeping motor</td>
-        </tr>
-        <tr>
-          <td><strong>Role</strong></td>
-          <td>Bundle of permissions — what you’re allowed to do</td>
-          <td>Job badge — who you are for this session</td>
-        </tr>
-        <tr>
-          <td><code>ACCOUNTADMIN</code></td>
-          <td>Snowflake’s built-in “mayor” role — can create anything account-wide</td>
-          <td>City mayor — use for five minutes, not daily work</td>
-        </tr>
-        <tr>
-          <td><code>ROLE_BANK_LAB_ADMIN</code></td>
-          <td>Elena’s custom architect badge — owns the lab objects we create</td>
-          <td>Head of facilities — builds rooms, not god-mode on the whole city</td>
-        </tr>
-        <tr>
-          <td><strong>GRANT</strong></td>
-          <td>Give a permission from one role to another</td>
-          <td>Hand someone a key or stamp a badge</td>
-        </tr>
-        <tr>
-          <td><strong>OWNERSHIP</strong></td>
-          <td>Full control over an object (alter, drop, re-grant)</td>
-          <td>Elena’s name on the building deed</td>
-        </tr>
-      </table>
-    </section>
 
     <section class="teach">
       <h2>ACCOUNTADMIN vs lab admin — why both?</h2>
@@ -148,15 +141,26 @@
 
     <section class="teach">
       <h2>Rooms Elena labels inside MERIDIAN_BANK</h2>
-      <table class="gloss">
-        <tr><th>Schema</th><th>Bank meaning</th></tr>
-        <tr><td><code>LANDING</code></td><td>Loading dock — raw client/txn files land here (not “RAW”)</td></tr>
-        <tr><td><code>CURATED</code></td><td>Clean shelves — safe for broader read</td></tr>
-        <tr><td><code>RISK_CTRL</code></td><td>Policy office — masking / entitlements (Lab 03)</td></tr>
-        <tr><td><code>FINANCE_MART</code></td><td>Report wall for Finance / Alex (Lab 04 gold)</td></tr>
-        <tr><td><code>FILE_IN</code></td><td>Truck bay for file stages (later labs)</td></tr>
-        <tr><td><code>UTILS</code></td><td>Toolbox — helpers, UDFs</td></tr>
-      </table>
+      <div class="see-grid three">
+        <div class="see-card">
+          <div class="see-label">Dock</div>
+          <strong><code>LANDING</code></strong>
+          <p>Raw client/txn files land here — not “RAW”.</p>
+          <div class="see-example"><code>LANDING.CLIENTS</code></div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Shelves</div>
+          <strong><code>CURATED</code></strong>
+          <p>Cleaned data — broader read than the dock.</p>
+          <div class="see-example">views · facts · Lab 01 window</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Later labs</div>
+          <strong><code>RISK_CTRL</code> · <code>FINANCE_MART</code> · <code>FILE_IN</code></strong>
+          <p>Policies, gold reports, file truck bay.</p>
+          <div class="see-example">masking · board metrics · COPY</div>
+        </div>
+      </div>
       <p>Snowflake also shows <code>PUBLIC</code> and <code>INFORMATION_SCHEMA</code> — automatic; ignore for this course.</p>
     </section>
 

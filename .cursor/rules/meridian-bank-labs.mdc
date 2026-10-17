@@ -23,18 +23,20 @@ See `docs/BANK_NAMING.md`. Cleanup: `sql/cleanup_lab00_lab01.sql`.
 
 1. Business problem (`callout bad`)
 2. Solution (`callout ok`)
-3. Hero `<figure class="viz-panel">` immediately after Solution — JPG from `docs/assets/`, caption per `docs/CAST_VISUAL.md`; story page uses `cast-sheet.jpg`
-4. **Teach-first** (`.teach`) — assume zero prior knowledge. Plain English + metaphor + visual before SQL.
-5. **Small explained chunks** — prefer ≤12 lines per Copy block. Never dump an entire `sql/*.sql` file as one unexplained block. Pattern: *What this does* → tiny SQL → *What you should see*.
-6. Elena wrap-up (`.soundbite`)
+3. **BEFORE / AFTER** (`.ba-grid` + `docs/assets/labXX-before.jpg` / `labXX-after.jpg`) — immediately after Solution; optional extra concept JPG/SVG later
+4. **See it** (`.see-grid` / `.see-card`) — concrete before→after examples; **not** Word/Layman/Metaphor dictionary tables
+5. Contrast sections like Lab 03 “two different problems” / `.flow-pipeline` when ideas get mixed up
+6. **Teach-first** (`.teach`) — assume zero prior knowledge. Plain English before SQL.
+7. **Small explained chunks** — prefer ≤12 lines per Copy block. Never dump an entire `sql/*.sql` file as one unexplained block. Pattern: *What this does* → tiny SQL → *What you should see*.
+8. Elena wrap-up (`.soundbite`)
 
-See `docs/TEACHING_STANDARD.md`. Reference: Lab 02 (dbt/watermark), Lab 03 (masking/RAP).
+See `docs/TEACHING_STANDARD.md`. Reference: Lab 03 (BEFORE/AFTER + see-cards), Lab 02 (animated pipeline + watermark).
 
 Lab art: `CAST_VISUAL.md` + `cast-sheet.jpg`; no overlapping SVG text; use `.flow-pipeline` for multi-object flows.
 
 ### Teach-first checklist (do not skip)
 
-- Dictionary table for every new jargon word in that lab
+- See-card with concrete example for every new jargon idea in that lab (not gloss tables)
 - Name every object in the flow
 - Why this option vs alternatives
 - What the student should see after each chunk
