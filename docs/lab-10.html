@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 10 — Secure sharing &amp; Marketplace</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
+        <a href="lab-02.html">Lab 02</a>
+        <a href="lab-03.html">Lab 03</a>
+        <a href="lab-04.html">Lab 04</a>
+        <a href="lab-05.html">Lab 05</a>
+        <a href="lab-06.html">Lab 06</a>
+        <a href="lab-07.html">Lab 07</a>
+        <a href="lab-08.html">Lab 08</a>
+        <a href="lab-09.html">Lab 09</a>
+        <a class="active" href="lab-10.html">Lab 10</a>
+        <a href="lab-11.html">Lab 11</a>
+        <a href="lab-12.html">Lab 12</a>
+        <a href="lab-13.html">Lab 13</a>
+        <a href="lab-14.html">Lab 14</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 10 · Data exchange · Understand first, then run</p>
+    <h1>Secure data sharing &amp; Marketplace talktrack</h1>
+    <p class="lede">
+      Sharing lets a <strong>provider</strong> expose read-only objects to a <strong>consumer</strong> account
+      without copying files out of Snowflake. You can complete the provider side in one trial account;
+      cross-account finish needs a second account (optional).
+    </p>
+
+    <div class="callout tip">
+      <strong>After this lab you can explain</strong>
+      <ul>
+        <li>Why shares expose <strong>secure views</strong> — not raw tables with hidden predicates</li>
+        <li>Provider steps: secure view → share → grants → (optional) add consumer account</li>
+        <li>Marketplace vs private share (listing, billing, public discovery)</li>
+        <li><code>CREATE SHARE</code> privilege — repair script if create fails</li>
+      </ul>
+    </div>
+
+    <div class="callout warn">
+      <strong>Privilege repair</strong>
+      If <code>CREATE SHARE</code> fails, run Lab 00 / <code>sql/00_privilege_repair.sql</code> as ACCOUNTADMIN
+      (includes <code>GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN</code>).
+    </div>
+
+    <h2>Big picture</h2>
+    <div class="flow">
+      <div class="node accent">Provider account</div>
+      <div class="arrow">→</div>
+      <div class="node">Secure view<br /><small>column filter</small></div>
+      <div class="arrow">→</div>
+      <div class="node">Share object</div>
+      <div class="arrow">→</div>
+      <div class="node">Consumer reads<br /><small>their compute</small></div>
+    </div>
+    <p class="hint">Consumer queries run in <em>their</em> warehouse — provider doesn’t pay their compute.</p>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">0</div>
+        <div>
+          <h3>CREATE SHARE privilege (only if Step 2 fails)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Creating shares is account-level. ACCOUNTADMIN delegates it to the lab admin role once.</p>
+        <span class="why">Same pattern as CREATE ROLE in Lab 01 — architects know which privileges are account-scoped.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 0 · privilege snippet</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Secure view — what leaves the building</h3>
+          <p>Only safe columns from <code>RAW.ORDERS_EVENTS</code>.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>Why SECURE VIEW</th><th>Plain English</th></tr>
+          <tr><td>Predicate / join protection</td><td>Consumer cannot inspect view SQL to bypass row filters</td></tr>
+          <tr><td>Column list</td><td>You explicitly export ORDER_ID, totals — not internal PII columns</td></tr>
+        </table>
+        <span class="why">Interviewers ask: “Why not share the table?” — secure view + least columns is the architect answer.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 1 · secure view</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+
+CREATE OR REPLACE SECURE VIEW CURATED.V_SHARE_ORDERS AS
+SELECT ORDER_ID, CUSTOMER_ID, STATUS, ORDER_TOTAL
+FROM RAW.ORDERS_EVENTS;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Create share &amp; grant objects</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>Grant</th><th>Why order matters</th></tr>
+          <tr><td><code>USAGE ON DATABASE</code></td><td>Share must see the database container</td></tr>
+          <tr><td><code>USAGE ON SCHEMA</code></td><td>Then the schema</td></tr>
+          <tr><td><code>SELECT ON VIEW</code></td><td>Only the secure view — not whole RAW schema</td></tr>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 2 · share + grants</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE SHARE IF NOT EXISTS SHARE_ARCH_ORDERS;
+GRANT USAGE ON DATABASE ARCH_INTERVIEW TO SHARE SHARE_ARCH_ORDERS;
+GRANT USAGE ON SCHEMA CURATED TO SHARE SHARE_ARCH_ORDERS;
+GRANT SELECT ON VIEW CURATED.V_SHARE_ORDERS TO SHARE SHARE_ARCH_ORDERS;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Verify provider side</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p><code>SHOW GRANTS TO SHARE</code> lists exactly what consumers will see after they accept the share.</p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 3 · inspect share</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SHOW SHARES LIKE 'SHARE_ARCH_ORDERS';
+SHOW GRANTS TO SHARE SHARE_ARCH_ORDERS;
+
+SELECT 'Lab 10 share created with secure view — add consumer account to complete' AS status;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Cross-account finish (optional — second account)</h3>
+          <p>Skip on a single trial; know the lines for the interview.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Provider ACCOUNTADMIN adds consumer account locator. Consumer creates a database from the share.</p>
+        <span class="why">Marketplace adds listing, discovery, and commercial terms — same underlying share mechanics with packaging.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 4 · talktrack only</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Provider (ACCOUNTADMIN):
+-- ALTER SHARE SHARE_ARCH_ORDERS ADD ACCOUNTS = &lt;consumer_account_locator&gt;;
+
+-- Consumer:
+-- CREATE DATABASE ARCH_ORDERS_SHARED FROM SHARE &lt;provider_account&gt;.SHARE_ARCH_ORDERS;
+-- SELECT * FROM ARCH_ORDERS_SHARED.CURATED.V_SHARE_ORDERS LIMIT 10;</code></pre>
+      </div>
+    </article>
+
+    <h2>Marketplace (no SQL — interview talktrack)</h2>
+    <ul>
+      <li><strong>Private share</strong> — known partner, invite by account locator.</li>
+      <li><strong>Data Exchange</strong> — closed group of organizations.</li>
+      <li><strong>Marketplace listing</strong> — public/partner catalog, subscription flow, optional monetization.</li>
+    </ul>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">✓</div>
+        <div>
+          <h3>Quick self-check</h3>
+        </div>
+      </div>
+      <ol>
+        <li>Who pays compute when the consumer queries a share?</li>
+        <li>Why secure view instead of table share?</li>
+        <li>What privilege does the lab role need to create a share?</li>
+      </ol>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Click for short answers</strong></summary>
+        <ol>
+          <li>Consumer — their warehouse credits.</li>
+          <li>Hide definition / enforce column &amp; row logic; reduce over-exposure.</li>
+          <li><code>CREATE SHARE ON ACCOUNT</code> (via ACCOUNTADMIN grant).</li>
+        </ol>
+      </details>
+    </article>
+
+    <div class="soundbite">
+      <strong>60-second interview answer</strong><br />
+      “I expose partner data with a secure view on the minimum columns, attach it to a share with db/schema usage grants,
+      and add consumer accounts explicitly. Consumers query in their account with their compute.
+      For public distribution I’d use Marketplace listings; for one partner, a private share.
+      I never share raw PII tables when a curated secure view suffices.”
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-09.html">← Lab 09</a>
+      <a class="btn primary" href="lab-11.html">Next: Lab 11 DR / replication →</a>
+    </div>
+  </div>
+
+  <footer class="footer">Stuck? Copy the Step number + SQL + error into chat.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

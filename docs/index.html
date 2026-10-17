@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Snowflake Architect Interview Prep</title>
+  <title>Snowflake Architect Interview Prep — Full Course</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -12,112 +12,84 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a class="active" href="index.html">Home</a>
-        <a href="lab-00.html">Lab 00</a>
-        <a href="lab-01.html">Lab 01</a>
-        <a href="lab-02.html">Lab 02</a>
-        <a href="study_guide_map.md">Exam map</a>
+        <a href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-14.html">14</a>
+        <a href="#labs">All labs</a>
       </nav>
     </div>
   </header>
 
   <div class="wrap">
     <section class="hero">
-      <p class="eyebrow">Interview first · Hands-on · Snowflake + dbt</p>
-      <h1>Don’t memorize theory.<br />Build it, then explain it.</h1>
+      <p class="eyebrow">Full course · ~18 hours · Interview + exam-aligned</p>
+      <h1>Build it. Understand it.<br />Then say it out loud.</h1>
       <p class="lede">
-        Rule: <strong>read the blue “Understand this” box → then copy a small SQL chunk</strong>.
-        Blind copy-paste will not save you in an interview. Start with Lab 00.
+        15 labs (00–14). Rule every time:
+        <strong>blue “Understand this” box → then Copy</strong>.
+        No blind paste. Schedule: <a href="COURSE_18H.md">COURSE_18H.md</a>.
       </p>
       <div class="cta-row">
-        <a class="btn primary" href="lab-00.html">Start Lab 00 → Setup</a>
-        <a class="btn ghost" href="#how">How this works</a>
+        <a class="btn primary" href="lab-00.html">Start Lab 00</a>
+        <a class="btn ghost" href="lab-14.html">Jump to mock interview</a>
       </div>
     </section>
 
-    <section id="how">
-      <h2>How you will learn (super simple)</h2>
+    <section>
+      <h2>How you learn</h2>
       <div class="flow">
-        <div class="node accent">1. Open lab HTML</div>
+        <div class="node accent">1. Read explain</div>
         <div class="arrow">→</div>
         <div class="node">2. Copy SQL</div>
         <div class="arrow">→</div>
-        <div class="node">3. Paste in Snowsight</div>
+        <div class="node">3. Run in Snowsight</div>
         <div class="arrow">→</div>
-        <div class="node">4. Compare to screenshot</div>
+        <div class="node">4. Self-check</div>
         <div class="arrow">→</div>
-        <div class="node accent">5. Say the answer</div>
+        <div class="node accent">5. Soundbite</div>
       </div>
-      <div class="callout tip">
-        <strong>You only need</strong>
-        A Snowflake account (trial is fine) + a web browser. For Lab 02 also need dbt in VS Code.
+      <div class="callout warn">
+        <strong>First time on a new machine?</strong>
+        After Lab 00, if any later lab says “insufficient privileges”, run that lab’s <strong>Step 0</strong> as <code>ACCOUNTADMIN</code> (or <code>sql/00_privilege_repair.sql</code>).
       </div>
     </section>
 
-    <section>
-      <h2>Starter labs (do these first)</h2>
-      <p class="hint">About 15–45 minutes each. Finish 00 before 01. Finish 01 before 02.</p>
+    <section id="labs">
+      <h2>All labs (do in order)</h2>
       <div class="grid">
-        <a class="card" href="lab-00.html">
-          <span class="num">Lab 00 · 15 min</span>
-          <h3>Course setup</h3>
-          <p>Create your playground database, warehouse, and lab admin role. One-time setup.</p>
-          <ul>
-            <li>Copy-paste SQL with one click</li>
-            <li>Picture of what Snowsight should show</li>
-          </ul>
-        </a>
-        <a class="card" href="lab-01.html">
-          <span class="num">Lab 01 · 40 min</span>
-          <h3>RBAC like an architect</h3>
-          <p>Prove an analyst can see safe data but not PII. This is a top interview question.</p>
-          <ul>
-            <li>Functional vs access roles</li>
-            <li>Pass / fail demos</li>
-          </ul>
-        </a>
-        <a class="card" href="lab-02.html">
-          <span class="num">Lab 02 · 40 min</span>
-          <h3>dbt incremental merge</h3>
-          <p>Run dbt twice. Second run only merges changes. Explain why that saves money.</p>
-          <ul>
-            <li>SQL load + dbt commands</li>
-            <li>Day-1 / Day-2 story</li>
-          </ul>
-        </a>
+        <a class="card" href="lab-00.html"><span class="num">00 · 45–60m</span><h3>Setup</h3><p>Warehouse, lab role, schemas, privilege smoke test.</p></a>
+        <a class="card" href="lab-01.html"><span class="num">01 · 60–90m</span><h3>RBAC</h3><p>Functional vs access roles. Prove analyst blocked from PII.</p></a>
+        <a class="card" href="lab-02.html"><span class="num">02 · 60m</span><h3>dbt incremental</h3><p>Merge, unique_key, watermark, Day 1 / Day 2.</p></a>
+        <a class="card" href="lab-03.html"><span class="num">03 · 75m</span><h3>Masking + RAP</h3><p>Column mask + row filter by role on CUSTOMERS_GOV.</p></a>
+        <a class="card" href="lab-04.html"><span class="num">04 · 60m</span><h3>Medallion / DV</h3><p>Bronze→Silver→Gold hands-on; Data Vault when/why.</p></a>
+        <a class="card" href="lab-05.html"><span class="num">05 · 75m</span><h3>Streams &amp; tasks</h3><p>CDC task, suspend, vs dynamic tables vs dbt.</p></a>
+        <a class="card" href="lab-06.html"><span class="num">06 · 60m</span><h3>Landing / Snowpipe</h3><p>Stage + COPY; Snowpipe = automated COPY story.</p></a>
+        <a class="card" href="lab-07.html"><span class="num">07 · 75m</span><h3>Query Profile</h3><p>Spill, prune, scale up vs out.</p></a>
+        <a class="card" href="lab-08.html"><span class="num">08 · 60m</span><h3>Clustering</h3><p>SYSTEM$CLUSTERING_INFORMATION; search opt talk.</p></a>
+        <a class="card" href="lab-09.html"><span class="num">09 · 60m</span><h3>Time Travel / clone</h3><p>UNDROP, zero-copy clone, Dev/QA pattern.</p></a>
+        <a class="card" href="lab-10.html"><span class="num">10 · 45m</span><h3>Data sharing</h3><p>Secure view + share; Marketplace talktrack.</p></a>
+        <a class="card" href="lab-11.html"><span class="num">11 · 45m</span><h3>DR / multi-account</h3><p>Share vs replicate vs clone decisions.</p></a>
+        <a class="card" href="lab-12.html"><span class="num">12 · 60m</span><h3>dbt at scale</h3><p>Contracts, Slim CI, sources.</p></a>
+        <a class="card" href="lab-13.html"><span class="num">13 · 60m</span><h3>FinOps</h3><p>ACCOUNT_USAGE, resource monitors.</p></a>
+        <a class="card" href="lab-14.html"><span class="num">14 · 90–120m</span><h3>Mock interview</h3><p>12 scenarios — answer out loud.</p></a>
       </div>
     </section>
 
     <section>
-      <h2>In sync with the official exam guide?</h2>
-      <div class="callout ok">
-        <strong>Yes for these starters</strong>
-        Lab 01 = Domain 1.2 (RBAC). Lab 02 = Domain 3 transforms + official dbt Quickstarts.
-        We keep interview path short; exam extras come later.
-        See <a href="study_guide_map.md">study guide map</a>.
-      </div>
-    </section>
-
-    <section id="roadmap">
-      <h2>Coming after your feedback</h2>
-      <table class="plain">
-        <thead>
-          <tr><th>ID</th><th>Topic</th><th>Interview weight</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>03</td><td>Masking + row access policies</td><td>Very high</td></tr>
-          <tr><td>04</td><td>Medallion vs Data Vault</td><td>Very high</td></tr>
-          <tr><td>05</td><td>Streams / tasks / dynamic tables vs dbt</td><td>Very high</td></tr>
-          <tr><td>06</td><td>Snowpipe landing zones</td><td>High</td></tr>
-          <tr><td>07</td><td>Query Profile &amp; warehouse sizing</td><td>Very high</td></tr>
-          <tr><td>08–14</td><td>Clustering, sharing, DR, dbt CI, FinOps, mocks</td><td>High</td></tr>
-        </tbody>
-      </table>
+      <h2>Study guide sync</h2>
+      <p class="hint">
+        Domains 1–4 mapped in <a href="study_guide_map.md">study_guide_map.md</a>.
+        Privilege rules for authors: <a href="privilege_contract.md">privilege_contract.md</a>.
+        Keep official PDF local only (not in git).
+      </p>
     </section>
   </div>
 
   <footer class="footer">
-    Repo <code>snowflake_architect_fk</code> · GitHub user <code>fkhambaty</code> ·
-    Open this file from disk or from the repo <code>docs/index.html</code>
+    Repo <code>snowflake_architect_fk</code> · open <code>docs/index.html</code> in a browser
   </footer>
   <script src="assets/course.js"></script>
 </body>

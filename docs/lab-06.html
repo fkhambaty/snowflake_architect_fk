@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 06 — Landing zone + COPY / Snowpipe</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
+        <a href="lab-02.html">Lab 02</a>
+        <a href="lab-03.html">Lab 03</a>
+        <a href="lab-04.html">Lab 04</a>
+        <a href="lab-05.html">Lab 05</a>
+        <a class="active" href="lab-06.html">Lab 06</a>
+        <a href="lab-07.html">Lab 07</a>
+        <a href="lab-08.html">Lab 08</a>
+        <a href="lab-09.html">Lab 09</a>
+        <a href="lab-10.html">Lab 10</a>
+        <a href="lab-11.html">Lab 11</a>
+        <a href="lab-12.html">Lab 12</a>
+        <a href="lab-13.html">Lab 13</a>
+        <a href="lab-14.html">Lab 14</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 06 · Ingestion · Understand first, then run</p>
+    <h1>Landing zone + internal stage COPY (Snowpipe story)</h1>
+    <p class="lede">
+      You simulate “file lands → COPY INTO table” using an <strong>internal stage</strong>.
+      No AWS or Azure account required. In production, <strong>Snowpipe</strong> automates the same COPY when files hit cloud storage.
+    </p>
+
+    <div class="callout tip">
+      <strong>Interview story arc</strong>
+      <ol>
+        <li>Files land in a stage (S3 / ADLS / GCS — or internal for labs)</li>
+        <li><code>COPY INTO</code> loads into a <strong>landing</strong> table in <code>RAW</code></li>
+        <li>Downstream: streams, tasks, or dbt build silver/gold</li>
+      </ol>
+    </div>
+
+    <h2>Big picture</h2>
+    <div class="flow">
+      <div class="node">CSV file<br /><small>@stage</small></div>
+      <div class="arrow">→</div>
+      <div class="node accent">COPY INTO</div>
+      <div class="arrow">→</div>
+      <div class="node">RAW.ORDERS_LANDING</div>
+    </div>
+
+    <!-- STEP 0 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">0</div>
+        <div>
+          <h3>Privilege repair (optional)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Ensures <code>STAGE_DATA</code> schema exists and lab admin can create stages and file formats.</p>
+        <span class="why">Skip if Lab 03 Step 0 already created all course schemas.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 0</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+SET uname = (SELECT CURRENT_USER());
+GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
+USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE DATABASE ARCH_INTERVIEW;
+CREATE SCHEMA IF NOT EXISTS STAGE_DATA;
+SELECT 'Schema STAGE_DATA ready' AS status;</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 1 FORMAT + STAGE -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>File format + internal stage</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>Object</th><th>Plain English</th></tr>
+          <tr><td><code>FILE FORMAT FF_CSV_SIMPLE</code></td><td>Rules for reading CSV (quotes, headers)</td></tr>
+          <tr><td><code>STAGE STG_ORDERS_INTERNAL</code></td><td>Folder inside Snowflake to hold files</td></tr>
+          <tr><td><code>INTERNAL</code> stage</td><td>No cloud bucket — perfect for learning COPY mechanics</td></tr>
+        </table>
+        <span class="why">Snowpipe on external stages triggers COPY when new files appear — same load semantics, different trigger.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · format + stage</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+
+CREATE SCHEMA IF NOT EXISTS STAGE_DATA;
+USE SCHEMA STAGE_DATA;
+
+CREATE OR REPLACE FILE FORMAT FF_CSV_SIMPLE
+  TYPE = CSV
+  FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+  SKIP_HEADER = 0;
+
+CREATE OR REPLACE STAGE STG_ORDERS_INTERNAL
+  FILE_FORMAT = FF_CSV_SIMPLE;</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 2 LANDING TABLE -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Landing table (bronze-shaped)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Landing tables often mirror file columns before typing/constraints in silver.</p>
+        <span class="why">Production might add metadata columns (<code>FILE_NAME</code>, <code>LOAD_TIME</code>) — keep interview answer in mind.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · landing table</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE RAW.ORDERS_LANDING (
+  ORDER_ID NUMBER,
+  CUSTOMER_ID NUMBER,
+  STATUS STRING,
+  ORDER_TOTAL NUMBER(12,2)
+);</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 3 UNLOAD TO STAGE -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Simulate “file landed” — COPY into stage</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Real life: an app drops <code>orders_day1.csv</code> into S3. Here we <code>COPY INTO @stage</code> from inline VALUES to create that file.</p>
+        <table class="gloss">
+          <tr><th>Option</th><th>Meaning</th></tr>
+          <tr><td><code>OVERWRITE = TRUE</code></td><td>Replace same path on re-run</td></tr>
+          <tr><td><code>SINGLE = TRUE</code></td><td>One output file (<code>.csv.gz</code>)</td></tr>
+        </table>
+        <span class="why">After this step, <code>LIST @stage</code> should show the gzipped CSV.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · write file to stage</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>COPY INTO @STG_ORDERS_INTERNAL/orders_day1.csv.gz
+FROM (
+  SELECT * FROM VALUES
+    (2001, 1, 'CREATED', 10.00),
+    (2002, 2, 'CREATED', 20.00),
+    (2003, 3, 'SHIPPED', 30.00)
+)
+OVERWRITE = TRUE
+SINGLE = TRUE;
+
+LIST @STG_ORDERS_INTERNAL;</code></pre>
+      </div>
+      <div class="badge-ok">✓ See <code>orders_day1.csv.gz</code> in LIST output</div>
+    </article>
+
+    <!-- STEP 4 COPY INTO TABLE -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>COPY INTO landing table (what Snowpipe automates)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>COPY INTO RAW.ORDERS_LANDING FROM @stage</code></td><td>Load staged files into the table</td></tr>
+          <tr><td><code>PATTERN = '.*orders_day1.csv.gz'</code></td><td>Only pick matching files</td></tr>
+          <tr><td><code>ON_ERROR = 'ABORT_STATEMENT'</code></td><td>Fail fast if a row is bad</td></tr>
+        </table>
+        <p><strong>Snowpipe</strong> = event-driven service that runs COPY (or similar load) when new files land on an <em>external</em> stage. You still define file format, target table, and error policy.</p>
+        <span class="why">Interview: “I design idempotent loads, file patterns, and landing→raw promotion — Snowpipe handles the trigger.”</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · load landing</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>COPY INTO RAW.ORDERS_LANDING
+FROM @STG_ORDERS_INTERNAL
+FILE_FORMAT = (FORMAT_NAME = 'STAGE_DATA.FF_CSV_SIMPLE')
+PATTERN = '.*orders_day1.csv.gz'
+ON_ERROR = 'ABORT_STATEMENT';
+
+SELECT * FROM RAW.ORDERS_LANDING ORDER BY ORDER_ID;
+
+SELECT 'Lab 06 landing COPY OK' AS status;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Three rows: 2001, 2002, 2003</div>
+    </article>
+
+    <!-- SNOWPIPE TALK -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <div>
+          <h3>Snowpipe vs manual COPY (talktrack)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>No extra SQL required — read for the interview</h4>
+        <ul>
+          <li><strong>Manual COPY</strong> (this lab): you run COPY when you know the file is ready.</li>
+          <li><strong>Snowpipe</strong>: cloud storage notification → Snowflake queues loads → COPY-like ingest continuously.</li>
+          <li><strong>Cost angle</strong>: Snowpipe charges per file/batch; warehouses may still participate depending on pipe setup (mention auto-ingest vs REST).</li>
+        </ul>
+        <span class="why">You don’t need AWS keys in this course — explain the pattern confidently from internal stage experience.</span>
+      </div>
+    </article>
+
+    <!-- QUIZ -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">✓</div>
+        <div>
+          <h3>Self-check</h3>
+        </div>
+      </div>
+      <ol>
+        <li>Stage vs table — what lives where?</li>
+        <li>Why a landing table instead of loading straight into a mart?</li>
+        <li>What does Snowpipe add on top of COPY?</li>
+        <li>What does <code>ON_ERROR = 'ABORT_STATEMENT'</code> protect?</li>
+      </ol>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Click for short answers</strong></summary>
+        <ol>
+          <li>Stage holds files; table holds relational rows after load.</li>
+          <li>Isolate raw file shape, replay loads, and apply RBAC/transforms downstream.</li>
+          <li>Automatic, event-driven ingestion when files arrive — not manual COPY runs.</li>
+          <li>Prevents partial silent bad data — whole statement fails.</li>
+        </ol>
+      </details>
+    </article>
+
+    <div class="soundbite">
+      <strong>Interview soundbite</strong><br />
+      “Landing zone pattern: files hit a stage, COPY INTO a RAW landing table with explicit file format and pattern,
+      then promote through medallion layers. Snowpipe is automated COPY on external stages with queueing and notifications —
+      I still own schema evolution, dedupe, and error handling.”
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-05.html">← Lab 05</a>
+      <a class="btn primary" href="lab-07.html">Next: Lab 07 Query Profile →</a>
+    </div>
+  </div>
+
+  <footer class="footer">COPY failed? Check LIST output path matches PATTERN and column count matches table.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

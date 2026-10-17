@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 14 — Mock interview pack</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
+        <a href="lab-02.html">Lab 02</a>
+        <a href="lab-03.html">Lab 03</a>
+        <a href="lab-04.html">Lab 04</a>
+        <a href="lab-05.html">Lab 05</a>
+        <a href="lab-06.html">Lab 06</a>
+        <a href="lab-07.html">Lab 07</a>
+        <a href="lab-08.html">Lab 08</a>
+        <a href="lab-09.html">Lab 09</a>
+        <a href="lab-10.html">Lab 10</a>
+        <a href="lab-11.html">Lab 11</a>
+        <a href="lab-12.html">Lab 12</a>
+        <a href="lab-13.html">Lab 13</a>
+        <a class="active" href="lab-14.html">Lab 14</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 14 · Mock interview · Drill out loud</p>
+    <h1>12 scenario questions — model “Say this” answers</h1>
+    <p class="lede">
+      Read each scenario. Cover the answer in 60–90 seconds without reading verbatim.
+      Each item links back to a lab. No Snowflake required — this is rehearsal.
+    </p>
+
+    <div class="callout tip">
+      <strong>How to drill</strong>
+      <ol>
+        <li>Read the scenario once.</li>
+        <li>Pause and answer aloud.</li>
+        <li>Open “Say this” and diff your answer — note gaps.</li>
+        <li>Re-run until you hit structure: context → decision → tradeoff → verify.</li>
+      </ol>
+    </div>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Analysts must not see SSN columns on the customer table</h3>
+          <p class="hint">Maps to <a href="lab-01.html">Lab 01 RBAC</a> (+ masking labs if used)</p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “I’d use functional roles for job titles and access roles for permission packs.
+          Analysts inherit curated-read — USAGE on database and schema, SELECT on a view that excludes SSN columns.
+          Engineers keep raw access for pipelines. I prove it by switching to FR_ANALYST: view works, direct RAW select fails.
+          I’d verify with SHOW GRANTS, not assume. If policy requires dynamic hiding, I’d add masking on remaining sensitive fields.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Compliance wants the same query result for analysts and admins — but admins see real email, analysts see masked</h3>
+          <p class="hint">Maps to <a href="lab-03.html">Lab 03</a> (masking policies)</p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “Same view and same SQL for everyone — masking policy on the column evaluates by role.
+          Admins get plaintext; analysts get hashed or null. APPLY MASKING POLICY is account-level, so I delegate carefully.
+          I test with two roles on identical SELECT statements. Auditors care that we didn’t fork logic into two views unless necessary.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Orders fact is 2B rows; nightly full refresh is too expensive</h3>
+          <p class="hint">Maps to <a href="lab-02.html">Lab 02</a>, <a href="lab-12.html">Lab 12 dbt</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “Incremental dbt model on Snowflake with merge strategy and a stable unique_key like order_id.
+          The incremental filter uses updated_at watermark from {{ this }}.
+          I enforce a contract on the mart so downstream BI doesn’t break silently.
+          CI runs Slim builds — state:modified+ with defer — so we don’t rebuild the whole graph every PR.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Should we use Snowflake streams or dbt incremental for CDC from RAW?</h3>
+          <p class="hint">Maps to <a href="lab-04.html">Lab 04</a> / <a href="lab-05.html">Lab 05</a> (streams &amp; tasks)</p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “Streams capture change metadata in Snowflake — great for task pipelines, near-real-time, or non-dbt ops paths.
+          dbt incremental is better when analytics engineering owns the DAG, tests, and contracts in git.
+          Hybrid is common: stream stages deltas, dbt merges into facts on schedule.
+          I decide based on latency SLA, team skills, and whether logic must live in SQL tasks vs dbt repo.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <div>
+          <h3>Dashboard query scans 500GB; users complain about cost and speed</h3>
+          <p class="hint">Maps to <a href="lab-08.html">Lab 08 clustering</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “I open Query Profile — partitions scanned vs total, spill to remote storage if any.
+          If filters align with a date or tenant column, I add CLUSTER BY on that key and check SYSTEM$CLUSTERING_INFORMATION for overlap.
+          For point lookups on IDs I might add search optimization and call out maintenance cost.
+          I also check warehouse size and accidental Cartesian joins in QUERY_HISTORY.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">6</div>
+        <div>
+          <h3>Query Profile shows massive spill to remote storage</h3>
+          <p class="hint">Maps to <a href="lab-08.html">Lab 08</a>, <a href="lab-13.html">Lab 13</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “Spill means RAM on the warehouse wasn’t enough for sort/join/aggr — Snowflake used local/remote disk.
+          Fixes: right-size warehouse up one step for that workload, reduce row width early, fix join order, cluster so less data participates.
+          I don’t permanently upsize without profiling — I reproduce with Query Profile and measure bytes scanned and spill bytes after changes.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">7</div>
+        <div>
+          <h3>QA team wants production-like data every sprint without doubling storage</h3>
+          <p class="hint">Maps to <a href="lab-09.html">Lab 09 clone</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “Zero-copy clone schema or tables into a non-prod database — metadata pointer, not immediate full copy.
+          QA runs on their warehouse. We refresh by re-cloning on a schedule or after masking subset rules.
+          Clone is same-account fast fork — not geo-DR; for DR I’d talk replication in Lab 11.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">8</div>
+        <div>
+          <h3>Partner needs read-only order metrics in their Snowflake account</h3>
+          <p class="hint">Maps to <a href="lab-10.html">Lab 10 sharing</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “Secure view with minimum columns on curated facts — no raw PII table share.
+          CREATE SHARE, grant database/schema usage, grant SELECT on the view, ADD ACCOUNTS for their locator.
+          They query with their compute. For public catalog I’d use Marketplace; for one partner, private share is enough.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">9</div>
+        <div>
+          <h3>Leadership asks: share vs replicate for our DR strategy?</h3>
+          <p class="hint">Maps to <a href="lab-10.html">Lab 10</a>, <a href="lab-11.html">Lab 11</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “Share is cross-account read access to live provider objects — consumer pays compute, not our DR copy.
+          Replication copies objects to a secondary account/region for failover — that’s DR.
+          I’d document RPO/RTO from replication lag and failover runbook, not conflate with partner sharing.
+          QA refresh in one account is clone, not either of those.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">10</div>
+        <div>
+          <h3>Finance needs per-team warehouse credit chargeback</h3>
+          <p class="hint">Maps to <a href="lab-13.html">Lab 13 FinOps</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY aggregated by warehouse — map warehouses to teams via naming or tags.
+          QUERY_HISTORY for attribution by user/role when disputing spikes.
+          I tell finance views lag up to ~3 hours. Guardrails: resource monitors NOTIFY/SUSPEND, auto-suspend, separate WH per workload.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">11</div>
+        <div>
+          <h3>Junior engineer dropped a production table; panic in Slack</h3>
+          <p class="hint">Maps to <a href="lab-09.html">Lab 09 UNDROP</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “If inside Time Travel retention, UNDROP TABLE restores catalog entry and data.
+          If they need a point before a bad UPDATE, query AT/BEFORE or clone from timestamp.
+          Fail-safe is last resort via Snowflake support — not self-serve.
+          Long term: replication for region loss, least privilege so drop rights are rare, and runbook drills.”
+        </p>
+      </details>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">12</div>
+        <div>
+          <h3>Board asks how we control runaway spend on ad hoc warehouses</h3>
+          <p class="hint">Maps to <a href="lab-13.html">Lab 13</a>, <a href="lab-12.html">Lab 12 Slim CI</a></p>
+        </div>
+      </div>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Say this</strong></summary>
+        <p>
+          “Layered controls: resource monitors with suspend at 100%, low auto-suspend seconds on ad hoc WH,
+          query timeouts, right-sized defaults XS/S, and Slim CI so PRs don’t run full dbt builds.
+          Technical tuning — clustering, incremental models — cuts bytes scanned.
+          Visibility from ACCOUNT_USAGE with ownership in FinOps dashboards and alerts at 75% notify.”
+        </p>
+      </details>
+    </article>
+
+    <h2>Lab index (quick map)</h2>
+    <table class="plain">
+      <tr><th>Topic</th><th>Lab</th></tr>
+      <tr><td>RBAC, views, least privilege</td><td><a href="lab-01.html">01</a></td></tr>
+      <tr><td>dbt incremental merge</td><td><a href="lab-02.html">02</a>, <a href="lab-12.html">12</a></td></tr>
+      <tr><td>Masking / row access</td><td><a href="lab-03.html">03</a></td></tr>
+      <tr><td>Streams &amp; tasks</td><td><a href="lab-04.html">04</a>, <a href="lab-05.html">05</a></td></tr>
+      <tr><td>Clustering &amp; profile</td><td><a href="lab-08.html">08</a></td></tr>
+      <tr><td>Time Travel, UNDROP, clone</td><td><a href="lab-09.html">09</a></td></tr>
+      <tr><td>Secure share</td><td><a href="lab-10.html">10</a></td></tr>
+      <tr><td>Replication / DR</td><td><a href="lab-11.html">11</a></td></tr>
+      <tr><td>FinOps</td><td><a href="lab-13.html">13</a></td></tr>
+    </table>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-13.html">← Lab 13</a>
+      <a class="btn primary" href="index.html">Back to Home</a>
+    </div>
+  </div>
+
+  <footer class="footer">Drill 3 scenarios per day until answers feel natural.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

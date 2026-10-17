@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 04 — Medallion vs Data Vault</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
+        <a href="lab-02.html">Lab 02</a>
+        <a href="lab-03.html">Lab 03</a>
+        <a class="active" href="lab-04.html">Lab 04</a>
+        <a href="lab-05.html">Lab 05</a>
+        <a href="lab-06.html">Lab 06</a>
+        <a href="lab-07.html">Lab 07</a>
+        <a href="lab-08.html">Lab 08</a>
+        <a href="lab-09.html">Lab 09</a>
+        <a href="lab-10.html">Lab 10</a>
+        <a href="lab-11.html">Lab 11</a>
+        <a href="lab-12.html">Lab 12</a>
+        <a href="lab-13.html">Lab 13</a>
+        <a href="lab-14.html">Lab 14</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 04 · Architecture · Understand first, then run</p>
+    <h1>Medallion (Bronze / Silver / Gold) + Data Vault talktrack</h1>
+    <p class="lede">
+      You will <strong>build a tiny medallion stack in SQL</strong>.
+      Data Vault is <strong>comparison only</strong> — no full DV model in this lab.
+    </p>
+
+    <div class="callout warn">
+      <strong>Need <code>RAW.ORDERS_EVENTS</code></strong>
+      If this table is missing, run <strong>Lab 02 Step 2 (Day-1 SQL)</strong> first — then come back here.
+    </div>
+
+    <div class="callout tip">
+      <strong>Medallion in one breath</strong>
+      <ul>
+        <li><strong>Bronze</strong> = land raw-ish data (here: <code>RAW.ORDERS_EVENTS</code>)</li>
+        <li><strong>Silver</strong> = cleaned, conformed (<code>CURATED.SILVER_ORDERS</code>)</li>
+        <li><strong>Gold</strong> = business metrics (<code>MART.GOLD_ORDER_SUMMARY</code>)</li>
+      </ul>
+    </div>
+
+    <h2>Big picture</h2>
+    <div class="flow">
+      <div class="node">Bronze<br /><small>RAW</small></div>
+      <div class="arrow">→</div>
+      <div class="node accent">Silver<br /><small>CURATED</small></div>
+      <div class="arrow">→</div>
+      <div class="node">Gold<br /><small>MART</small></div>
+    </div>
+    <p class="hint">Each layer has a job. Downstream trusts upstream rules (types, filters, grain).</p>
+
+    <!-- STEP 0 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">0</div>
+        <div>
+          <h3>Privilege repair (skip if Lab 03 Step 0 already OK)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Same ACCOUNTADMIN snippet as other labs — ensures schemas like <code>MART</code> exist and lab admin can create tables.</p>
+        <span class="why">Re-run anytime privileges feel “randomly broken.”</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 0 (short)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+SET uname = (SELECT CURRENT_USER());
+GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
+USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE DATABASE ARCH_INTERVIEW;
+CREATE SCHEMA IF NOT EXISTS MART;
+SELECT 'Privilege repair OK' AS status;</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 1 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Sanity check: bronze table exists</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>COUNT(*) FROM RAW.ORDERS_EVENTS</code></td><td>Do we have landing order events?</td></tr>
+        </table>
+        <span class="why">Zero rows or “object does not exist” → Lab 02 Day-1 insert block.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · bronze check</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+
+SELECT COUNT(*) AS bronze_rows FROM RAW.ORDERS_EVENTS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Expect at least 5 rows after Lab 02 Day-1</div>
+    </article>
+
+    <!-- STEP 2 SILVER -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Silver layer — clean and filter</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Silver applies <em>technical</em> quality: consistent casing, drop bad totals, keep grain one row per event.</p>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>UPPER(STATUS)</code></td><td>Standardize status text</td></tr>
+          <tr><td><code>WHERE ORDER_TOTAL >= 0</code></td><td>Reject impossible negatives (simple rule demo)</td></tr>
+          <tr><td><code>CREATE TABLE … AS SELECT</code></td><td>Materialize silver for reuse (dbt would own this in prod)</td></tr>
+        </table>
+        <span class="why">Interview: “Silver is trusted operational detail — not yet executive KPIs.”</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · silver build</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+
+CREATE SCHEMA IF NOT EXISTS MART;
+
+CREATE OR REPLACE TABLE CURATED.SILVER_ORDERS AS
+SELECT
+  ORDER_ID,
+  CUSTOMER_ID,
+  UPPER(STATUS) AS STATUS,
+  ORDER_TOTAL,
+  UPDATED_AT
+FROM RAW.ORDERS_EVENTS
+WHERE ORDER_TOTAL >= 0;</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 3 GOLD -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Gold layer — business mart</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Gold changes <strong>grain</strong>: one row per customer with lifetime order count and revenue.</p>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>GROUP BY CUSTOMER_ID</code></td><td>Roll up all silver orders per customer</td></tr>
+          <tr><td><code>SUM(ORDER_TOTAL)</code></td><td>Lifetime value metric</td></tr>
+          <tr><td><code>MAX(UPDATED_AT)</code></td><td>Freshness hint for dashboards</td></tr>
+        </table>
+        <span class="why">Analysts often query gold/mart tables — not bronze JSON blobs.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · gold build</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE MART.GOLD_ORDER_SUMMARY AS
+SELECT
+  CUSTOMER_ID,
+  COUNT(*) AS ORDER_COUNT,
+  SUM(ORDER_TOTAL) AS LIFETIME_VALUE,
+  MAX(UPDATED_AT) AS LAST_UPDATE
+FROM CURATED.SILVER_ORDERS
+GROUP BY CUSTOMER_ID;</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 4 PROVE -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Prove layer row counts + peek gold</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Union counts show bronze ≥ silver (filters) and gold ≤ distinct customers in silver.</p>
+        <span class="why">If gold has more rows than customers, your GROUP BY grain is wrong.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · layer counts</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'bronze rows' AS layer, COUNT(*) AS n FROM RAW.ORDERS_EVENTS
+UNION ALL
+SELECT 'silver rows', COUNT(*) FROM CURATED.SILVER_ORDERS
+UNION ALL
+SELECT 'gold customers', COUNT(*) FROM MART.GOLD_ORDER_SUMMARY;</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · top customers</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM MART.GOLD_ORDER_SUMMARY ORDER BY LIFETIME_VALUE DESC;</code></pre>
+      </div>
+    </article>
+
+    <!-- DATA VAULT TALKTRACK -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <div>
+          <h3>Data Vault — interview talktrack (no build)</h3>
+          <p>Use this table when they ask “Medallion or Data Vault?”</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you memorize</h4>
+        <p>
+          <strong>Data Vault 2.0</strong> models hubs (business keys), links (relationships), satellites (attributes/history).
+          It shines when sources change constantly and auditability beats simplicity.
+        </p>
+        <span class="why">You are not building hubs/links here — you explain tradeoffs like an architect.</span>
+      </div>
+
+      <table class="gloss">
+        <tr><th>Topic</th><th>Medallion (this lab)</th><th>Data Vault (talktrack)</th></tr>
+        <tr><td>Primary goal</td><td>Fast path to analytics layers (bronze/silver/gold)</td><td>Auditable integration of many changing sources</td></tr>
+        <tr><td>Model shape</td><td>Tables/views per layer, often star schema in gold</td><td>Hubs, links, satellites + business keys</td></tr>
+        <tr><td>History</td><td>Streams, snapshots, or dbt SCD patterns in silver/gold</td><td>Built-in satellite timelines per source</td></tr>
+        <tr><td>Team fit</td><td>Analytics engineering + BI consumers</td><td>Enterprise data teams with heavy source churn</td></tr>
+        <tr><td>When to choose</td><td>Cloud lakehouse, dbt, clear consumption layers</td><td>Regulated env, many sources, integration complexity</td></tr>
+        <tr><td>Interview line</td><td>“We medallion for delivery speed and clarity.”</td><td>“We’d DV when traceability and source agility dominate.”</td></tr>
+      </table>
+    </article>
+
+    <!-- QUIZ -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">✓</div>
+        <div>
+          <h3>Self-check</h3>
+        </div>
+      </div>
+      <ol>
+        <li>What layer is <code>RAW.ORDERS_EVENTS</code> in this lab?</li>
+        <li>Why materialize silver instead of querying bronze directly in gold SQL?</li>
+        <li>Name one hub and one satellite in Data Vault terms.</li>
+        <li>When would you <em>not</em> jump straight to medallion?</li>
+      </ol>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Click for short answers</strong></summary>
+        <ol>
+          <li>Bronze (raw landing / events).</li>
+          <li>Reuse cleaning rules; separate concerns; easier testing and lineage.</li>
+          <li>Hub = business key entity; satellite = descriptive/historical attributes on that key.</li>
+          <li>Many volatile sources needing full integration audit trail — consider DV or hybrid.</li>
+        </ol>
+      </details>
+    </article>
+
+    <div class="soundbite">
+      <strong>Interview soundbite</strong><br />
+      “I implement medallion bronze/silver/gold for clarity and speed: raw events, conformed silver, customer-level gold marts.
+      Data Vault is my answer when the problem is integrating dozens of changing sources with strong audit — hubs, links, satellites —
+      often hybrid: DV in the integration zone, medallion marts for consumption.”
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-03.html">← Lab 03</a>
+      <a class="btn primary" href="lab-05.html">Next: Lab 05 Streams →</a>
+    </div>
+  </div>
+
+  <footer class="footer">Missing ORDERS_EVENTS? Open Lab 02 and run the Day-1 SQL chunk only.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

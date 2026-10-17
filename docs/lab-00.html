@@ -12,9 +12,21 @@
       <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
       <nav class="nav-links">
         <a href="index.html">Home</a>
-        <a class="active" href="lab-00.html">Lab 00</a>
-        <a href="lab-01.html">Lab 01</a>
-        <a href="lab-02.html">Lab 02</a>
+        <a class="active" href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a href="lab-11.html">11</a>
+        <a href="lab-12.html">12</a>
+        <a href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
       </nav>
     </div>
   </header>
@@ -131,20 +143,25 @@ CREATE WAREHOUSE IF NOT EXISTS WH_ARCH_XS
         <table class="gloss">
           <tr><th>SQL</th><th>Plain English</th></tr>
           <tr><td><code>CREATE ROLE ROLE_ARCH_LAB_ADMIN</code></td><td>Invent a badge that will own the lab playground</td></tr>
-          <tr><td><code>GRANT CREATE ROLE ON ACCOUNT …</code></td><td>Allow that badge to create more roles later (Lab 01)</td></tr>
-          <tr><td><code>USAGE / OPERATE … WITH GRANT OPTION</code></td><td>Use the warehouse, and pass that right to other roles</td></tr>
-          <tr><td><code>CREATE DATABASE …</code></td><td>Create the lab “folder”</td></tr>
-          <tr><td><code>GRANT OWNERSHIP ON DATABASE …</code></td><td>Lab admin becomes the owner (can create schemas/tables/views)</td></tr>
-          <tr><td><code>GRANT ROLE … TO USER</code></td><td>Allow <em>you</em> to wear the lab admin badge</td></tr>
+          <tr><td><code>GRANT CREATE ROLE ON ACCOUNT …</code></td><td>Allow creating FR_*/AR_* roles (Lab 01)</td></tr>
+          <tr><td><code>APPLY MASKING / ROW ACCESS POLICY</code></td><td>Attach governance policies (Lab 03)</td></tr>
+          <tr><td><code>EXECUTE TASK</code></td><td>Run stream→task pipelines (Lab 05)</td></tr>
+          <tr><td><code>CREATE SHARE</code></td><td>Provider-side data share (Lab 10)</td></tr>
+          <tr><td><code>USAGE / OPERATE … WITH GRANT OPTION</code></td><td>Use warehouse and pass it to other roles</td></tr>
+          <tr><td><code>GRANT OWNERSHIP ON DATABASE …</code></td><td>Lab admin owns the playground</td></tr>
         </table>
-        <span class="why">Missing CREATE ROLE here is exactly what broke Lab 01 earlier.</span>
+        <span class="why">Missing these account grants is what caused the Lab 01 CREATE ROLE error — and will break Labs 03/05/10 too.</span>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · role + database</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · role + database + full-course grants</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>CREATE ROLE IF NOT EXISTS ROLE_ARCH_LAB_ADMIN
-  COMMENT = 'Owns interview prep lab objects and can create lab roles';
+  COMMENT = 'Owns interview prep lab objects';
 
 GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
 
 GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
 GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
@@ -178,6 +195,8 @@ CREATE SCHEMA IF NOT EXISTS RAW;
 CREATE SCHEMA IF NOT EXISTS CURATED;
 CREATE SCHEMA IF NOT EXISTS SECURE;
 CREATE SCHEMA IF NOT EXISTS UTILS;
+CREATE SCHEMA IF NOT EXISTS MART;
+CREATE SCHEMA IF NOT EXISTS STAGE_DATA;
 
 SELECT CURRENT_ROLE() AS role, CURRENT_WAREHOUSE() AS wh, CURRENT_DATABASE() AS db;
 SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;

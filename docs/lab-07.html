@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 07 — Query Profile + warehouse sizing</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
+        <a href="lab-02.html">Lab 02</a>
+        <a href="lab-03.html">Lab 03</a>
+        <a href="lab-04.html">Lab 04</a>
+        <a href="lab-05.html">Lab 05</a>
+        <a href="lab-06.html">Lab 06</a>
+        <a class="active" href="lab-07.html">Lab 07</a>
+        <a href="lab-08.html">Lab 08</a>
+        <a href="lab-09.html">Lab 09</a>
+        <a href="lab-10.html">Lab 10</a>
+        <a href="lab-11.html">Lab 11</a>
+        <a href="lab-12.html">Lab 12</a>
+        <a href="lab-13.html">Lab 13</a>
+        <a href="lab-14.html">Lab 14</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 07 · Performance · Understand first, then run</p>
+    <h1>Query Profile + warehouse scale up vs scale out</h1>
+    <p class="lede">
+      Run a light query and a heavier join. Then open <strong>Query Profile</strong> in Snowsight and narrate what you see.
+      Architects tune <em>SQL shape</em> first — then warehouse size and concurrency.
+    </p>
+
+    <div class="callout warn">
+      <strong>Prerequisites</strong>
+      <code>RAW.CUSTOMERS</code> (Lab 00) and <code>RAW.ORDERS_EVENTS</code> (Lab 02 Day-1).
+    </div>
+
+    <h2>Big picture</h2>
+    <p class="hint">
+      <strong>Scale up</strong> = bigger warehouse (more power per query).
+      <strong>Scale out</strong> = more warehouses or clusters handling <em>more queries at once</em> — not one query magically using infinite CPUs unless multi-cluster (Enterprise+).
+    </p>
+
+    <!-- STEP 0 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">0</div>
+        <div>
+          <h3>Privilege repair (optional)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Confirms lab admin can use the lab warehouse and database context.</p>
+        <span class="why">Only needed if prior labs broke role/warehouse grants.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 0</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+USE ROLE ROLE_ARCH_LAB_ADMIN;
+SELECT 'Warehouse grants OK' AS status;</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 1 SIMPLE -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Run selective query (baseline)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Small filter on customers — on tiny data everything is fast. Still practice finding it in Query History.</p>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>WHERE COUNTRY = 'US'</code></td><td>Predicate — in huge tables, clustering/pruning matter</td></tr>
+        </table>
+        <span class="why">Compare mentally to the join query — profile shape will differ.</span>
+      </div>
+
+      <div class="ui-mock">
+        <div class="ui-mock-bar">
+          <div class="ui-chip glow"><span class="dot"></span> WH: WH_ARCH_XS ▾</div>
+          <div class="ui-chip">DB: ARCH_INTERVIEW ▾</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · selective query</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+
+SELECT *
+FROM RAW.CUSTOMERS
+WHERE COUNTRY = 'US';</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 2 JOIN -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Run join + aggregate (profile this one)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>This query touches two tables, joins on <code>CUSTOMER_ID</code>, then groups by country.</p>
+        <table class="gloss">
+          <tr><th>Step in plan</th><th>What to say in interview</th></tr>
+          <tr><td>TableScan</td><td>Reading micro-partitions from each table</td></tr>
+          <tr><td>Join</td><td>How rows match — hash join common at scale</td></tr>
+          <tr><td>Aggregate</td><td>GROUP BY reduces rows to country totals</td></tr>
+        </table>
+        <span class="why">Run this query, then immediately open Query History — don’t lose the query id.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · join + aggregate</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT
+  c.COUNTRY,
+  COUNT(*) AS ORDERS,
+  SUM(o.ORDER_TOTAL) AS REVENUE
+FROM RAW.CUSTOMERS c
+JOIN RAW.ORDERS_EVENTS o
+  ON o.CUSTOMER_ID = c.CUSTOMER_ID
+GROUP BY c.COUNTRY
+ORDER BY REVENUE DESC;</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 3 UI -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Open Query Profile in Snowsight (click path)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you click</h4>
+        <ol>
+          <li>Snowsight left nav → <strong>Monitoring</strong> → <strong>Query History</strong></li>
+          <li>Find the <strong>JOIN</strong> query you just ran (sort by start time)</li>
+          <li>Click the <strong>query id</strong> or row to open details</li>
+          <li>Open the <strong>Query Profile</strong> tab (execution plan + operator tree)</li>
+          <li>Expand nodes: look for <strong>Join</strong>, <strong>Aggregate</strong>, bytes scanned, time spent</li>
+        </ol>
+        <span class="why">Interviewers want you to connect “slow step in profile” → “fix SQL or data layout or warehouse.”</span>
+      </div>
+
+      <div class="callout tip">
+        <strong>What to narrate (even on 5-row data)</strong>
+        <ul>
+          <li>Which operator took the most time?</li>
+          <li>Did both tables scan fully? (At scale: pruning/clustering)</li>
+          <li>Would a pre-aggregated mart (Lab 04 gold) shrink work?</li>
+        </ul>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · reminder</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'Lab 07: open Query History → click the JOIN query → Query Profile' AS next_step;</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 4 WAREHOUSE -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Inspect warehouse settings</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>Concept</th><th>Plain English</th></tr>
+          <tr><td><strong>Scale up</strong></td><td><code>ALTER WAREHOUSE … SET WAREHOUSE_SIZE = 'SMALL'</code> — more CPU/memory <em>per warehouse</em></td></tr>
+          <tr><td><strong>Scale out</strong></td><td>More separate warehouses for different workloads, or multi-cluster for concurrent users</td></tr>
+          <tr><td><code>WH_ARCH_XS</code></td><td>Extra-small — cheap for labs; heavy jobs need bigger size or better SQL</td></tr>
+          <tr><td>Auto-suspend</td><td>Stop billing when idle — architects set sensible timeouts</td></tr>
+        </table>
+        <span class="why">Bigger warehouse rarely fixes a cartesian join — fix the join first.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · SHOW WAREHOUSES</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SHOW WAREHOUSES LIKE 'WH_ARCH_XS';</code></pre>
+      </div>
+
+      <p class="hint">In UI: Admin → Warehouses → <code>WH_ARCH_XS</code> → note size, auto-suspend, auto-resume.</p>
+    </article>
+
+    <!-- STEP 5 EXPERIMENT -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <div>
+          <h3>Optional: scale-up experiment (talk only on trial accounts)</h3>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>On real data, re-run the same JOIN on XS vs S and compare elapsed time in Query History.</p>
+        <p>On 5-row lab data, times are noise — still explain <em>when</em> you’d scale up: large aggregations, complex joins, no easy SQL rewrite left.</p>
+        <span class="why">Scale out helps when many users queue on one warehouse — not always one heavy query.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · scale up example (optional)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Optional — costs more credits; revert after demo
+-- ALTER WAREHOUSE WH_ARCH_XS SET WAREHOUSE_SIZE = 'SMALL';
+-- Re-run the JOIN query, compare Query History duration
+-- ALTER WAREHOUSE WH_ARCH_XS SET WAREHOUSE_SIZE = 'XSMALL';</code></pre>
+      </div>
+    </article>
+
+    <!-- QUIZ -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">✓</div>
+        <div>
+          <h3>Self-check</h3>
+        </div>
+      </div>
+      <ol>
+        <li>Scale up vs scale out — one line each?</li>
+        <li>What tab in Snowsight shows operator-level time?</li>
+        <li>Name one SQL change that beats resizing warehouse for a bad join.</li>
+        <li>Why use a gold mart before ad-hoc country revenue queries?</li>
+      </ol>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Click for short answers</strong></summary>
+        <ol>
+          <li>Scale up = larger WH for more per-query power; scale out = more capacity/concurrency across workloads.</li>
+          <li>Query Profile on the query detail page.</li>
+          <li>Fix join keys/filter early, pre-aggregate, reduce columns scanned, cluster/prune large tables.</li>
+          <li>Smaller scanned data, known grain, cheaper repeatable BI queries.</li>
+        </ol>
+      </details>
+    </article>
+
+    <div class="soundbite">
+      <strong>Interview soundbite</strong><br />
+      “I start with Query Profile to find dominant operators — scan, join, spill — then tune SQL and micro-partition pruning.
+      I scale warehouse size when the plan is sound but needs more compute per query.
+      I scale out with separate warehouses or multi-cluster when concurrency queues, not as a substitute for bad joins.”
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-06.html">← Lab 06</a>
+      <a class="btn primary" href="lab-08.html">Next: Lab 08 →</a>
+    </div>
+  </div>
+
+  <footer class="footer">Can’t find Profile? Confirm you opened the JOIN query, not the simple SELECT.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

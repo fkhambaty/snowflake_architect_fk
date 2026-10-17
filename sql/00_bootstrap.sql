@@ -1,5 +1,6 @@
 -- Lab 00: bootstrap playground (safe to re-run)
--- MUST run as ACCOUNTADMIN (or a role that can create warehouses/databases/roles).
+-- MUST run as ACCOUNTADMIN (or equivalent).
+-- Reviewed for Labs 00–14 privilege needs (see docs/privilege_contract.md).
 
 USE ROLE ACCOUNTADMIN;
 
@@ -11,27 +12,38 @@ CREATE WAREHOUSE IF NOT EXISTS WH_ARCH_XS
   COMMENT = 'Interview prep lab warehouse';
 
 CREATE ROLE IF NOT EXISTS ROLE_ARCH_LAB_ADMIN
-  COMMENT = 'Owns interview prep lab objects and can create lab roles';
+  COMMENT = 'Owns interview prep lab objects';
 
--- Account-level: required for Lab 01+ role graphs created by the lab admin role
+-- Roles (Lab 01+)
 GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
 
--- Warehouse: WITH GRANT OPTION so lab admin can grant USAGE to FR_* roles
+-- Warehouse grants to others (Lab 01+)
 GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
 GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+
+-- Governance policies (Lab 03)
+GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+
+-- Tasks (Lab 05) — EXECUTE TASK needed to run/resume tasks
+GRANT EXECUTE TASK ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+
+-- Secure shares (Lab 10 provider side)
+GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+
+-- Alerts optional later; skip for trial simplicity
 
 CREATE DATABASE IF NOT EXISTS ARCH_INTERVIEW
   COMMENT = 'Snowflake Architect interview prep';
 
 GRANT OWNERSHIP ON DATABASE ARCH_INTERVIEW TO ROLE ROLE_ARCH_LAB_ADMIN COPY CURRENT GRANTS;
 
--- Grant lab admin role to the current user.
 SET uname = (SELECT CURRENT_USER());
 GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
 
--- ---------- smoke test: can lab admin create + drop a throwaway role? ----------
+-- Smoke: CREATE ROLE
 USE ROLE ROLE_ARCH_LAB_ADMIN;
-CREATE ROLE IF NOT EXISTS ROLE_ARCH_SMOKE_TMP COMMENT = 'temp smoke test - safe to drop';
+CREATE ROLE IF NOT EXISTS ROLE_ARCH_SMOKE_TMP COMMENT = 'temp smoke test';
 DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;
 
 USE WAREHOUSE WH_ARCH_XS;
@@ -41,7 +53,8 @@ CREATE SCHEMA IF NOT EXISTS RAW;
 CREATE SCHEMA IF NOT EXISTS CURATED;
 CREATE SCHEMA IF NOT EXISTS SECURE;
 CREATE SCHEMA IF NOT EXISTS UTILS;
+CREATE SCHEMA IF NOT EXISTS MART;
+CREATE SCHEMA IF NOT EXISTS STAGE_DATA;
 
-SELECT CURRENT_ROLE() AS role, CURRENT_WAREHOUSE() AS wh, CURRENT_DATABASE() AS db;
+SELECT 'Lab 00 bootstrap OK' AS status;
 SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;
-SELECT 'Lab 00 bootstrap OK — CREATE ROLE smoke test passed' AS status;

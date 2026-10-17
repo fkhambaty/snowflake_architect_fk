@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 09 — Time Travel, UNDROP, clone</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
+        <a href="lab-02.html">Lab 02</a>
+        <a href="lab-03.html">Lab 03</a>
+        <a href="lab-04.html">Lab 04</a>
+        <a href="lab-05.html">Lab 05</a>
+        <a href="lab-06.html">Lab 06</a>
+        <a href="lab-07.html">Lab 07</a>
+        <a href="lab-08.html">Lab 08</a>
+        <a class="active" href="lab-09.html">Lab 09</a>
+        <a href="lab-10.html">Lab 10</a>
+        <a href="lab-11.html">Lab 11</a>
+        <a href="lab-12.html">Lab 12</a>
+        <a href="lab-13.html">Lab 13</a>
+        <a href="lab-14.html">Lab 14</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 09 · Data lifecycle · Understand first, then run</p>
+    <h1>Time Travel, UNDROP &amp; zero-copy clone</h1>
+    <p class="lede">
+      Snowflake keeps deleted/changed data for a <strong>retention window</strong>.
+      You can query the past, recover drops, and clone without doubling storage immediately.
+      <strong>UNDROP</strong> and <strong>CLONE</strong> are the most reliable live demos.
+    </p>
+
+    <div class="callout tip">
+      <strong>After this lab you can explain</strong>
+      <ul>
+        <li>Time Travel vs Fail-safe (retention vs last-resort)</li>
+        <li>Why <code>AT (OFFSET => …)</code> can fail if you run steps too fast or retention is short</li>
+        <li><code>UNDROP</code> for “oops I dropped the table”</li>
+        <li><code>CREATE … CLONE</code> for QA/dev copies (metadata pointer — not a full copy day one)</li>
+      </ul>
+    </div>
+
+    <h2>Retention (read this once)</h2>
+    <table class="plain">
+      <tr><th>Setting</th><th>Typical trial / default</th><th>Architect note</th></tr>
+      <tr><td>Time Travel retention</td><td>Often 1 day on standard; extend per object/account</td><td>Queries using <code>AT</code> only work inside the window</td></tr>
+      <tr><td>Fail-safe</td><td>7 days after Time Travel ends</td><td>Snowflake support recovery — not a self-serve SQL feature for users</td></tr>
+    </table>
+    <p class="hint">
+      If <code>AT (OFFSET => -60*5)</code> errors, your earlier version may already be out of retention — that is a teaching moment, not a lab failure.
+    </p>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Time Travel story: insert → update → delete</h3>
+          <p>We mutate data on purpose, then try to see the “before” state.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>Step in script</th><th>What happened to history</th></tr>
+          <tr><td><code>INSERT … 'before'</code></td><td>Version 1 exists in Time Travel</td></tr>
+          <tr><td><code>UPDATE … 'after'</code></td><td>Version 2; version 1 still recoverable for a while</td></tr>
+          <tr><td><code>DELETE</code></td><td>Row gone from “current” table — past versions may still be queryable</td></tr>
+        </table>
+        <span class="why">Interviews: Time Travel is for logical recovery and audit — not a backup strategy by itself.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 1 · mutate TT_DEMO</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+USE SCHEMA CURATED;
+
+CREATE OR REPLACE TABLE TT_DEMO (ID NUMBER, NOTE STRING);
+INSERT INTO TT_DEMO VALUES (1, 'before');
+
+SET qid = LAST_QUERY_ID();
+
+UPDATE TT_DEMO SET NOTE = 'after' WHERE ID = 1;
+DELETE FROM TT_DEMO WHERE ID = 1;
+
+SELECT * FROM TT_DEMO;  -- empty now</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Query Time Travel (may be flaky — know why)</h3>
+          <p>Offset-based travel assumes “~5 minutes ago” is still retained.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>
+          <code>AT (OFFSET => -60*5)</code> means “as of about 5 minutes ago.”
+          If you ran Step 1 seconds ago, the “before delete” state might need
+          <code>AT (TIMESTAMP => …)</code> or <code>BEFORE (STATEMENT => $qid)</code> instead.
+        </p>
+        <span class="why">Say in interview: “I match the Time Travel predicate to retention and use statement/timestamp when offsets are ambiguous.”</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 2 · optional time travel select</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Try offset (works if retention + timing align)
+SELECT * FROM TT_DEMO AT (OFFSET => -60*5);
+
+-- More precise when you saved $qid from INSERT:
+-- SELECT * FROM TT_DEMO BEFORE (STATEMENT => $qid);</code></pre>
+      </div>
+      <div class="callout warn"><strong>If this errors</strong> — explain retention to the interviewer; move to Step 3 (UNDROP) which always lands well in demos.</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>UNDROP — reliable “save the demo” move</h3>
+          <p>Drop a table, then bring it back within the Time Travel window.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>Command</th><th>Plain English</th></tr>
+          <tr><td><code>DROP TABLE TT_DEMO2</code></td><td>Table hidden from catalog — not instantly destroyed</td></tr>
+          <tr><td><code>UNDROP TABLE TT_DEMO2</code></td><td>Restore name + data if still in Time Travel</td></tr>
+        </table>
+        <span class="why">Architects mention UNDROP for operator mistakes; long-term DR still needs replication / backups strategy.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 3 · UNDROP demo</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE TT_DEMO2 (ID NUMBER, NOTE STRING);
+INSERT INTO TT_DEMO2 VALUES (1, 'keep me');
+DROP TABLE TT_DEMO2;
+UNDROP TABLE TT_DEMO2;
+SELECT * FROM TT_DEMO2;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Row “keep me” returns — strong interview demo.</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Zero-copy clone</h3>
+          <p>New table name; shared micro-partitions until you change data.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>
+          <code>CREATE TABLE … CLONE …</code> creates a new object pointing at the same storage.
+          Great for QA refresh, what-if testing, and sandbox schemas — without an immediate full copy bill.
+        </p>
+        <span class="why">Interview tie-in: clone for QA (Lab 14) vs share for partners (Lab 10) vs replicate for DR (Lab 11).</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Step 4 · zero-copy clone</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE TT_DEMO_CLONE CLONE TT_DEMO2;
+SELECT * FROM TT_DEMO_CLONE;
+
+SELECT 'Lab 09 Time Travel / UNDROP / CLONE OK' AS status;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">✓</div>
+        <div>
+          <h3>Quick self-check</h3>
+        </div>
+      </div>
+      <ol>
+        <li>What is the difference between Time Travel and Fail-safe?</li>
+        <li>Why might <code>AT (OFFSET => …)</code> fail in a fast lab?</li>
+        <li>Does clone duplicate all bytes on day one?</li>
+      </ol>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Click for short answers</strong></summary>
+        <ol>
+          <li>Time Travel is user-queryable history in retention; Fail-safe is Snowflake-managed last resort after that.</li>
+          <li>Retention window too short, or offset doesn’t point at the version you think.</li>
+          <li>No — metadata-level pointer; storage diverges as clone or source changes.</li>
+        </ol>
+      </details>
+    </article>
+
+    <div class="soundbite">
+      <strong>60-second interview answer</strong><br />
+      “Time Travel keeps versions for a configured retention period — I can query AT/BEFORE or restore with UNDROP.
+      I don’t treat it as geo-DR; I use replication for that. For QA I zero-copy clone prod tables or schemas so teams
+      fork without an immediate full storage copy. I always state retention limits when someone asks about compliance recovery.”
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-08.html">← Lab 08</a>
+      <a class="btn primary" href="lab-10.html">Next: Lab 10 Sharing →</a>
+    </div>
+  </div>
+
+  <footer class="footer">Stuck? Copy the Step number + SQL + error into chat.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>
