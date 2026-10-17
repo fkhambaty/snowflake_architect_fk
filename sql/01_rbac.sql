@@ -1,5 +1,12 @@
 -- Lab 01: functional vs access roles (architect pattern)
--- Prerequisites: Lab 00 + sample customers
+-- Prerequisites:
+--   1) Lab 00 bootstrap (updated) OR sql/00_privilege_repair.sql
+--   2) sql/00_sample_data.sql (RAW.CUSTOMERS)
+--
+-- Design note:
+--   Role CREATE/GRANT of roles can run as ROLE_ARCH_LAB_ADMIN only if that role
+--   has CREATE ROLE ON ACCOUNT (granted in Lab 00). Object grants use lab admin
+--   as database owner.
 
 USE ROLE ROLE_ARCH_LAB_ADMIN;
 USE WAREHOUSE WH_ARCH_XS;
@@ -19,12 +26,12 @@ CREATE ROLE IF NOT EXISTS FR_ANALYST;
 CREATE ROLE IF NOT EXISTS FR_DATA_ENGINEER;
 CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;
 
--- Warehouse for everyone in the lab
+-- Warehouse for everyone in the lab (needs WITH GRANT OPTION from Lab 00)
 GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_ANALYST;
 GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_DATA_ENGINEER;
 GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_COMPLIANCE;
 
--- Database usage
+-- Database / schema usage on access roles
 GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_RAW_READ;
 GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_CURATED_READ;
 GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_PII_READ;
@@ -41,7 +48,6 @@ GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_RAW_READ;
 GRANT SELECT ON ALL TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
 
--- PII access role can read RAW (we'll tighten with secure view in Lab 01 steps)
 GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;
 

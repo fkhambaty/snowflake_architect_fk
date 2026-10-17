@@ -106,7 +106,7 @@
           <button type="button" class="copy-btn">Copy</button>
         </div>
 <pre><code>-- Lab 00: bootstrap playground (safe to re-run)
--- Run as ACCOUNTADMIN (or equivalent) first.
+-- MUST run as ACCOUNTADMIN first.
 
 USE ROLE ACCOUNTADMIN;
 
@@ -118,10 +118,14 @@ CREATE WAREHOUSE IF NOT EXISTS WH_ARCH_XS
   COMMENT = 'Interview prep lab warehouse';
 
 CREATE ROLE IF NOT EXISTS ROLE_ARCH_LAB_ADMIN
-  COMMENT = 'Owns interview prep lab objects';
+  COMMENT = 'Owns interview prep lab objects and can create lab roles';
 
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN;
-GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN;
+-- Required so Lab 01 can CREATE ROLE as lab admin
+GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+
+-- WITH GRANT OPTION so lab admin can grant the warehouse to FR_* roles
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
 
 CREATE DATABASE IF NOT EXISTS ARCH_INTERVIEW
   COMMENT = 'Snowflake Architect interview prep';
@@ -131,7 +135,11 @@ GRANT OWNERSHIP ON DATABASE ARCH_INTERVIEW TO ROLE ROLE_ARCH_LAB_ADMIN COPY CURR
 SET uname = (SELECT CURRENT_USER());
 GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
 
+-- Smoke test: prove lab admin can create roles (fails early if privileges wrong)
 USE ROLE ROLE_ARCH_LAB_ADMIN;
+CREATE ROLE IF NOT EXISTS ROLE_ARCH_SMOKE_TMP COMMENT = 'temp smoke test - safe to drop';
+DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;
+
 USE WAREHOUSE WH_ARCH_XS;
 USE DATABASE ARCH_INTERVIEW;
 
@@ -141,13 +149,20 @@ CREATE SCHEMA IF NOT EXISTS SECURE;
 CREATE SCHEMA IF NOT EXISTS UTILS;
 
 SELECT CURRENT_ROLE() AS role, CURRENT_WAREHOUSE() AS wh, CURRENT_DATABASE() AS db;
-SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;</code></pre>
+SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;
+SELECT 'Lab 00 bootstrap OK — CREATE ROLE smoke test passed' AS status;</code></pre>
       </div>
 
       <div class="callout tip">
         <strong>How to run in Snowsight</strong>
         Click inside the worksheet → press <strong>Ctrl+Enter</strong> (Windows) or click the blue <strong>Run</strong> button.
         If there are many statements, use <strong>Run All</strong> / run the whole script.
+      </div>
+
+      <div class="callout ok">
+        <strong>What “good” looks like at the end of this script</strong>
+        Last result message should say <code>Lab 00 bootstrap OK — CREATE ROLE smoke test passed</code>.
+        If that smoke test fails, <strong>stop</strong> — do not start Lab 01 yet.
       </div>
 
       <div class="callout bad">

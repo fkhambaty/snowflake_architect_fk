@@ -1,5 +1,5 @@
 -- Lab 00: bootstrap playground (safe to re-run)
--- Run as ACCOUNTADMIN (or equivalent) first.
+-- MUST run as ACCOUNTADMIN (or a role that can create warehouses/databases/roles).
 
 USE ROLE ACCOUNTADMIN;
 
@@ -11,10 +11,14 @@ CREATE WAREHOUSE IF NOT EXISTS WH_ARCH_XS
   COMMENT = 'Interview prep lab warehouse';
 
 CREATE ROLE IF NOT EXISTS ROLE_ARCH_LAB_ADMIN
-  COMMENT = 'Owns interview prep lab objects';
+  COMMENT = 'Owns interview prep lab objects and can create lab roles';
 
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN;
-GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN;
+-- Account-level: required for Lab 01+ role graphs created by the lab admin role
+GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+
+-- Warehouse: WITH GRANT OPTION so lab admin can grant USAGE to FR_* roles
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
 
 CREATE DATABASE IF NOT EXISTS ARCH_INTERVIEW
   COMMENT = 'Snowflake Architect interview prep';
@@ -22,11 +26,14 @@ CREATE DATABASE IF NOT EXISTS ARCH_INTERVIEW
 GRANT OWNERSHIP ON DATABASE ARCH_INTERVIEW TO ROLE ROLE_ARCH_LAB_ADMIN COPY CURRENT GRANTS;
 
 -- Grant lab admin role to the current user.
--- If this fails, run: SELECT CURRENT_USER(); then GRANT ROLE ... TO USER "<name>";
 SET uname = (SELECT CURRENT_USER());
 GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
 
+-- ---------- smoke test: can lab admin create + drop a throwaway role? ----------
 USE ROLE ROLE_ARCH_LAB_ADMIN;
+CREATE ROLE IF NOT EXISTS ROLE_ARCH_SMOKE_TMP COMMENT = 'temp smoke test - safe to drop';
+DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;
+
 USE WAREHOUSE WH_ARCH_XS;
 USE DATABASE ARCH_INTERVIEW;
 
@@ -37,3 +44,4 @@ CREATE SCHEMA IF NOT EXISTS UTILS;
 
 SELECT CURRENT_ROLE() AS role, CURRENT_WAREHOUSE() AS wh, CURRENT_DATABASE() AS db;
 SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;
+SELECT 'Lab 00 bootstrap OK — CREATE ROLE smoke test passed' AS status;

@@ -33,6 +33,52 @@
       If not, go to <a href="lab-00.html">Lab 00</a> first.
     </div>
 
+    <div class="callout bad">
+      <strong>If you already hit: “must have CREATE ROLE granted on ACCOUNT”</strong>
+      That means Lab 00 was run with an older script. Do <strong>Step 0 below first</strong> (takes 10 seconds), then continue.
+      Do <em>not</em> keep re-running Step 2 until Step 0 succeeds.
+    </div>
+
+    <!-- STEP 0 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">0</div>
+        <div>
+          <h3>Privilege repair (required if CREATE ROLE failed)</h3>
+          <p>Switch the Role chip to <code>ACCOUNTADMIN</code>, then run this. Safe to re-run even if Lab 00 was already correct.</p>
+        </div>
+      </div>
+
+      <div class="ui-mock">
+        <div class="ui-mock-bar">
+          <div class="ui-chip glow"><span class="dot"></span> Role: ACCOUNTADMIN ▾</div>
+        </div>
+        <div class="ui-mock-body">
+          <p class="hint" style="margin:0">Must be ACCOUNTADMIN for this step only — then we switch back.</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · privilege repair + smoke test</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+
+GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
+
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
+
+SET uname = (SELECT CURRENT_USER());
+GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
+
+USE ROLE ROLE_ARCH_LAB_ADMIN;
+CREATE ROLE IF NOT EXISTS ROLE_ARCH_SMOKE_TMP COMMENT = 'temp smoke test - safe to drop';
+DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;
+
+SELECT 'Privilege repair OK — CREATE ROLE works for ROLE_ARCH_LAB_ADMIN' AS status;</code></pre>
+      </div>
+      <div class="badge-ok">✓ You must see “Privilege repair OK…” before Step 2. If smoke test fails, stop and tell me the full error.</div>
+    </article>
+
     <div class="callout tip">
       <strong>Two kinds of roles (remember this sentence)</strong>
       <ul>
