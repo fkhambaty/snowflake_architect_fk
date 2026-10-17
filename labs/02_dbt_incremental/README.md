@@ -2,7 +2,8 @@
 
 **Time:** ~40 minutes  
 **Interview weight:** Extremely high for Snowflake + dbt Architect roles  
-**Prereq:** Lab 00; dbt installed (you said VS Code + dbt is ready)
+**Prereq:** Lab 00; dbt installed (you said VS Code + dbt is ready)  
+**Study guide:** Domain **3.3** transforms + guide Lab Guide *Accelerating Data Teams with dbt* ([map](../../docs/study_guide_map.md)). dbt is interview-critical; on the exam it shows up as an ecosystem/transform choice, not its own domain.
 
 ## Interview question this lab answers
 
@@ -142,6 +143,13 @@ Talking points:
 - [ ] `dbt debug` works  
 - [ ] First run + second run both succeed  
 - [ ] You can explain merge vs full-refresh without notes  
+
+## Optional official Snowflake labs (after this short one)
+
+Deeper / longer Quickstarts from the study guide Domain 3 Lab Guides — **skip until our short lab feels solid**:
+
+- [Accelerating Data Teams with dbt Core & Snowflake](https://www.snowflake.com/en/developers/guides/data-teams-with-dbt-core/)
+- [Accelerating Data Teams with dbt Cloud & Snowflake](https://www.snowflake.com/en/developers/guides/data-teams-with-dbt-cloud/)
 
 ## Feedback I need from you after this lab
 

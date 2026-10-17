@@ -10,6 +10,10 @@ dbt_project/logs/
 *.pem
 *.p8
 
+# Official Snowflake study guide PDF — personal use only; do not publish
+SnowProArchitectStudyGuide.pdf
+*StudyGuide*.pdf
+
 # OS / editor
 .DS_Store
 Thumbs.db

@@ -4,6 +4,15 @@ Hands-on interview prep for **Snowflake Architect** roles (6+ years expected) wi
 
 This is a **practical walkthrough course**: interview question → scenario → run it in your Snowflake account → answer like an architect.
 
+## Study guide sync
+
+Mapped to the official **SnowPro Advanced: Architect** study guide (Aug 2025): [`docs/study_guide_map.md`](docs/study_guide_map.md).
+
+- Starter labs match Domain **1.2** (RBAC) and Domain **3** / official dbt Quickstarts.
+- Interview-first; exam breadth comes after you clear these.
+- Official Snowflake labs are linked as optional companions (we don’t republish Snowflake University content).
+- Keep `SnowProArchitectStudyGuide.pdf` local only (gitignored — guide says not for third parties).
+
 ## Start here
 
 Open the course hub in a browser:

@@ -2,7 +2,8 @@
 
 **Time:** ~35–45 minutes  
 **Interview weight:** Extremely high for Snowflake Architect  
-**Prereq:** [Lab 00](../00_setup/README.md) + sample data
+**Prereq:** [Lab 00](../00_setup/README.md) + sample data  
+**Study guide:** Domain **1.2** — functional vs access roles, secure views, privilege inheritance ([map](../../docs/study_guide_map.md))
 
 ## Interview question this lab answers
 
@@ -166,6 +167,12 @@ Use this script; customize with what you just proved:
 - [ ] Engineer: raw OK  
 - [ ] Compliance: PII OK  
 - [ ] You can explain the diagram without looking  
+
+## Optional official Snowflake lab (after this one)
+
+Only if you want deeper exam-aligned practice — **not required** before Lab 02:
+
+- [Process PII with RBAC, masking, row access](https://www.snowflake.com/en/developers/guides/getting-started-with-pii/) (Quickstart named under Domain 1 study resources theme)
 
 ## Cleanup (optional — keep for Lab 02)
 
