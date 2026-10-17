@@ -849,6 +849,107 @@ html {
   }
 }
 
+/* Teach-first blocks (assume zero prior jargon) */
+.teach {
+  margin: 1.75rem 0 2rem;
+  padding: 1.25rem 1.35rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, rgba(107, 184, 224, 0.06), transparent 45%), var(--panel);
+}
+.teach h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+  color: var(--text);
+}
+.teach > p { color: var(--muted); }
+
+.flow-pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin: 1.25rem 0 1.5rem;
+}
+.flow-node {
+  flex: 1 1 160px;
+  min-width: 140px;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.flow-node.source { border-color: #e08086; box-shadow: 0 0 0 1px rgba(224, 128, 134, 0.25); }
+.flow-node.stg { border-color: var(--accent); }
+.flow-node.fct { border-color: var(--ok); box-shadow: 0 0 0 1px rgba(91, 191, 150, 0.25); }
+.flow-tag {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.flow-node strong {
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  color: var(--text);
+  word-break: break-word;
+}
+.flow-sub { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+
+.flow-arrow {
+  flex: 0 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+.flow-arrow span {
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 12px solid var(--accent);
+  animation: flowPulse 1.6s ease-in-out infinite;
+}
+@keyframes flowPulse {
+  0%, 100% { opacity: 0.35; transform: translateX(-3px); }
+  50% { opacity: 1; transform: translateX(3px); }
+}
+
+.wm-demo {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem 0;
+}
+@media (min-width: 800px) {
+  .wm-demo { grid-template-columns: repeat(3, 1fr); }
+}
+.wm-card {
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg2);
+}
+.wm-card h4 { margin: 0 0 0.5rem; font-size: 0.95rem; color: var(--accent-2); }
+.wm-card p { margin: 0.35rem 0; font-size: 0.9rem; color: var(--muted); }
+.wm-card.highlight {
+  border-color: var(--ok);
+  background: rgba(91, 191, 150, 0.08);
+}
+.wm-mark {
+  margin-top: 0.6rem !important;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  background: var(--code-bg);
+  color: var(--code-inline-text) !important;
+  font-family: var(--mono);
+  font-size: 0.8rem !important;
+}
+
 /* Visual memory panels (lab art) */
 .viz-panel {
   margin: 1.25rem 0 1.75rem;

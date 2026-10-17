@@ -35,7 +35,10 @@
   <div class="wrap">
     <p class="eyebrow">Lab 02 · Tuesday · You are Elena · Jordan owns pipelines</p>
     <h1>Stop rebuilding the transaction ledger every night</h1>
-    <p class="lede">Jordan (Engineer) told Marcus the txn fact takes 45 minutes to full-refresh. Alex still needs fresh totals for the board deck. Pattern: <strong>Business problem → Solution (SQL/dbt) → Elena’s wrap-up</strong>. Need Lab 01 roles; dbt reads <code>LANDING.TXN_EVENTS</code> via <code>stg_orders</code> (order_id alias is fine).</p>
+    <p class="lede">
+      Read the <strong>teach-first</strong> sections below before you run SQL or dbt.
+      No assumed jargon — watermark, materialization, and each file are explained in plain English.
+    </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
@@ -45,31 +48,242 @@
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Day-1 rows in <code>LANDING.TXN_EVENTS</code>, dbt incremental <code>merge</code> on <code>fct_orders_incremental</code> with <code>unique_key=order_id</code> and <code>updated_at</code> watermark.
-      Profiles use <code>ROLE_BANK_LAB_ADMIN</code>, <code>MERIDIAN_BANK</code>, <code>WH_BANK_XS</code>.
+      Land Day-1 rows in <code>LANDING.TXN_EVENTS</code>, clean them in a dbt <em>view</em> <code>stg_orders</code>,
+      then keep a durable fact table <code>fct_orders_incremental</code> up to date with <em>incremental merge</em>
+      (only new/changed rows, keyed by txn id, filtered by an <code>updated_at</code> watermark).
     </div>
 
     <figure class="viz-panel">
       <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on LANDING.TXN_EVENTS" width="1600" height="900" loading="eager" />
       <figcaption>
         <strong>Picture · Only change the ledger</strong>
-        Jordan+Elena: full refresh crossed out; dbt incremental MERGE on TXN_EVENTS.
+        Full refresh = rebuild everything. Incremental = touch only what changed since last run.
       </figcaption>
     </figure>
 
+    <!-- ========== TEACH FIRST ========== -->
+    <section class="teach">
+      <h2>Teach first — the whole pipeline in one picture</h2>
+      <p class="lede" style="font-size:1.05rem;margin-top:0">
+        Three objects. One job. Watch the pulse move left → right.
+      </p>
+
+      <div class="flow-pipeline" aria-label="Animated data flow from source to fact">
+        <div class="flow-node source">
+          <span class="flow-tag">1 · Source (Snowflake table)</span>
+          <strong>LANDING.TXN_EVENTS</strong>
+          <span class="flow-sub">Jordan’s dock · raw truth · main table</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">2 · Staging (dbt view)</span>
+          <strong>CURATED.STG_ORDERS</strong>
+          <span class="flow-sub">rename columns · no storage of its own</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">3 · Fact (dbt incremental table)</span>
+          <strong>CURATED.FCT_ORDERS_INCREMENTAL</strong>
+          <span class="flow-sub">Alex’s ledger · grows / updates via MERGE</span>
+        </div>
+      </div>
+
+      <table class="gloss">
+        <tr><th>Object</th><th>Who creates it</th><th>What it is</th><th>You “own” it how?</th></tr>
+        <tr>
+          <td><code>TXN_EVENTS</code></td>
+          <td>You, in Snowsight SQL</td>
+          <td>Physical table — the main event log</td>
+          <td>Inserts / updates land here first</td>
+        </tr>
+        <tr>
+          <td><code>stg_orders</code></td>
+          <td>dbt (<code>stg_orders.sql</code>)</td>
+          <td>A <em>view</em> — a saved SELECT, not a second copy of data</td>
+          <td>Always shows latest TXN_EVENTS with friendlier names</td>
+        </tr>
+        <tr>
+          <td><code>fct_orders_incremental</code></td>
+          <td>dbt (<code>fct_orders_incremental.sql</code>)</td>
+          <td>A <em>table</em> that dbt keeps up to date</td>
+          <td>This is what “the pipeline built” for Alex</td>
+        </tr>
+      </table>
+      <p>
+        <strong>Folders</strong> <code>models/staging/</code> and <code>models/marts/</code> are only how files sit on disk.
+        In Snowflake both models land in schema <code>CURATED</code> (see <code>dbt_project.yml</code>).
+        You will <em>not</em> see schemas named staging/marts.
+      </p>
+    </section>
+
+    <section class="teach">
+      <h2>What is a watermark? (assume you never heard the word)</h2>
+      <div class="story">
+        <div class="story-label">Bookmark metaphor</div>
+        <p>
+          Imagine a book of every transaction ever. Last night you finished reading up to
+          <strong>page “2026-10-01 14:00”</strong> — that page number is your <em>watermark</em>
+          (also called a high-water mark).
+        </p>
+        <p>
+          Tonight you do <strong>not</strong> re-read the whole book. You open at the bookmark and only process
+          pages with a timestamp <em>newer than</em> that mark. When you’re done, the bookmark moves forward.
+        </p>
+        <p>
+          In our model the bookmark column is <code>updated_at</code>.
+          On an incremental run dbt asks: <em>“What is the MAX(updated_at) already in the fact table?”</em>
+          then only pulls staging rows where <code>updated_at</code> is greater than that.
+        </p>
+      </div>
+
+      <div class="wm-demo" aria-label="Watermark before and after">
+        <div class="wm-card">
+          <h4>After Day 1 run</h4>
+          <p>Fact has rows 1001–1005.</p>
+          <p class="wm-mark">Watermark = max(updated_at) = <code>2026-10-01 14:00</code></p>
+        </div>
+        <div class="wm-card">
+          <h4>Day 2 source changes</h4>
+          <p>New rows 1006, 1007 (Oct 2).</p>
+          <p>Row 1001 status → SETTLED with <code>updated_at</code> bumped to Oct 2.</p>
+        </div>
+        <div class="wm-card highlight">
+          <h4>Second dbt run</h4>
+          <p>Only rows with <code>updated_at</code> &gt; watermark enter the MERGE.</p>
+          <p>Old rows 1002–1005 are <em>not</em> rebuilt.</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <strong>Classic bug</strong>
+        If Jordan changes <code>STATUS</code> but forgets to bump <code>UPDATED_AT</code>, the watermark filter
+        skips that row and Alex’s fact stays wrong. The timestamp is part of the contract with the source.
+      </div>
+    </section>
+
+    <section class="teach">
+      <h2>dbt “materialized” — what options exist, why we chose incremental</h2>
+      <p>
+        <code>materialized=…</code> tells dbt <em>how to store</em> the result of a model’s SELECT in Snowflake.
+        It is not a Snowflake keyword — it is a dbt config that compiles to CREATE VIEW / CREATE TABLE / MERGE, etc.
+      </p>
+      <table class="gloss">
+        <tr><th>materialized</th><th>What Snowflake gets</th><th>When Elena picks it</th></tr>
+        <tr>
+          <td><code>view</code></td>
+          <td>CREATE VIEW — no stored copy; query always hits upstream</td>
+          <td>Lightweight cleanup (<code>stg_orders</code>). Cheap, always fresh.</td>
+        </tr>
+        <tr>
+          <td><code>table</code></td>
+          <td>CREATE TABLE AS SELECT — full rebuild every run</td>
+          <td>Small dims, or when “always rebuild” is OK. Bad for huge growing facts.</td>
+        </tr>
+        <tr>
+          <td><code>incremental</code></td>
+          <td>First run: build table. Later runs: only new/changed rows (MERGE here)</td>
+          <td><strong>Our choice for the txn fact</strong> — history is large; only deltas matter.</td>
+        </tr>
+        <tr>
+          <td><code>ephemeral</code></td>
+          <td>No object — CTE inlined into downstream SQL</td>
+          <td>Tiny helpers you never query alone (not used in this lab).</td>
+        </tr>
+        <tr>
+          <td><code>materialized_view</code></td>
+          <td>Snowflake MV (adapter/support dependent)</td>
+          <td>Advanced; Lab 05 talks Dynamic Tables as the Snowflake-native cousin.</td>
+        </tr>
+      </table>
+      <p>
+        <strong>Why incremental + merge for Meridian:</strong>
+        Marcus won’t pay for rewriting millions of settled txns every night.
+        <code>unique_key='order_id'</code> means “if txn 1001 already exists, UPDATE it; else INSERT.”
+        That upsert is Snowflake <code>MERGE</code> — not a blind append (append alone would duplicate 1001).
+      </p>
+    </section>
+
+    <section class="teach">
+      <h2>Walk the code — line by line</h2>
+
+      <div class="explain">
+        <h4>A) <code>stg_orders.sql</code> — the translator</h4>
+        <p>
+          <code>{{ source('landing', 'txn_events') }}</code> means: “read the table declared in <code>_sources.yml</code>
+          as Meridian’s landing dock.” dbt does <em>not</em> create TXN_EVENTS — you did, in SQL.
+        </p>
+        <p>
+          Renames (<code>txn_id → order_id</code>) keep bank language at the dock and slightly more “analytics” names
+          in curated models. Still the same five rows.
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>dbt · stg_orders.sql</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>{{ config(materialized='view') }}
+
+select
+    txn_id as order_id,
+    client_id as customer_id,
+    status,
+    amount as order_total,
+    updated_at
+from {{ source('landing', 'txn_events') }}</code></pre>
+      </div>
+
+      <div class="explain">
+        <h4>B) <code>fct_orders_incremental.sql</code> — the ledger keeper</h4>
+        <table class="gloss">
+          <tr><th>Piece</th><th>Plain English</th></tr>
+          <tr><td><code>materialized='incremental'</code></td><td>Don’t full-rebuild after the first run</td></tr>
+          <tr><td><code>unique_key='order_id'</code></td><td>One row per txn; updates overwrite that id</td></tr>
+          <tr><td><code>incremental_strategy='merge'</code></td><td>Compile to Snowflake MERGE (upsert)</td></tr>
+          <tr><td><code>{{ ref('stg_orders') }}</code></td><td>Read the staging view (never skip staging)</td></tr>
+          <tr><td><code>is_incremental()</code></td><td>False on first build; true on later runs</td></tr>
+          <tr><td><code>where updated_at &gt; (select max… from {{ this }})</code></td><td><strong>Watermark filter</strong> — only rows newer than the fact’s current max timestamp</td></tr>
+          <tr><td><code>{{ this }}</code></td><td>This model’s own table (the fact we’re updating)</td></tr>
+        </table>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>dbt · fct_orders_incremental.sql</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>{{
+  config(
+    materialized='incremental',
+    unique_key='order_id',
+    incremental_strategy='merge'
+  )
+}}
+
+select
+    order_id,
+    customer_id,
+    status,
+    order_total,
+    updated_at
+from {{ ref('stg_orders') }}
+
+{% if is_incremental() %}
+  where updated_at > (
+    select coalesce(max(updated_at), '1900-01-01'::timestamp_ntz)
+    from {{ this }}
+  )
+{% endif %}</code></pre>
+      </div>
+    </section>
+
     <div class="story">
       <div class="story-label">Tuesday in the data team room</div>
-      <p>Jordan: “I can land events in LANDING — you make dbt only touch deltas.” Elena: “Merge on txn id, watermark on updated_at, prove it with Day 2 updates.”</p>
+      <p>Jordan: “I land events in LANDING.” Elena: “Staging renames; the fact merges on txn id using updated_at as the bookmark. Prove it with Day 2.”</p>
     </div>
 
+    <!-- ========== RUN STEPS ========== -->
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Wire dbt to Meridian Bank</h3></div></div>
       <div class="explain">
         <h4>profiles.yml = dbt’s login card</h4>
-        <p>dbt runs as <code>ROLE_BANK_LAB_ADMIN</code> — same badge Elena uses to own objects. Models land in <code>CURATED</code>; source is <code>landing.txn_events</code> in <code>_sources.yml</code>.</p>
+        <p>dbt runs as <code>ROLE_BANK_LAB_ADMIN</code>. Models land in <code>CURATED</code>. Copy from <code>dbt_project/profiles.yml.example</code> → <code>profiles.yml</code> (keep passwords out of git).</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>YAML · profiles.yml (from dbt_project/profiles.yml.example)</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>YAML · profiles.yml</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>snowflake_architect_fk:
   target: dev
   outputs:
@@ -89,14 +303,14 @@
 <pre><code>cd dbt_project
 dbt debug</code></pre>
       </div>
-      <div class="badge-ok">✓ All checks passed before you load data</div>
+      <div class="badge-ok">✓ All checks passed — then load Day 1 data (next step) before dbt run</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">2</div><div><h3>Day 1 — load transaction events at the dock</h3></div></div>
+      <div class="step-head"><div class="step-num">2</div><div><h3>Day 1 — create the main table at the dock</h3></div></div>
       <div class="explain">
-        <h4>Why UPDATED_AT matters</h4>
-        <p>Incremental merge only re-processes rows newer than the fact’s max <code>updated_at</code>. If Jordan updates status but forgets to bump the timestamp, the fact stays wrong — a classic production bug.</p>
+        <h4>TXN_EVENTS is the source of truth</h4>
+        <p>dbt will not create this. Run this SQL in Snowsight first. Every later model is a lens on this table.</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · sql/02_orders_source.sql</span><button type="button" class="copy-btn">Copy</button></div>
@@ -126,29 +340,11 @@ SELECT 'day1' AS batch, COUNT(*) AS n FROM TXN_EVENTS;</code></pre>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">3</div><div><h3>Read the dbt graph (staging → mart)</h3></div></div>
-      <div class="story">
-        <p><code>stg_orders</code> is a view: reads <code>{{ source('landing', 'txn_events') }}</code>, renames <code>txn_id</code> → <code>order_id</code> for the mart contract. Marts = business facts Alex trusts.</p>
+      <div class="step-head"><div class="step-num">3</div><div><h3>First dbt run — build view + fact</h3></div></div>
+      <div class="explain">
+        <h4>What happens under the hood</h4>
+        <p><code>is_incremental()</code> is false → watermark filter is omitted → all 5 staging rows load into a new table. Staging becomes a view.</p>
       </div>
-      <div class="code-block">
-        <div class="code-head"><span>dbt · stg_orders.sql + fct_orders_incremental.sql</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>-- stg_orders.sql (view)
-select txn_id as order_id, client_id as customer_id, status,
-       amount as order_total, updated_at
-from {{ source('landing', 'txn_events') }}
-
--- fct_orders_incremental.sql (incremental merge)
-{{ config(materialized='incremental', unique_key='order_id', incremental_strategy='merge') }}
-select order_id, customer_id, status, order_total, updated_at
-from {{ ref('stg_orders') }}
-{% if is_incremental() %}
-  where updated_at > (select coalesce(max(updated_at), '1900-01-01'::timestamp_ntz) from {{ this }})
-{% endif %}</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head"><div class="step-num">4</div><div><h3>First dbt run — build the fact</h3></div></div>
       <div class="code-block">
         <div class="code-head"><span>Terminal · first run</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>dbt run --select stg_orders fct_orders_incremental
@@ -158,16 +354,17 @@ dbt test --select fct_orders_incremental</code></pre>
         <div class="code-head"><span>SQL · verify in Snowsight</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE DATABASE MERIDIAN_BANK;
-SELECT COUNT(*) AS rows_after_first_run FROM CURATED.FCT_ORDERS_INCREMENTAL;</code></pre>
+SELECT COUNT(*) AS rows_after_first_run FROM CURATED.FCT_ORDERS_INCREMENTAL;
+-- Look in CURATED: STG_ORDERS (view) + FCT_ORDERS_INCREMENTAL (table)</code></pre>
       </div>
-      <div class="badge-ok">✓ 5 rows; order_id 1001 status POSTED</div>
+      <div class="badge-ok">✓ 5 rows; order_id 1001 status POSTED · watermark ≈ 2026-10-01 14:00</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">5</div><div><h3>Day 2 — new txns + status change, then second run</h3></div></div>
+      <div class="step-head"><div class="step-num">4</div><div><h3>Day 2 — change the source, then prove the watermark</h3></div></div>
       <div class="explain">
-        <h4>This is the whole point</h4>
-        <p>Two inserts + one update with a newer <code>UPDATED_AT</code>. Second <code>dbt run</code> should MERGE only those rows — not rebuild history.</p>
+        <h4>This is the whole point of the lab</h4>
+        <p>Two inserts + one update with a <em>newer</em> <code>UPDATED_AT</code>. Second run MERGEs only those rows — history is not rebuilt.</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · sql/02_orders_day2.sql</span><button type="button" class="copy-btn">Copy</button></div>
@@ -196,7 +393,7 @@ SELECT TXN_ID, STATUS, UPDATED_AT FROM TXN_EVENTS ORDER BY TXN_ID;</code></pre>
 FROM CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
       </div>
       <ul class="checklist">
-        <li>7 rows total (no duplicates)</li>
+        <li>7 rows total (no duplicates on 1001)</li>
         <li>1001 is SETTLED</li>
         <li>1006 and 1007 exist</li>
       </ul>
@@ -204,18 +401,19 @@ FROM CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s problem was a nightly full refresh on growing txn history. I loaded events in LANDING.TXN_EVENTS and taught dbt to incremental-merge into CURATED.FCT_ORDERS_INCREMENTAL with order_id as unique_key and updated_at as watermark.
-      Day 2 inserts and a status change on 1001 merged without rebuilding the whole table — Jordan saves runtime, Alex gets fresh facts.
-      <em>Outcome:</em> cheaper pipeline, correct upserts, proof in Query History as MERGE not full-table rewrite.”
+      “Meridian’s problem was a nightly full refresh on growing txn history. The main table is LANDING.TXN_EVENTS.
+      stg_orders is a view that renames columns; fct_orders_incremental is an incremental table that MERGEs on order_id
+      and only reads rows newer than the updated_at watermark — a bookmark on the last processed timestamp.
+      Day 2 inserts and a status change on 1001 merged without rebuilding the whole ledger.
+      <em>Outcome:</em> cheaper pipeline, correct upserts, proof as MERGE not a full-table rewrite.”
     </div>
-
 
     <div class="pager">
       <a class="btn ghost" href="lab-01.html">← Lab 01</a>
       <a class="btn primary" href="lab-03.html">Lab 03 →</a>
     </div>
   </div>
-  <footer class="footer">Source SQL: sql/02_orders_source.sql · sql/02_orders_day2.sql</footer>
+  <footer class="footer">Source SQL: sql/02_orders_source.sql · sql/02_orders_day2.sql · teach-first lab</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

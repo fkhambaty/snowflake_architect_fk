@@ -24,10 +24,18 @@ See `docs/BANK_NAMING.md`. Cleanup: `sql/cleanup_lab00_lab01.sql`.
 1. Business problem (`callout bad`)
 2. Solution (`callout ok`)
 3. Hero `<figure class="viz-panel">` immediately after Solution — JPG from `docs/assets/`, caption per `docs/CAST_VISUAL.md`; story page uses `cast-sheet.jpg`
-4. Steps: explain → Copy SQL matching `sql/*.sql`
-5. Elena wrap-up (`.soundbite`: what she did + outcome)
+4. **Teach-first** (`.teach` sections) for any non-obvious concept — **assume zero prior knowledge**. Define jargon (watermark, materialization, RAP, Time Travel, Slim CI, etc.) in plain English + metaphor + visual/flow before the first Copy SQL. Lab 02 is the reference.
+5. Steps: explain → Copy SQL matching `sql/*.sql`
+6. Elena wrap-up (`.soundbite`: what she did + outcome)
 
-Lab art: follow `CAST_VISUAL.md` + `cast-sheet.jpg` cast likenesses; inline SVG diagrams must not overlap label text (clip paths / spacing).
+Lab art: follow `CAST_VISUAL.md` + `cast-sheet.jpg` cast likenesses; inline SVG diagrams must not overlap label text (clip paths / spacing). Prefer animated CSS flows (`.flow-pipeline`) for pipelines when helpful.
+
+### Teach-first checklist (do not skip)
+
+- Name every object in the flow (source table vs view vs table vs share…)
+- Why this option vs alternatives (e.g. dbt view / table / incremental / ephemeral)
+- What the student should see in Snowsight after the step
+- Never say “watermark” / “MERGE” / “contract” without a one-paragraph definition first
 
 ## HARD RULE — role proofs (student already burned tokens on this)
 

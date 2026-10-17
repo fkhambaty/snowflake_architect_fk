@@ -56,11 +56,61 @@
     </figure>
 
     <div class="story">
-      <p>Jordan owns git; Elena owns what may break Alex — contracts on published marts, not every staging view.</p>
+      <p>Jordan owns git; Elena owns what may break Alex — contracts on published marts, not every staging view.
+      Refresh Lab 02 if watermark / incremental is fuzzy — this lab builds on that fact table.</p>
     </div>
+
+    <section class="teach">
+      <h2>Teach first — words Lab 02 did not need yet</h2>
+      <table class="gloss">
+        <tr><th>Term</th><th>Plain English</th></tr>
+        <tr>
+          <td><strong>dbt source</strong></td>
+          <td>A declaration that “this Snowflake table already exists outside dbt” (our <code>LANDING.TXN_EVENTS</code>). Models use <code>{{ source(...) }}</code> so renames are tracked.</td>
+        </tr>
+        <tr>
+          <td><strong>Contract</strong></td>
+          <td>A promise about column names + types on a published model. If a PR renames <code>order_total</code>, dbt fails the build instead of silently blanking Alex’s tile.</td>
+        </tr>
+        <tr>
+          <td><strong>Slim CI</strong></td>
+          <td>In pull requests, only build models that changed (and downstream), using a saved prod manifest — not the entire Meridian graph every time.</td>
+        </tr>
+        <tr>
+          <td><code>state:modified+</code></td>
+          <td>Selector: “models that differ from the saved state, plus everything that depends on them.”</td>
+        </tr>
+        <tr>
+          <td><code>--defer</code></td>
+          <td>For parents you didn’t rebuild in CI, read the already-built prod relation instead of rebuilding the world.</td>
+        </tr>
+      </table>
+      <div class="flow-pipeline" aria-label="Governed dbt flow">
+        <div class="flow-node source">
+          <span class="flow-tag">Source</span>
+          <strong>TXN_EVENTS</strong>
+          <span class="flow-sub">declared in YAML</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">Staging</span>
+          <strong>stg_orders</strong>
+          <span class="flow-sub">view · no contract required</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">Published mart</span>
+          <strong>fct_… + contract</strong>
+          <span class="flow-sub">Alex depends on this shape</span>
+        </div>
+      </div>
+    </section>
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Sources boundary — LANDING.TXN_EVENTS</h3></div></div>
+      <div class="explain">
+        <p>Without a source entry, dbt still can query the table via raw SQL — but you lose lineage and freshness hooks. Meridian declares the dock explicitly.</p>
+      </div>
       <div class="code-block">
         <div class="code-head"><span>YAML · dbt_project/models/staging/_sources.yml</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>version: 2
