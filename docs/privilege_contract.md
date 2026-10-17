@@ -13,6 +13,12 @@ Granted in Lab 00 (`sql/00_bootstrap.sql`) by `ACCOUNTADMIN`:
 | `OWNERSHIP` on `ARCH_INTERVIEW` | Create schemas/tables/views; grant SELECT to access roles |
 | Role granted to the student’s user | So they can `USE ROLE ROLE_ARCH_LAB_ADMIN` |
 
+## Teaching checklist (every lab)
+
+1. Break scripts into small chunks.
+2. Each chunk has an **Understand this** box (plain English + why it matters) *before* the Copy button.
+3. End with a tiny self-check (2–4 questions) so the student knows they didn’t only paste.
+
 ## Author checklist (before publishing any new lab)
 
 1. List every statement that needs account-level rights (`CREATE ROLE`, network policy, security integration, etc.).

@@ -425,6 +425,55 @@ table.plain th { color: var(--muted); }
   margin: 1rem 0;
   font-size: 1.02rem;
 }
+
+/* Teach-then-run: explain code before copy */
+.explain {
+  margin: 1rem 0 0.4rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: rgba(41, 181, 232, 0.07);
+  border: 1px solid rgba(41, 181, 232, 0.22);
+}
+.explain h4 {
+  margin: 0 0 0.45rem;
+  font-size: 0.98rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+.explain p { margin: 0.4rem 0; color: var(--muted); font-size: 0.95rem; }
+.explain ul { margin: 0.4rem 0 0; padding-left: 1.15rem; color: var(--muted); font-size: 0.93rem; }
+.explain li { margin: 0.25rem 0; }
+.explain .why {
+  display: block;
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--line);
+  color: var(--warn);
+  font-size: 0.9rem;
+}
+.gloss {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+}
+.gloss th, .gloss td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.45rem 0.4rem;
+  text-align: left;
+  vertical-align: top;
+}
+.gloss th { color: var(--muted); font-weight: 600; width: 42%; }
+.gloss code { font-size: 0.8em; word-break: break-all; }
+.chunk-label {
+  display: inline-block;
+  margin: 1.1rem 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-2, #ffb020);
+}
 .footer {
   max-width: 1080px;
   margin: 0 auto;

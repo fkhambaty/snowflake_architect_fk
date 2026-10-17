@@ -25,7 +25,7 @@
     <p class="lede">
       Think of this like setting up a clean desk before studying.
       We create one database, one tiny warehouse, and one role that owns the labs.
-      Later labs reuse these exact names — no guessing.
+      <strong>Read each blue “Understand this” box before you copy</strong> — copying without understanding won’t help in interviews.
     </p>
     <div class="progress-track" aria-hidden="true">
       <span class="on"></span><span></span><span></span><span></span>
@@ -95,35 +95,57 @@
       <div class="step-head">
         <div class="step-num">2</div>
         <div>
-          <h3>Copy this SQL → paste → Run All</h3>
-          <p>Do not type it by hand. Click the Copy button, paste into the worksheet, then run.</p>
+          <h3>Bootstrap — understand each chunk, then run</h3>
+          <p>You can run chunks one-by-one (best for learning) or the full script at the bottom.</p>
         </div>
       </div>
 
+      <p class="chunk-label">Chunk A — become admin + create the cheap warehouse</p>
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>USE ROLE ACCOUNTADMIN</code></td><td>Wear the bootstrap badge (only for setup)</td></tr>
+          <tr><td><code>CREATE WAREHOUSE … XSMALL</code></td><td>Create a tiny SQL engine so labs cost almost nothing</td></tr>
+          <tr><td><code>AUTO_SUSPEND = 60</code></td><td>Turn the engine off after 60s idle → saves credits</td></tr>
+          <tr><td><code>AUTO_RESUME = TRUE</code></td><td>Wake it automatically when you run SQL</td></tr>
+          <tr><td><code>IF NOT EXISTS</code></td><td>Safe to re-run; won’t explode if it already exists</td></tr>
+        </table>
+        <span class="why">Interview: “I right-size warehouses and auto-suspend so demos don’t burn money.”</span>
+      </div>
       <div class="code-block">
-        <div class="code-head">
-          <span>SQL · Lab 00 bootstrap (safe to re-run)</span>
-          <button type="button" class="copy-btn">Copy</button>
-        </div>
-<pre><code>-- Lab 00: bootstrap playground (safe to re-run)
--- MUST run as ACCOUNTADMIN first.
-
-USE ROLE ACCOUNTADMIN;
+        <div class="code-head"><span>SQL · warehouse</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
 
 CREATE WAREHOUSE IF NOT EXISTS WH_ARCH_XS
   WAREHOUSE_SIZE = 'XSMALL'
   AUTO_SUSPEND = 60
   AUTO_RESUME = TRUE
   INITIALLY_SUSPENDED = TRUE
-  COMMENT = 'Interview prep lab warehouse';
+  COMMENT = 'Interview prep lab warehouse';</code></pre>
+      </div>
 
-CREATE ROLE IF NOT EXISTS ROLE_ARCH_LAB_ADMIN
+      <p class="chunk-label">Chunk B — create lab admin role + give it powers</p>
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>CREATE ROLE ROLE_ARCH_LAB_ADMIN</code></td><td>Invent a badge that will own the lab playground</td></tr>
+          <tr><td><code>GRANT CREATE ROLE ON ACCOUNT …</code></td><td>Allow that badge to create more roles later (Lab 01)</td></tr>
+          <tr><td><code>USAGE / OPERATE … WITH GRANT OPTION</code></td><td>Use the warehouse, and pass that right to other roles</td></tr>
+          <tr><td><code>CREATE DATABASE …</code></td><td>Create the lab “folder”</td></tr>
+          <tr><td><code>GRANT OWNERSHIP ON DATABASE …</code></td><td>Lab admin becomes the owner (can create schemas/tables/views)</td></tr>
+          <tr><td><code>GRANT ROLE … TO USER</code></td><td>Allow <em>you</em> to wear the lab admin badge</td></tr>
+        </table>
+        <span class="why">Missing CREATE ROLE here is exactly what broke Lab 01 earlier.</span>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · role + database</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE ROLE IF NOT EXISTS ROLE_ARCH_LAB_ADMIN
   COMMENT = 'Owns interview prep lab objects and can create lab roles';
 
--- Required so Lab 01 can CREATE ROLE as lab admin
 GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
 
--- WITH GRANT OPTION so lab admin can grant the warehouse to FR_* roles
 GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
 GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN WITH GRANT OPTION;
 
@@ -133,10 +155,19 @@ CREATE DATABASE IF NOT EXISTS ARCH_INTERVIEW
 GRANT OWNERSHIP ON DATABASE ARCH_INTERVIEW TO ROLE ROLE_ARCH_LAB_ADMIN COPY CURRENT GRANTS;
 
 SET uname = (SELECT CURRENT_USER());
-GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
+GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);</code></pre>
+      </div>
 
--- Smoke test: prove lab admin can create roles (fails early if privileges wrong)
-USE ROLE ROLE_ARCH_LAB_ADMIN;
+      <p class="chunk-label">Chunk C — smoke test + schemas</p>
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>We switch into lab admin and try creating a throwaway role. If that fails, stop — Lab 01 will fail too.</p>
+        <p>Then we create four schemas (subfolders): RAW (landing), CURATED (clean), SECURE (sensitive), UTILS (helpers).</p>
+        <span class="why">Naming layers like this is how you talk about medallion / zone architecture in interviews.</span>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · smoke test + schemas</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
 CREATE ROLE IF NOT EXISTS ROLE_ARCH_SMOKE_TMP COMMENT = 'temp smoke test - safe to drop';
 DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;
 
@@ -153,35 +184,21 @@ SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;
 SELECT 'Lab 00 bootstrap OK — CREATE ROLE smoke test passed' AS status;</code></pre>
       </div>
 
-      <div class="callout tip">
-        <strong>How to run in Snowsight</strong>
-        Click inside the worksheet → press <strong>Ctrl+Enter</strong> (Windows) or click the blue <strong>Run</strong> button.
-        If there are many statements, use <strong>Run All</strong> / run the whole script.
-      </div>
-
       <div class="callout ok">
-        <strong>What “good” looks like at the end of this script</strong>
-        Last result message should say <code>Lab 00 bootstrap OK — CREATE ROLE smoke test passed</code>.
-        If that smoke test fails, <strong>stop</strong> — do not start Lab 01 yet.
+        <strong>Success message</strong>
+        You must see <code>Lab 00 bootstrap OK — CREATE ROLE smoke test passed</code>.
       </div>
 
       <div class="callout bad">
-        <strong>If the GRANT ROLE line fails</strong>
-        That just means Snowflake wants your username typed. Run this tiny query first:
+        <strong>If GRANT ROLE TO USER fails</strong>
+        Find your username, then grant manually:
       </div>
       <div class="code-block">
-        <div class="code-head">
-          <span>SQL · find your username</span>
-          <button type="button" class="copy-btn">Copy</button>
-        </div>
+        <div class="code-head"><span>SQL · find username</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT CURRENT_USER();</code></pre>
       </div>
-      <p class="hint">Then run (replace the name with yours):</p>
       <div class="code-block">
-        <div class="code-head">
-          <span>SQL · grant lab role to you</span>
-          <button type="button" class="copy-btn">Copy</button>
-        </div>
+        <div class="code-head"><span>SQL · manual grant</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
 GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER "PASTE_YOUR_USERNAME_HERE";</code></pre>
       </div>

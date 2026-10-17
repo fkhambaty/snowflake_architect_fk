@@ -20,46 +20,83 @@
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 01 · Domain 1.2 · ~40 minutes · Top interview topic</p>
+    <p class="eyebrow">Lab 01 · Domain 1.2 · Understand first, then run</p>
     <h1>RBAC like an architect</h1>
     <p class="lede">
-      Interviewers love this: “How do you stop analysts from seeing SSN/email while still letting them work?”
-      You will <em>build</em> the answer, then <em>prove</em> it with a failing query.
+      Rule for this lab: <strong>read the blue “Understand this” box → then copy the small SQL under it</strong>.
+      Do not paste a giant script blindly. Interviewers ask <em>why</em>, not “can you paste?”
     </p>
 
+    <div class="callout tip">
+      <strong>What you will be able to explain after this lab</strong>
+      <ul>
+        <li>What a <em>role</em> is (a badge of permissions — not a person)</li>
+        <li>Why we use <strong>functional</strong> roles vs <strong>access</strong> roles</li>
+        <li>Why analysts get a <strong>view</strong> instead of the raw table</li>
+        <li>Why “Insufficient privileges” on RAW is a <em>good</em> demo</li>
+      </ul>
+    </div>
+
     <div class="callout warn">
-      <strong>Stop — did you finish Lab 00?</strong>
-      You need database <code>ARCH_INTERVIEW</code> and table <code>RAW.CUSTOMERS</code> with 5 rows.
-      If not, go to <a href="lab-00.html">Lab 00</a> first.
+      <strong>Need Lab 00 first</strong>
+      Database <code>ARCH_INTERVIEW</code> + table <code>RAW.CUSTOMERS</code> (5 rows).
+      Missing that? → <a href="lab-00.html">Lab 00</a>
     </div>
 
-    <div class="callout bad">
-      <strong>If you already hit: “must have CREATE ROLE granted on ACCOUNT”</strong>
-      That means Lab 00 was run with an older script. Do <strong>Step 0 below first</strong> (takes 10 seconds), then continue.
-      Do <em>not</em> keep re-running Step 2 until Step 0 succeeds.
+    <!-- ========== BIG PICTURE ========== -->
+    <h2>Big picture (30 seconds)</h2>
+    <p class="hint">
+      Snowflake does not check “who is Faizan?” for every table.
+      It checks: <strong>which role is active right now</strong>, and <strong>what that role is allowed to do</strong>.
+    </p>
+    <div class="flow">
+      <div class="node">You (person)</div>
+      <div class="arrow">→</div>
+      <div class="node accent">FR_ANALYST<br /><small>job badge</small></div>
+      <div class="arrow">→</div>
+      <div class="node">AR_CURATED_READ<br /><small>permission pack</small></div>
+      <div class="arrow">→</div>
+      <div class="node">safe view</div>
     </div>
+    <p class="hint">
+      Naming cheat sheet: <code>FR_*</code> = Functional Role (job). <code>AR_*</code> = Access Role (permissions only).
+    </p>
 
-    <!-- STEP 0 -->
+    <!-- ========== STEP 0 ========== -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">0</div>
         <div>
-          <h3>Privilege repair (required if CREATE ROLE failed)</h3>
-          <p>Switch the Role chip to <code>ACCOUNTADMIN</code>, then run this. Safe to re-run even if Lab 00 was already correct.</p>
+          <h3>Privilege repair (only if CREATE ROLE failed earlier)</h3>
+          <p>Skip this if Lab 00 already showed “CREATE ROLE smoke test passed”.</p>
         </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>
+          Creating roles is an <strong>account-level</strong> power. Your lab role can own a database,
+          but it cannot create new roles until ACCOUNTADMIN says:
+          “I allow <code>ROLE_ARCH_LAB_ADMIN</code> to create roles.”
+        </p>
+        <table class="gloss">
+          <tr><th>SQL idea</th><th>Plain English</th></tr>
+          <tr><td><code>USE ROLE ACCOUNTADMIN</code></td><td>Put on the “super admin” badge for this step only</td></tr>
+          <tr><td><code>GRANT CREATE ROLE ON ACCOUNT …</code></td><td>Allow lab admin to invent new roles</td></tr>
+          <tr><td><code>… WITH GRANT OPTION</code></td><td>Lab admin can also <em>give warehouse access to others</em> (FR_* roles)</td></tr>
+          <tr><td><code>CREATE ROLE … SMOKE_TMP</code> then <code>DROP</code></td><td>Quick test: if this fails, stop — privileges still wrong</td></tr>
+        </table>
+        <span class="why">Why it matters: Without this, Step 2 dies with the error you already saw on account QQ00022.</span>
       </div>
 
       <div class="ui-mock">
         <div class="ui-mock-bar">
           <div class="ui-chip glow"><span class="dot"></span> Role: ACCOUNTADMIN ▾</div>
         </div>
-        <div class="ui-mock-body">
-          <p class="hint" style="margin:0">Must be ACCOUNTADMIN for this step only — then we switch back.</p>
-        </div>
       </div>
 
       <div class="code-block">
-        <div class="code-head"><span>SQL · privilege repair + smoke test</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Step 0</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ACCOUNTADMIN;
 
 GRANT CREATE ROLE ON ACCOUNT TO ROLE ROLE_ARCH_LAB_ADMIN;
@@ -76,126 +113,328 @@ DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;
 
 SELECT 'Privilege repair OK — CREATE ROLE works for ROLE_ARCH_LAB_ADMIN' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ You must see “Privilege repair OK…” before Step 2. If smoke test fails, stop and tell me the full error.</div>
+      <div class="badge-ok">✓ Must see “Privilege repair OK…” before continuing.</div>
     </article>
 
-    <div class="callout tip">
-      <strong>Two kinds of roles (remember this sentence)</strong>
-      <ul>
-        <li><strong>Functional role</strong> = who you are at work (Analyst, Engineer, Compliance)</li>
-        <li><strong>Access role</strong> = a permission pack (can read curated / can read PII)</li>
-      </ul>
-      People get functional roles. Functional roles get access roles. Access roles get table privileges.
-      Never give humans random table grants one-by-one forever.
-    </div>
-
-    <div class="flow">
-      <div class="node accent">FR_ANALYST</div>
-      <div class="arrow">→</div>
-      <div class="node">AR_CURATED_READ</div>
-      <div class="arrow">→</div>
-      <div class="node">safe view</div>
-      <div class="arrow">↛</div>
-      <div class="node" style="border-color:var(--bad);color:var(--bad)">RAW PII</div>
-    </div>
-
-    <!-- STEP 1 -->
+    <!-- ========== STEP 1 ========== -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">1</div>
         <div>
-          <h3>Confirm sample data exists</h3>
-          <p>Role chip should be <code>ROLE_ARCH_LAB_ADMIN</code>.</p>
+          <h3>Confirm the customer table exists</h3>
+          <p>We only protect data that is actually there.</p>
         </div>
       </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>USE ROLE …</code></td><td>Which badge am I wearing?</td></tr>
+          <tr><td><code>USE WAREHOUSE …</code></td><td>Which engine runs my SQL?</td></tr>
+          <tr><td><code>USE DATABASE …</code></td><td>Which “folder” of objects?</td></tr>
+          <tr><td><code>COUNT(*)</code></td><td>How many customer rows?</td></tr>
+          <tr><td><code>COUNT(SSN_LAST4)</code></td><td>How many rows have that PII column filled?</td></tr>
+        </table>
+        <span class="why">Why: If n ≠ 5, later “analyst blocked” demos mean nothing — you’re testing an empty table.</span>
+      </div>
+
       <div class="code-block">
-        <div class="code-head"><span>SQL · count customers</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Step 1</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
 USE WAREHOUSE WH_ARCH_XS;
 USE DATABASE ARCH_INTERVIEW;
 SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM RAW.CUSTOMERS;</code></pre>
       </div>
-      <div class="badge-ok">✓ Expect n = 5. If 0, re-run Step 4 in Lab 00.</div>
+      <div class="badge-ok">✓ Expect n = 5. If 0 → Lab 00 Step 4 (sample data).</div>
     </article>
 
-    <!-- STEP 2 -->
+    <!-- ========== STEP 2A ========== -->
     <article class="step">
       <div class="step-head">
         <div class="step-num">2</div>
         <div>
-          <h3>Build the role graph + safe view</h3>
-          <p>One big script. Copy → paste → Run All. Then breathe.</p>
+          <h3>Create empty roles (name tags only — no powers yet)</h3>
+          <p>Creating a role does <em>not</em> give access by itself. It’s just an empty badge.</p>
         </div>
       </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p><code>CREATE ROLE</code> = “Invent a new badge name.” Nothing can read tables yet.</p>
+        <ul>
+          <li><code>AR_*</code> = Access roles → we will hang <em>permissions</em> on these</li>
+          <li><code>FR_*</code> = Functional roles → we will hang these on <em>people/jobs</em></li>
+          <li><code>IF NOT EXISTS</code> = safe to re-run; won’t crash if the role is already there</li>
+        </ul>
+        <span class="why">Interview line: “Roles are empty until you GRANT something to them.”</span>
+      </div>
+
+      <p class="chunk-label">Chunk A — create roles</p>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Lab 01 RBAC (full script)</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · create AR_* and FR_*</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
 USE WAREHOUSE WH_ARCH_XS;
 USE DATABASE ARCH_INTERVIEW;
 
+-- Access roles = permission packs
 CREATE ROLE IF NOT EXISTS AR_RAW_READ;
 CREATE ROLE IF NOT EXISTS AR_CURATED_READ;
 CREATE ROLE IF NOT EXISTS AR_PII_READ;
 
+-- Functional roles = job badges
 CREATE ROLE IF NOT EXISTS FR_ANALYST;
 CREATE ROLE IF NOT EXISTS FR_DATA_ENGINEER;
-CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;
+CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;</code></pre>
+      </div>
+    </article>
 
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_ANALYST;
+    <!-- ========== STEP 2B ========== -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Give warehouse power to job roles</h3>
+          <p>Even SELECT needs a warehouse (compute). No warehouse usage → query can’t run.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>
+          <code>GRANT USAGE ON WAREHOUSE … TO ROLE FR_ANALYST</code> means:
+          “The Analyst badge is allowed to <em>use</em> this tiny warehouse engine.”
+        </p>
+        <p>
+          We grant this to <strong>FR_*</strong> (people/jobs), not only to access roles,
+          because the person switches into <code>FR_ANALYST</code> and needs compute immediately.
+        </p>
+        <span class="why">This is why Lab 00 gave lab admin <code>WITH GRANT OPTION</code> — so it can pass warehouse usage along.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · warehouse to FR_*</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_ANALYST;
 GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_DATA_ENGINEER;
-GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_COMPLIANCE;
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_COMPLIANCE;</code></pre>
+      </div>
+    </article>
 
-GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_RAW_READ;
+    <!-- ========== STEP 2C ========== -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Unlock the “doors” (database + schema USAGE)</h3>
+          <p>Snowflake is like a building: you need keys for the building, then the floor, then the room.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <ul>
+          <li><strong>Database USAGE</strong> = enter the building (<code>ARCH_INTERVIEW</code>)</li>
+          <li><strong>Schema USAGE</strong> = enter the floor (<code>RAW</code> / <code>CURATED</code>)</li>
+          <li><strong>SELECT on table/view</strong> = open a specific room (next step)</li>
+        </ul>
+        <p>If you only GRANT SELECT on a table but forget schema USAGE, Snowflake still blocks you. Beginners get burned by this constantly.</p>
+        <span class="why">Interview line: “Privileges are hierarchical — USAGE on container objects, then object privileges.”</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · database + schema USAGE</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_RAW_READ;
 GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_CURATED_READ;
 GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_PII_READ;
 
 GRANT USAGE ON SCHEMA RAW TO ROLE AR_RAW_READ;
 GRANT USAGE ON SCHEMA CURATED TO ROLE AR_CURATED_READ;
 GRANT USAGE ON SCHEMA SECURE TO ROLE AR_PII_READ;
-GRANT USAGE ON SCHEMA RAW TO ROLE AR_PII_READ;
+GRANT USAGE ON SCHEMA RAW TO ROLE AR_PII_READ;</code></pre>
+      </div>
+      <div class="callout tip">
+        <strong>Notice</strong>
+        We put USAGE on <code>AR_*</code> (access packs), not directly on every human.
+        Humans inherit these packs in a later step.
+      </div>
+    </article>
 
-GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_RAW_READ;
+    <!-- ========== STEP 2D ========== -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <div>
+          <h3>Grant SELECT on tables (the actual data permission)</h3>
+          <p>Now the access roles can read data — still not given to humans yet.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr>
+            <td><code>GRANT SELECT ON ALL TABLES IN SCHEMA RAW …</code></td>
+            <td>Read every table that exists <em>today</em> in RAW</td>
+          </tr>
+          <tr>
+            <td><code>GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW …</code></td>
+            <td>Also auto-allow tables created <em>later</em> — so you don’t forget tomorrow</td>
+          </tr>
+        </table>
+        <p>
+          <code>AR_CURATED_READ</code> gets curated schema tables.
+          <code>AR_RAW_READ</code> / <code>AR_PII_READ</code> get RAW (PII lives there in this lab).
+        </p>
+        <span class="why">Interview gold: “I use future grants so new tables don’t silently become invisible — or accidentally open — without a plan.”</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · SELECT + future grants</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_RAW_READ;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_RAW_READ;
+
 GRANT SELECT ON ALL TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
-GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;
 
-GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST;
+GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;</code></pre>
+      </div>
+    </article>
+
+    <!-- ========== STEP 2E ========== -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">6</div>
+        <div>
+          <h3>Wire job badges → permission packs (the architect graph)</h3>
+          <p>This is the most important mental model in the whole lab.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p><code>GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST</code> means:</p>
+        <p><strong>“Whoever wears Analyst also wears the curated-read pack.”</strong></p>
+        <ul>
+          <li>Analyst → curated only (safe)</li>
+          <li>Engineer → raw + curated (pipelines)</li>
+          <li>Compliance → PII + curated</li>
+        </ul>
+        <p>We do <em>not</em> grant table SELECT directly to <code>FR_ANALYST</code>. That keeps the design clean when 50 analysts join.</p>
+        <span class="why">Interview line: “Functional roles for people/groups; access roles for privileges; grant access→functional, not tables→every human.”</span>
+      </div>
+
+      <div class="flow">
+        <div class="node accent">FR_ANALYST</div>
+        <div class="arrow">inherits</div>
+        <div class="node">AR_CURATED_READ</div>
+        <div class="arrow">↛</div>
+        <div class="node" style="border-color:var(--bad);color:var(--bad)">AR_PII_READ</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · grant access roles to functional roles</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST;
+
 GRANT ROLE AR_RAW_READ TO ROLE FR_DATA_ENGINEER;
 GRANT ROLE AR_CURATED_READ TO ROLE FR_DATA_ENGINEER;
-GRANT ROLE AR_PII_READ TO ROLE FR_COMPLIANCE;
-GRANT ROLE AR_CURATED_READ TO ROLE FR_COMPLIANCE;
 
-SET uname = (SELECT CURRENT_USER());
+GRANT ROLE AR_PII_READ TO ROLE FR_COMPLIANCE;
+GRANT ROLE AR_CURATED_READ TO ROLE FR_COMPLIANCE;</code></pre>
+      </div>
+    </article>
+
+    <!-- ========== STEP 2F ========== -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">7</div>
+        <div>
+          <h3>Give those job badges to YOU (so you can test)</h3>
+          <p>Roles exist in the account, but your user must be allowed to wear them.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>SQL</th><th>Plain English</th></tr>
+          <tr><td><code>SET uname = (SELECT CURRENT_USER());</code></td><td>Store my login name in a variable</td></tr>
+          <tr><td><code>GRANT ROLE FR_ANALYST TO USER …</code></td><td>Allow Faizan (you) to switch into Analyst</td></tr>
+          <tr><td><code>IDENTIFIER($uname)</code></td><td>Use that variable as the real username safely</td></tr>
+        </table>
+        <p>In real companies, an IdP group (Okta/Azure AD) often maps to <code>FR_ANALYST</code> automatically. Here we grant to your user so the dropdown shows the roles.</p>
+        <span class="why">If the role is missing from the Snowsight dropdown, this step didn’t stick (or UI needs a refresh).</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · grant FR_* to your user</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SET uname = (SELECT CURRENT_USER());
 GRANT ROLE FR_ANALYST TO USER IDENTIFIER($uname);
 GRANT ROLE FR_DATA_ENGINEER TO USER IDENTIFIER($uname);
-GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);
+GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);</code></pre>
+      </div>
+    </article>
 
-USE SCHEMA CURATED;
+    <!-- ========== STEP 2G ========== -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">8</div>
+        <div>
+          <h3>Create the “safe window” view (no PII columns)</h3>
+          <p>A view is a saved SELECT. Analysts look through the window — not into the whole room.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>Raw table has: name, email, phone, SSN last-4, …</p>
+        <p>View keeps only: <code>CUSTOMER_ID, FULL_NAME, COUNTRY, CREATED_AT</code></p>
+        <p>Then we grant SELECT on the <strong>view</strong> to <code>AR_CURATED_READ</code>.</p>
+        <p>
+          Important: even if someone somehow reached the view definition, they still need privileges.
+          The main win here is <strong>column exclusion</strong> + RBAC so analysts never get RAW.
+        </p>
+        <span class="why">Later labs add masking policies (hide SSN even for roles that can SELECT the table). RBAC + views is the first layer.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · curated view</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE SCHEMA CURATED;
+
 CREATE OR REPLACE VIEW V_CUSTOMERS_PUBLIC AS
-SELECT CUSTOMER_ID, FULL_NAME, COUNTRY, CREATED_AT
+SELECT
+  CUSTOMER_ID,
+  FULL_NAME,
+  COUNTRY,
+  CREATED_AT
 FROM RAW.CUSTOMERS;
 
 GRANT SELECT ON VIEW V_CUSTOMERS_PUBLIC TO ROLE AR_CURATED_READ;
 
-SELECT 'RBAC objects created' AS status;</code></pre>
-      </div>
-      <div class="callout tip">
-        <strong>What just happened?</strong>
-        Analysts get a <em>view</em> with no email/phone/SSN. Engineers can still read RAW for pipelines.
-        Compliance can read PII. Same person (you) can switch roles to test each path.
+SELECT 'Safe view ready' AS status;</code></pre>
       </div>
     </article>
 
-    <!-- STEP 3 -->
+    <!-- ========== STEP 3 PROVE ========== -->
     <article class="step">
       <div class="step-head">
-        <div class="step-num">3</div>
+        <div class="step-num">9</div>
         <div>
-          <h3>Become the Analyst — prove PII is blocked</h3>
-          <p>This is the money demo. Change the Role chip first or the test is useless.</p>
+          <h3>Prove it: Analyst can see safe data, not PII</h3>
+          <p>This is the interview demo. Change the Role chip or it’s fake.</p>
         </div>
+      </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p><code>USE ROLE FR_ANALYST</code> = “I am now wearing only the Analyst badge.”</p>
+        <p>Snowflake re-checks every permission from that badge’s inheritance chain.</p>
+        <ul>
+          <li>View query → should work (inherits AR_CURATED_READ → SELECT on view)</li>
+          <li>RAW table → should fail (never inherited AR_RAW_READ / AR_PII_READ)</li>
+        </ul>
+        <span class="why">Saying “we secured it” is weak. Showing a failed SELECT on RAW is strong.</span>
       </div>
 
       <div class="ui-mock">
@@ -204,77 +443,80 @@ SELECT 'RBAC objects created' AS status;</code></pre>
           <div class="ui-chip">WH: WH_ARCH_XS ▾</div>
           <div class="ui-chip">DB: ARCH_INTERVIEW ▾</div>
         </div>
-        <div class="ui-mock-body">
-          <p class="hint" style="margin:0">Click the Role dropdown (glowing) → pick <strong>FR_ANALYST</strong> → wait a second.</p>
-        </div>
       </div>
 
-      <p><strong>A) This should WORK</strong></p>
+      <p class="chunk-label">A — should work</p>
       <div class="code-block">
-        <div class="code-head"><span>SQL · analyst safe query</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · analyst safe</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_ANALYST;
 USE WAREHOUSE WH_ARCH_XS;
 USE DATABASE ARCH_INTERVIEW;
 SELECT * FROM CURATED.V_CUSTOMERS_PUBLIC;</code></pre>
       </div>
-      <div class="ui-mock">
-        <div class="ui-mock-body">
-          <div class="ui-result">
-            <table>
-              <thead><tr><th>CUSTOMER_ID</th><th>FULL_NAME</th><th>COUNTRY</th></tr></thead>
-              <tbody>
-                <tr><td>1</td><td>Asha Patel</td><td>US</td></tr>
-                <tr><td>2</td><td>Ben Okonkwo</td><td>US</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="badge-ok">✓ No EMAIL / PHONE / SSN columns. That is the point.</div>
-        </div>
-      </div>
+      <div class="badge-ok">✓ Columns: id, name, country, created — no email/phone/SSN</div>
 
-      <p><strong>B) This should FAIL (red error = success for the lesson)</strong></p>
+      <p class="chunk-label">B — should fail (red error = you did it right)</p>
       <div class="code-block">
-        <div class="code-head"><span>SQL · analyst forbidden query</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · analyst blocked</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT * FROM RAW.CUSTOMERS;</code></pre>
       </div>
-      <div class="badge-fail">✗ Insufficient privileges — this is EXACTLY what you want to show in an interview.</div>
+      <div class="badge-fail">✗ Insufficient privileges — celebrate this error</div>
     </article>
 
-    <!-- STEP 4 -->
+    <!-- ========== STEP 4 ========== -->
     <article class="step">
       <div class="step-head">
-        <div class="step-num">4</div>
+        <div class="step-num">10</div>
         <div>
-          <h3>Become Engineer, then Compliance</h3>
-          <p>Switch role chip each time.</p>
+          <h3>Prove Engineer and Compliance paths</h3>
+          <p>Same person (you), different badges → different powers. That’s RBAC.</p>
         </div>
       </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <p>You are not creating three Snowflake users. You are switching roles.</p>
+        <p>That’s normal in Snowflake: one human, many roles; primary role decides the privilege set (unless secondary roles are enabled — advanced topic for later).</p>
+      </div>
+
       <div class="code-block">
-        <div class="code-head"><span>SQL · engineer can read RAW</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · engineer</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_DATA_ENGINEER;
 SELECT CUSTOMER_ID, EMAIL FROM RAW.CUSTOMERS LIMIT 5;</code></pre>
       </div>
-      <div class="badge-ok">✓ Engineer path works (pipeline work).</div>
+      <div class="badge-ok">✓ Engineer can read RAW (pipeline work).</div>
 
       <div class="code-block">
-        <div class="code-head"><span>SQL · compliance can read PII</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · compliance</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_COMPLIANCE;
 SELECT CUSTOMER_ID, SSN_LAST4 FROM RAW.CUSTOMERS;</code></pre>
       </div>
-      <div class="badge-ok">✓ Compliance path works.</div>
+      <div class="badge-ok">✓ Compliance can read PII.</div>
     </article>
 
-    <!-- STEP 5 -->
+    <!-- ========== STEP 5 ========== -->
     <article class="step">
       <div class="step-head">
-        <div class="step-num">5</div>
+        <div class="step-num">11</div>
         <div>
-          <h3>Inspect grants (architect habit)</h3>
-          <p>Show you can “read the wiring,” not only create it.</p>
+          <h3>Read the wiring with SHOW GRANTS</h3>
+          <p>Architects can explain the graph from Snowflake itself — not from memory alone.</p>
         </div>
       </div>
+
+      <div class="explain">
+        <h4>Understand this before you copy</h4>
+        <table class="gloss">
+          <tr><th>Command</th><th>Question it answers</th></tr>
+          <tr><td><code>SHOW GRANTS TO ROLE FR_ANALYST</code></td><td>What did Analyst receive? (should include role AR_CURATED_READ)</td></tr>
+          <tr><td><code>SHOW GRANTS TO ROLE AR_CURATED_READ</code></td><td>What can the curated pack do? (USAGE/SELECT…)</td></tr>
+          <tr><td><code>SHOW GRANTS OF ROLE AR_CURATED_READ</code></td><td>Who/what was given this pack? (FR_ANALYST, etc.)</td></tr>
+        </table>
+        <span class="why">In interviews: “I’d verify with SHOW GRANTS / ACCESS_HISTORY — not assume.”</span>
+      </div>
+
       <div class="code-block">
-        <div class="code-head"><span>SQL · show grants</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · inspect grants</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
 SHOW GRANTS TO ROLE FR_ANALYST;
 SHOW GRANTS TO ROLE AR_CURATED_READ;
@@ -282,18 +524,39 @@ SHOW GRANTS OF ROLE AR_CURATED_READ;</code></pre>
       </div>
     </article>
 
-    <div class="soundbite">
-      <strong>60-second interview answer (practice out loud)</strong><br />
-      “I separate functional roles from access roles. Analysts inherit curated-read only, so they query a view without PII.
-      Engineers get raw for pipelines. Compliance gets PII access. I just proved analyst select on RAW fails.
-      In production I’d add masking policies and future grants so new tables don’t become world-readable.”
-    </div>
+    <!-- ========== QUIZ ========== -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">✓</div>
+        <div>
+          <h3>Quick self-check (no Snowflake needed)</h3>
+          <p>If you can answer these, you understood — not just pasted.</p>
+        </div>
+      </div>
+      <ol>
+        <li>Why create <code>AR_CURATED_READ</code> instead of granting the view straight to every analyst user?</li>
+        <li>Why does Analyst need schema USAGE <em>and</em> SELECT?</li>
+        <li>What does <code>GRANT ROLE A TO ROLE B</code> mean in one sentence?</li>
+        <li>Why is a failed <code>SELECT</code> on <code>RAW.CUSTOMERS</code> as Analyst a success?</li>
+      </ol>
+      <details class="callout tip" style="cursor:pointer">
+        <summary><strong>Click for short answers</strong></summary>
+        <ol>
+          <li>One permission pack → many people/jobs; easier to audit and change once.</li>
+          <li>Snowflake checks container access (db/schema) before object access (table/view).</li>
+          <li>B inherits A’s privileges (role hierarchy).</li>
+          <li>It proves least privilege: analyst path cannot reach PII tables.</li>
+        </ol>
+      </details>
+    </article>
 
-    <div class="callout tip">
-      <strong>Optional official Snowflake lab (later)</strong>
-      <a href="https://www.snowflake.com/en/developers/guides/getting-started-with-pii/" target="_blank" rel="noreferrer">
-        Process PII with RBAC, masking, row access
-      </a> — do this after our short lab if you want more depth.
+    <div class="soundbite">
+      <strong>60-second interview answer (now you know why each piece exists)</strong><br />
+      “I separate functional roles from access roles. Table privileges go on access roles.
+      Analysts inherit curated-read and query a view without PII columns.
+      Engineers inherit raw for pipelines; compliance inherits PII.
+      I prove it by switching to FR_ANALYST — curated view works, RAW select fails.
+      Future grants keep new tables under the same model.”
     </div>
 
     <div class="pager">
@@ -302,7 +565,7 @@ SHOW GRANTS OF ROLE AR_CURATED_READ;</code></pre>
     </div>
   </div>
 
-  <footer class="footer">If FR_ANALYST is missing from the role dropdown, re-run Step 2 grants or grant the role to your user manually.</footer>
+  <footer class="footer">Stuck on a line? Copy the SQL line + the error + which Step number into chat.</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>
