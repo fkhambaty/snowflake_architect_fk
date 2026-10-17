@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 01 — RBAC like an architect</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="lab-00.html">Lab 00</a>
+        <a class="active" href="lab-01.html">Lab 01</a>
+        <a href="lab-02.html">Lab 02</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 01 · Domain 1.2 · ~40 minutes · Top interview topic</p>
+    <h1>RBAC like an architect</h1>
+    <p class="lede">
+      Interviewers love this: “How do you stop analysts from seeing SSN/email while still letting them work?”
+      You will <em>build</em> the answer, then <em>prove</em> it with a failing query.
+    </p>
+
+    <div class="callout warn">
+      <strong>Stop — did you finish Lab 00?</strong>
+      You need database <code>ARCH_INTERVIEW</code> and table <code>RAW.CUSTOMERS</code> with 5 rows.
+      If not, go to <a href="lab-00.html">Lab 00</a> first.
+    </div>
+
+    <div class="callout tip">
+      <strong>Two kinds of roles (remember this sentence)</strong>
+      <ul>
+        <li><strong>Functional role</strong> = who you are at work (Analyst, Engineer, Compliance)</li>
+        <li><strong>Access role</strong> = a permission pack (can read curated / can read PII)</li>
+      </ul>
+      People get functional roles. Functional roles get access roles. Access roles get table privileges.
+      Never give humans random table grants one-by-one forever.
+    </div>
+
+    <div class="flow">
+      <div class="node accent">FR_ANALYST</div>
+      <div class="arrow">→</div>
+      <div class="node">AR_CURATED_READ</div>
+      <div class="arrow">→</div>
+      <div class="node">safe view</div>
+      <div class="arrow">↛</div>
+      <div class="node" style="border-color:var(--bad);color:var(--bad)">RAW PII</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Confirm sample data exists</h3>
+          <p>Role chip should be <code>ROLE_ARCH_LAB_ADMIN</code>.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · count customers</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM RAW.CUSTOMERS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Expect n = 5. If 0, re-run Step 4 in Lab 00.</div>
+    </article>
+
+    <!-- STEP 2 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Build the role graph + safe view</h3>
+          <p>One big script. Copy → paste → Run All. Then breathe.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Lab 01 RBAC (full script)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+
+CREATE ROLE IF NOT EXISTS AR_RAW_READ;
+CREATE ROLE IF NOT EXISTS AR_CURATED_READ;
+CREATE ROLE IF NOT EXISTS AR_PII_READ;
+
+CREATE ROLE IF NOT EXISTS FR_ANALYST;
+CREATE ROLE IF NOT EXISTS FR_DATA_ENGINEER;
+CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;
+
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_ANALYST;
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_DATA_ENGINEER;
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE FR_COMPLIANCE;
+
+GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_RAW_READ;
+GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_CURATED_READ;
+GRANT USAGE ON DATABASE ARCH_INTERVIEW TO ROLE AR_PII_READ;
+
+GRANT USAGE ON SCHEMA RAW TO ROLE AR_RAW_READ;
+GRANT USAGE ON SCHEMA CURATED TO ROLE AR_CURATED_READ;
+GRANT USAGE ON SCHEMA SECURE TO ROLE AR_PII_READ;
+GRANT USAGE ON SCHEMA RAW TO ROLE AR_PII_READ;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_RAW_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_RAW_READ;
+GRANT SELECT ON ALL TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
+GRANT SELECT ON ALL TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA RAW TO ROLE AR_PII_READ;
+
+GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST;
+GRANT ROLE AR_RAW_READ TO ROLE FR_DATA_ENGINEER;
+GRANT ROLE AR_CURATED_READ TO ROLE FR_DATA_ENGINEER;
+GRANT ROLE AR_PII_READ TO ROLE FR_COMPLIANCE;
+GRANT ROLE AR_CURATED_READ TO ROLE FR_COMPLIANCE;
+
+SET uname = (SELECT CURRENT_USER());
+GRANT ROLE FR_ANALYST TO USER IDENTIFIER($uname);
+GRANT ROLE FR_DATA_ENGINEER TO USER IDENTIFIER($uname);
+GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);
+
+USE SCHEMA CURATED;
+CREATE OR REPLACE VIEW V_CUSTOMERS_PUBLIC AS
+SELECT CUSTOMER_ID, FULL_NAME, COUNTRY, CREATED_AT
+FROM RAW.CUSTOMERS;
+
+GRANT SELECT ON VIEW V_CUSTOMERS_PUBLIC TO ROLE AR_CURATED_READ;
+
+SELECT 'RBAC objects created' AS status;</code></pre>
+      </div>
+      <div class="callout tip">
+        <strong>What just happened?</strong>
+        Analysts get a <em>view</em> with no email/phone/SSN. Engineers can still read RAW for pipelines.
+        Compliance can read PII. Same person (you) can switch roles to test each path.
+      </div>
+    </article>
+
+    <!-- STEP 3 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Become the Analyst — prove PII is blocked</h3>
+          <p>This is the money demo. Change the Role chip first or the test is useless.</p>
+        </div>
+      </div>
+
+      <div class="ui-mock">
+        <div class="ui-mock-bar">
+          <div class="ui-chip glow"><span class="dot"></span> Role: FR_ANALYST ▾</div>
+          <div class="ui-chip">WH: WH_ARCH_XS ▾</div>
+          <div class="ui-chip">DB: ARCH_INTERVIEW ▾</div>
+        </div>
+        <div class="ui-mock-body">
+          <p class="hint" style="margin:0">Click the Role dropdown (glowing) → pick <strong>FR_ANALYST</strong> → wait a second.</p>
+        </div>
+      </div>
+
+      <p><strong>A) This should WORK</strong></p>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · analyst safe query</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE FR_ANALYST;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+SELECT * FROM CURATED.V_CUSTOMERS_PUBLIC;</code></pre>
+      </div>
+      <div class="ui-mock">
+        <div class="ui-mock-body">
+          <div class="ui-result">
+            <table>
+              <thead><tr><th>CUSTOMER_ID</th><th>FULL_NAME</th><th>COUNTRY</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>Asha Patel</td><td>US</td></tr>
+                <tr><td>2</td><td>Ben Okonkwo</td><td>US</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="badge-ok">✓ No EMAIL / PHONE / SSN columns. That is the point.</div>
+        </div>
+      </div>
+
+      <p><strong>B) This should FAIL (red error = success for the lesson)</strong></p>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · analyst forbidden query</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM RAW.CUSTOMERS;</code></pre>
+      </div>
+      <div class="badge-fail">✗ Insufficient privileges — this is EXACTLY what you want to show in an interview.</div>
+    </article>
+
+    <!-- STEP 4 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Become Engineer, then Compliance</h3>
+          <p>Switch role chip each time.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · engineer can read RAW</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE FR_DATA_ENGINEER;
+SELECT CUSTOMER_ID, EMAIL FROM RAW.CUSTOMERS LIMIT 5;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Engineer path works (pipeline work).</div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · compliance can read PII</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE FR_COMPLIANCE;
+SELECT CUSTOMER_ID, SSN_LAST4 FROM RAW.CUSTOMERS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Compliance path works.</div>
+    </article>
+
+    <!-- STEP 5 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <div>
+          <h3>Inspect grants (architect habit)</h3>
+          <p>Show you can “read the wiring,” not only create it.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · show grants</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+SHOW GRANTS TO ROLE FR_ANALYST;
+SHOW GRANTS TO ROLE AR_CURATED_READ;
+SHOW GRANTS OF ROLE AR_CURATED_READ;</code></pre>
+      </div>
+    </article>
+
+    <div class="soundbite">
+      <strong>60-second interview answer (practice out loud)</strong><br />
+      “I separate functional roles from access roles. Analysts inherit curated-read only, so they query a view without PII.
+      Engineers get raw for pipelines. Compliance gets PII access. I just proved analyst select on RAW fails.
+      In production I’d add masking policies and future grants so new tables don’t become world-readable.”
+    </div>
+
+    <div class="callout tip">
+      <strong>Optional official Snowflake lab (later)</strong>
+      <a href="https://www.snowflake.com/en/developers/guides/getting-started-with-pii/" target="_blank" rel="noreferrer">
+        Process PII with RBAC, masking, row access
+      </a> — do this after our short lab if you want more depth.
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-00.html">← Lab 00</a>
+      <a class="btn primary" href="lab-02.html">Next: Lab 02 dbt →</a>
+    </div>
+  </div>
+
+  <footer class="footer">If FR_ANALYST is missing from the role dropdown, re-run Step 2 grants or grant the role to your user manually.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

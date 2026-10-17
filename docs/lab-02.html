@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 02 — dbt incremental on Snowflake</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
+        <a class="active" href="lab-02.html">Lab 02</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 02 · Domain 3 + dbt · ~40 minutes</p>
+    <h1>dbt incremental merge on Snowflake</h1>
+    <p class="lede">
+      Story in one line: Day 1 load 5 orders. Run dbt. Day 2 add 2 orders + update 1.
+      Run dbt again. Table grows correctly — it does <em>not</em> rebuild everything from scratch.
+    </p>
+
+    <div class="flow">
+      <div class="node">RAW.ORDERS_EVENTS</div>
+      <div class="arrow">→</div>
+      <div class="node">stg_orders</div>
+      <div class="arrow">→</div>
+      <div class="node accent">fct_orders_incremental (MERGE)</div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Words you will say in interviews</strong>
+      <ul>
+        <li><strong>Incremental</strong> = only process new/changed rows after the first run</li>
+        <li><strong>Merge</strong> = insert new keys, update existing keys (upsert)</li>
+        <li><strong>unique_key</strong> = how dbt knows which row is “the same order”</li>
+        <li><strong>Watermark</strong> = usually <code>updated_at</code> — “give me rows newer than what I already have”</li>
+      </ul>
+    </div>
+
+    <!-- STEP 1 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Point dbt at your Snowflake account</h3>
+          <p>One-time config on your laptop.</p>
+        </div>
+      </div>
+      <ol>
+        <li>Open folder <code>dbt_project</code> from this repo in VS Code.</li>
+        <li>Open (or create) your profiles file:<br />
+          <code>C:\Users\YOURNAME\.dbt\profiles.yml</code></li>
+        <li>Copy the template below into that file and fill the blanks.</li>
+      </ol>
+
+      <div class="code-block">
+        <div class="code-head"><span>YAML · profiles.yml template</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>snowflake_architect_fk:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: YOUR_ACCOUNT_LOCATOR
+      user: YOUR_USER
+      password: YOUR_PASSWORD
+      role: ROLE_ARCH_LAB_ADMIN
+      database: ARCH_INTERVIEW
+      warehouse: WH_ARCH_XS
+      schema: CURATED
+      threads: 4</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>Terminal · test connection</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>cd dbt_project
+dbt debug</code></pre>
+      </div>
+      <div class="badge-ok">✓ All connection checks should be green / OK before continuing.</div>
+      <div class="callout warn">
+        <strong>Don’t put real passwords in Git</strong>
+        <code>profiles.yml</code> stays in your user folder — never commit it to the repo.
+      </div>
+    </article>
+
+    <!-- STEP 2 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Load Day-1 orders in Snowflake</h3>
+          <p>Snowsight worksheet, role <code>ROLE_ARCH_LAB_ADMIN</code>.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Day 1 source load</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+USE SCHEMA RAW;
+
+CREATE OR REPLACE TABLE ORDERS_EVENTS (
+  ORDER_ID     NUMBER,
+  CUSTOMER_ID  NUMBER,
+  STATUS       STRING,
+  ORDER_TOTAL  NUMBER(12,2),
+  UPDATED_AT   TIMESTAMP_NTZ
+);
+
+INSERT INTO ORDERS_EVENTS VALUES
+  (1001, 1, 'CREATED',   40.00, '2026-10-01 10:00:00'),
+  (1002, 2, 'CREATED',   15.50, '2026-10-01 11:00:00'),
+  (1003, 3, 'SHIPPED',   99.00, '2026-10-01 12:00:00'),
+  (1004, 4, 'CREATED',   22.00, '2026-10-01 13:00:00'),
+  (1005, 5, 'CANCELLED', 10.00, '2026-10-01 14:00:00');
+
+SELECT 'day1' AS batch, COUNT(*) AS n FROM ORDERS_EVENTS;</code></pre>
+      </div>
+      <div class="badge-ok">✓ Expect n = 5</div>
+    </article>
+
+    <!-- STEP 3 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>First dbt run (builds the incremental table)</h3>
+          <p>In VS Code terminal, inside <code>dbt_project</code>.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Terminal · first run + tests</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>dbt run --select stg_orders fct_orders_incremental
+dbt test --select fct_orders_incremental</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · check mart after run #1</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE DATABASE ARCH_INTERVIEW;
+SELECT COUNT(*) AS rows_after_first_run FROM CURATED.FCT_ORDERS_INCREMENTAL;
+SELECT * FROM CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
+      </div>
+      <div class="ui-mock">
+        <div class="ui-mock-body">
+          <div class="ui-result">
+            <table>
+              <thead><tr><th>ORDER_ID</th><th>STATUS</th><th>UPDATED_AT</th></tr></thead>
+              <tbody>
+                <tr><td>1001</td><td>CREATED</td><td>2026-10-01 …</td></tr>
+                <tr><td>1005</td><td>CANCELLED</td><td>2026-10-01 …</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="badge-ok">✓ 5 rows in CURATED.FCT_ORDERS_INCREMENTAL</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- STEP 4 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Day 2 deltas → second dbt run (the interview moment)</h3>
+          <p>New orders arrive. One old order ships. Then merge.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Day 2 changes</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+USE SCHEMA RAW;
+
+INSERT INTO ORDERS_EVENTS VALUES
+  (1006, 1, 'CREATED', 55.00, '2026-10-02 09:00:00'),
+  (1007, 2, 'CREATED', 18.00, '2026-10-02 09:30:00');
+
+UPDATE ORDERS_EVENTS
+SET STATUS = 'SHIPPED', UPDATED_AT = '2026-10-02 10:00:00'
+WHERE ORDER_ID = 1001;
+
+SELECT ORDER_ID, STATUS, UPDATED_AT FROM ORDERS_EVENTS ORDER BY ORDER_ID;</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>Terminal · second dbt run</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>dbt run --select fct_orders_incremental</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · prove merge worked</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT ORDER_ID, STATUS, UPDATED_AT
+FROM CURATED.FCT_ORDERS_INCREMENTAL
+ORDER BY ORDER_ID;</code></pre>
+      </div>
+
+      <ul class="checklist">
+        <li>Row count is 7 (not 10, not doubled junk)</li>
+        <li>Order <code>1001</code> status is <code>SHIPPED</code> (updated, not duplicated)</li>
+        <li>Orders <code>1006</code> and <code>1007</code> exist</li>
+      </ul>
+    </article>
+
+    <!-- STEP 5 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <div>
+          <h3>What to say about cost (architect level)</h3>
+          <p>Open Snowsight → <strong>Activity / Query History</strong> and find the second MERGE.</p>
+        </div>
+      </div>
+      <div class="ui-mock">
+        <div class="ui-mock-bar">
+          <div class="ui-chip glow"><span class="dot"></span> Activity → Query History</div>
+          <div class="ui-chip">Look for MERGE into FCT_ORDERS…</div>
+        </div>
+        <div class="ui-mock-body">
+          <p class="hint" style="margin:0">
+            First run often looks like a full create/insert.
+            Second run should show a <strong>MERGE</strong> — that is your talking point.
+          </p>
+        </div>
+      </div>
+      <div class="callout tip">
+        <strong>When NOT to use incremental</strong>
+        Tiny dimension tables, or when business logic changes so often that full refresh is safer and still cheap.
+      </div>
+    </article>
+
+    <div class="soundbite">
+      <strong>Interview soundbite</strong><br />
+      “For facts with daily deltas I use dbt incremental merge on Snowflake with a unique order_id and updated_at watermark.
+      First run builds the table; later runs merge only changes. I validate with uniqueness tests and check Query History for MERGE, not full rebuilds.
+      RAW stays restricted; curated marts are what analysts get — same RBAC story as Lab 01.”
+    </div>
+
+    <div class="callout tip">
+      <strong>Optional official Snowflake labs (longer)</strong>
+      <a href="https://www.snowflake.com/en/developers/guides/data-teams-with-dbt-core/" target="_blank" rel="noreferrer">dbt Core Quickstart</a>
+      ·
+      <a href="https://www.snowflake.com/en/developers/guides/data-teams-with-dbt-cloud/" target="_blank" rel="noreferrer">dbt Cloud Quickstart</a>
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-01.html">← Lab 01</a>
+      <a class="btn primary" href="index.html">Back to Home</a>
+    </div>
+  </div>
+
+  <footer class="footer">After Labs 00–02, tell me pace / clarity feedback so the next HTML labs match what helps you.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

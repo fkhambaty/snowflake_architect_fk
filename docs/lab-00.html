@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 00 — Course setup</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a class="active" href="lab-00.html">Lab 00</a>
+        <a href="lab-01.html">Lab 01</a>
+        <a href="lab-02.html">Lab 02</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 00 · Do this once · ~15 minutes</p>
+    <h1>Build your playground</h1>
+    <p class="lede">
+      Think of this like setting up a clean desk before studying.
+      We create one database, one tiny warehouse, and one role that owns the labs.
+      Later labs reuse these exact names — no guessing.
+    </p>
+    <div class="progress-track" aria-hidden="true">
+      <span class="on"></span><span></span><span></span><span></span>
+    </div>
+    <p class="meta">Progress: Step 1 of 4 on this page</p>
+
+    <div class="callout tip">
+      <strong>Plain English: what are we making?</strong>
+      <table class="plain">
+        <tr><th>Thing</th><th>Name</th><th>Kid-simple meaning</th></tr>
+        <tr><td>Warehouse</td><td><code>WH_ARCH_XS</code></td><td>The “engine” that runs SQL (X-Small = cheap)</td></tr>
+        <tr><td>Role</td><td><code>ROLE_ARCH_LAB_ADMIN</code></td><td>Your lab “badge” with permission to own objects</td></tr>
+        <tr><td>Database</td><td><code>ARCH_INTERVIEW</code></td><td>A folder for all interview practice data</td></tr>
+        <tr><td>Schemas</td><td><code>RAW</code>, <code>CURATED</code>, <code>SECURE</code>, <code>UTILS</code></td><td>Subfolders inside the database</td></tr>
+      </table>
+    </div>
+
+    <div class="flow">
+      <div class="node">You</div>
+      <div class="arrow">→</div>
+      <div class="node accent">ROLE_ARCH_LAB_ADMIN</div>
+      <div class="arrow">→</div>
+      <div class="node">ARCH_INTERVIEW</div>
+      <div class="arrow">→</div>
+      <div class="node">RAW / CURATED / SECURE / UTILS</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Open Snowsight (Snowflake’s website)</h3>
+          <p>If you can open Gmail in a browser, you can do this.</p>
+        </div>
+      </div>
+      <ol>
+        <li>Go to your Snowflake URL (often <code>https://app.snowflake.com</code>) and log in.</li>
+        <li>On the left menu, click <strong>Projects</strong> → <strong>Worksheets</strong> (sometimes just <strong>Worksheets</strong>).</li>
+        <li>Click <strong>+ Worksheet</strong> (or “+” → SQL Worksheet).</li>
+        <li>Rename it to <code>lab_00_setup</code> (top title — click to edit).</li>
+      </ol>
+
+      <div class="ui-mock" aria-label="Mock of Snowsight worksheet bar">
+        <div class="ui-mock-bar">
+          <div class="ui-chip glow"><span class="dot"></span> Role: ACCOUNTADMIN ▾</div>
+          <div class="ui-chip">Warehouse: … ▾</div>
+          <div class="ui-chip">Database: … ▾</div>
+        </div>
+        <div class="ui-mock-body">
+          <p class="hint" style="margin:0">
+            <strong style="color:var(--warn)">Look at the blinking chip ↑</strong><br />
+            At the top of the worksheet, set <strong>Role</strong> to <code>ACCOUNTADMIN</code>
+            (or <code>SYSADMIN</code> if that is what your trial uses to create databases).
+          </p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <strong>Interview tip (say this later)</strong>
+        “I only use ACCOUNTADMIN to bootstrap. Day-to-day work should use a custom role.”
+      </div>
+    </article>
+
+    <!-- STEP 2 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Copy this SQL → paste → Run All</h3>
+          <p>Do not type it by hand. Click the Copy button, paste into the worksheet, then run.</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span>SQL · Lab 00 bootstrap (safe to re-run)</span>
+          <button type="button" class="copy-btn">Copy</button>
+        </div>
+<pre><code>-- Lab 00: bootstrap playground (safe to re-run)
+-- Run as ACCOUNTADMIN (or equivalent) first.
+
+USE ROLE ACCOUNTADMIN;
+
+CREATE WAREHOUSE IF NOT EXISTS WH_ARCH_XS
+  WAREHOUSE_SIZE = 'XSMALL'
+  AUTO_SUSPEND = 60
+  AUTO_RESUME = TRUE
+  INITIALLY_SUSPENDED = TRUE
+  COMMENT = 'Interview prep lab warehouse';
+
+CREATE ROLE IF NOT EXISTS ROLE_ARCH_LAB_ADMIN
+  COMMENT = 'Owns interview prep lab objects';
+
+GRANT USAGE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN;
+GRANT OPERATE ON WAREHOUSE WH_ARCH_XS TO ROLE ROLE_ARCH_LAB_ADMIN;
+
+CREATE DATABASE IF NOT EXISTS ARCH_INTERVIEW
+  COMMENT = 'Snowflake Architect interview prep';
+
+GRANT OWNERSHIP ON DATABASE ARCH_INTERVIEW TO ROLE ROLE_ARCH_LAB_ADMIN COPY CURRENT GRANTS;
+
+SET uname = (SELECT CURRENT_USER());
+GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);
+
+USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+
+CREATE SCHEMA IF NOT EXISTS RAW;
+CREATE SCHEMA IF NOT EXISTS CURATED;
+CREATE SCHEMA IF NOT EXISTS SECURE;
+CREATE SCHEMA IF NOT EXISTS UTILS;
+
+SELECT CURRENT_ROLE() AS role, CURRENT_WAREHOUSE() AS wh, CURRENT_DATABASE() AS db;
+SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;</code></pre>
+      </div>
+
+      <div class="callout tip">
+        <strong>How to run in Snowsight</strong>
+        Click inside the worksheet → press <strong>Ctrl+Enter</strong> (Windows) or click the blue <strong>Run</strong> button.
+        If there are many statements, use <strong>Run All</strong> / run the whole script.
+      </div>
+
+      <div class="callout bad">
+        <strong>If the GRANT ROLE line fails</strong>
+        That just means Snowflake wants your username typed. Run this tiny query first:
+      </div>
+      <div class="code-block">
+        <div class="code-head">
+          <span>SQL · find your username</span>
+          <button type="button" class="copy-btn">Copy</button>
+        </div>
+<pre><code>SELECT CURRENT_USER();</code></pre>
+      </div>
+      <p class="hint">Then run (replace the name with yours):</p>
+      <div class="code-block">
+        <div class="code-head">
+          <span>SQL · grant lab role to you</span>
+          <button type="button" class="copy-btn">Copy</button>
+        </div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER "PASTE_YOUR_USERNAME_HERE";</code></pre>
+      </div>
+    </article>
+
+    <!-- STEP 3 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Prove it worked (checklist)</h3>
+          <p>Switch the top chips, then run the check query.</p>
+        </div>
+      </div>
+
+      <div class="ui-mock">
+        <div class="ui-mock-bar">
+          <div class="ui-chip glow"><span class="dot"></span> Role: ROLE_ARCH_LAB_ADMIN ▾</div>
+          <div class="ui-chip glow"><span class="dot"></span> WH: WH_ARCH_XS ▾</div>
+          <div class="ui-chip glow"><span class="dot"></span> DB: ARCH_INTERVIEW ▾</div>
+        </div>
+        <div class="ui-mock-body">
+          <div class="ui-tree">
+            Data → Databases → <span class="hl">ARCH_INTERVIEW</span><br />
+            &nbsp;&nbsp;├── <span class="hl">RAW</span><br />
+            &nbsp;&nbsp;├── <span class="hl">CURATED</span><br />
+            &nbsp;&nbsp;├── <span class="hl">SECURE</span><br />
+            &nbsp;&nbsp;└── <span class="hl">UTILS</span>
+          </div>
+          <div class="badge-ok">✓ This is what “success” looks like in the Data browser</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span>SQL · success check</span>
+          <button type="button" class="copy-btn">Copy</button>
+        </div>
+<pre><code>SELECT CURRENT_ROLE(), CURRENT_WAREHOUSE(), CURRENT_DATABASE();
+SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;</code></pre>
+      </div>
+
+      <ul class="checklist">
+        <li>Role shows <code>ROLE_ARCH_LAB_ADMIN</code></li>
+        <li>Warehouse shows <code>WH_ARCH_XS</code></li>
+        <li>Database shows <code>ARCH_INTERVIEW</code></li>
+        <li>You see schemas RAW, CURATED, SECURE, UTILS</li>
+      </ul>
+    </article>
+
+    <!-- STEP 4 -->
+    <article class="step">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Load sample customers (needed for Lab 01)</h3>
+          <p>Tiny fake table with emails and SSN last-4 so we can practice hiding PII next.</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span>SQL · sample customers</span>
+          <button type="button" class="copy-btn">Copy</button>
+        </div>
+<pre><code>USE ROLE ROLE_ARCH_LAB_ADMIN;
+USE WAREHOUSE WH_ARCH_XS;
+USE DATABASE ARCH_INTERVIEW;
+USE SCHEMA RAW;
+
+CREATE OR REPLACE TABLE CUSTOMERS (
+  CUSTOMER_ID   NUMBER,
+  FULL_NAME     STRING,
+  EMAIL         STRING,
+  PHONE         STRING,
+  COUNTRY       STRING,
+  SSN_LAST4     STRING,
+  CREATED_AT    TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
+
+INSERT INTO CUSTOMERS (CUSTOMER_ID, FULL_NAME, EMAIL, PHONE, COUNTRY, SSN_LAST4) VALUES
+  (1, 'Asha Patel',  'asha.patel@example.com',  '+1-555-0101', 'US', '1234'),
+  (2, 'Ben Okonkwo', 'ben.okonkwo@example.com', '+1-555-0102', 'US', '5678'),
+  (3, 'Chen Wei',    'chen.wei@example.com',    '+1-555-0103', 'CA', '9012'),
+  (4, 'Diana Rossi', 'diana.rossi@example.com', '+1-555-0104', 'US', '3456'),
+  (5, 'Evan Ng',     'evan.ng@example.com',     '+1-555-0105', 'UK', '7890');
+
+SELECT * FROM CUSTOMERS ORDER BY CUSTOMER_ID;</code></pre>
+      </div>
+
+      <div class="ui-mock">
+        <div class="ui-mock-bar"><div class="ui-chip">Results</div></div>
+        <div class="ui-mock-body">
+          <div class="ui-result">
+            <table>
+              <thead><tr><th>CUSTOMER_ID</th><th>FULL_NAME</th><th>EMAIL</th><th>SSN_LAST4</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>Asha Patel</td><td>asha.patel@…</td><td>1234</td></tr>
+                <tr><td>2</td><td>Ben Okonkwo</td><td>ben.okonkwo@…</td><td>5678</td></tr>
+                <tr><td>3</td><td>Chen Wei</td><td>chen.wei@…</td><td>9012</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="badge-ok">✓ You should see 5 rows. PII columns exist on purpose — Lab 01 will lock them down.</div>
+        </div>
+      </div>
+    </article>
+
+    <div class="soundbite">
+      <strong>Interview soundbite (read out loud once)</strong><br />
+      “I bootstrap a dedicated lab role, warehouse, and database so demos never pollute production.
+      Least privilege starts with isolating the playground itself.”
+    </div>
+
+    <div class="callout ok">
+      <strong>You’re done with Lab 00 when…</strong>
+      You can switch to <code>ROLE_ARCH_LAB_ADMIN</code>, see four schemas, and <code>RAW.CUSTOMERS</code> has 5 rows.
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="index.html">← Home</a>
+      <a class="btn primary" href="lab-01.html">Next: Lab 01 RBAC →</a>
+    </div>
+  </div>
+
+  <footer class="footer">Stuck? Copy the error message text into chat and ask for help.</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

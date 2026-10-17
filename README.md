@@ -1,67 +1,51 @@
 # Snowflake Architect Interview Prep (FK)
 
-Hands-on interview prep for **Snowflake Architect** roles (6+ years expected) with **dbt**.
+## Open the course here (not this README)
 
-This is a **practical walkthrough course**: interview question → scenario → run it in your Snowflake account → answer like an architect.
+This repo is an **HTML course**. Do not study from the markdown text files.
 
-## Study guide sync
+### Option A — from your computer (best)
 
-Mapped to the official **SnowPro Advanced: Architect** study guide (Aug 2025): [`docs/study_guide_map.md`](docs/study_guide_map.md).
-
-- Starter labs match Domain **1.2** (RBAC) and Domain **3** / official dbt Quickstarts.
-- Interview-first; exam breadth comes after you clear these.
-- Official Snowflake labs are linked as optional companions (we don’t republish Snowflake University content).
-- Keep `SnowProArchitectStudyGuide.pdf` local only (gitignored — guide says not for third parties).
-
-## Start here
-
-Open the course hub in a browser:
-
-- [`docs/index.html`](docs/index.html) — clickable map of all modules
-
-Or open the raw file path:
+1. Open File Explorer to this folder’s `docs` directory  
+2. Double-click **`index.html`**  
+   Or from the repo root path:
 
 ```text
 docs/index.html
 ```
 
-## Starter modules (for your feedback)
+### Option B — from GitHub
 
-| # | Module | Why it exists |
-|---|--------|---------------|
-| 00 | [Course setup](labs/00_setup/README.md) | Warehouses, roles, sample DB once |
-| 01 | [RBAC like an architect](labs/01_rbac_architect/README.md) | Most common senior interview topic |
-| 02 | [dbt incremental + Snowflake](labs/02_dbt_incremental/README.md) | Core Snowflake + dbt pairing |
+Open: [docs/index.html](https://github.com/fkhambaty/snowflake_architect_fk/blob/main/docs/index.html)  
+Then click **Raw** / download, or clone the repo and open `docs/index.html` locally (GitHub’s blob view is not as nice as opening the file in a browser).
 
-After you try these two labs, tell me what to change (pace, depth, format, screenshots style, missing topics). Remaining modules will follow your feedback.
-
-## Planned full map (not built yet)
-
-Aligned to interview + [SnowPro Advanced: Architect](https://learn.snowflake.com/en/certifications/snowpro-advanced-architect/) domains — **interview-first**, exam topics only when they show up in real architect conversations.
-
-1. Accounts & Security — RBAC, masking, row access, network, SSO patterns  
-2. Architecture — medallion/Data Vault tradeoffs, cloning, Time Travel, sharing, DR  
-3. Data Engineering — Snowpipe, streams/tasks, dynamic tables vs dbt, Iceberg  
-4. Performance — Query Profile, clustering, warehouse sizing, caching  
-5. dbt at scale — projects, packages, CI, Slim CI, exposures, contracts  
-6. Cost governance — resource monitors, query attribution, FinOps talking points  
-
-## Repo layout
+**Recommended:** clone/open locally so Copy buttons and styling work perfectly.
 
 ```text
-docs/                 # HTML course hub + diagrams
-labs/                 # Step-by-step labs (SQL + dbt)
-sql/                  # Shared SQL helpers
-dbt_project/          # Sample dbt project used by labs
+https://github.com/fkhambaty/snowflake_architect_fk
 ```
 
-## Requirements
+---
 
-- Snowflake account (trial is fine)
-- Snowflake VS Code / Snowsight access
-- dbt Core or dbt Cloud CLI installed locally
-- Python 3.10+ if using dbt-snowflake adapter
+## What you get
 
-## Author
+- Pretty HTML hub + Labs 00 / 01 / 02
+- **Copy** button on every SQL / terminal block
+- Fake Snowsight screenshots + animated step numbers
+- Spoon-fed “click this, then that” instructions
+- Interview soundbites to say out loud
 
-Built for interview prep by **fkhambaty**.
+| Lab | HTML page |
+|-----|-----------|
+| Home | [`docs/index.html`](docs/index.html) |
+| 00 Setup | [`docs/lab-00.html`](docs/lab-00.html) |
+| 01 RBAC | [`docs/lab-01.html`](docs/lab-01.html) |
+| 02 dbt | [`docs/lab-02.html`](docs/lab-02.html) |
+
+SQL source files still live under `sql/` and `dbt_project/` if you prefer opening them in an editor — but the HTML pages already embed what you need to copy.
+
+---
+
+## Study guide sync
+
+See [`docs/study_guide_map.md`](docs/study_guide_map.md). Keep your official `SnowProArchitectStudyGuide.pdf` local only (gitignored).
