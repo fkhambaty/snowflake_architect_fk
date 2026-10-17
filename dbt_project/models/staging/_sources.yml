@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    database: ARCH_INTERVIEW
+    schema: RAW
+    tables:
+      - name: orders_events
+        description: "Lab 02 source events for incremental merge demo"

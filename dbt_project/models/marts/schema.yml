@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: fct_orders_incremental
+    description: "Incremental order fact using Snowflake merge strategy"
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Snowflake Architect Interview Prep — FK</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">Interview-first · Hands-on · Snowflake + dbt</p>
+    <h1>Snowflake Architect<br />Interview Prep</h1>
+    <p class="lede">
+      Open a module → run SQL in your account → practice the interview answer.
+      Starter build: setup + 2 full labs. Rest ships after your feedback.
+    </p>
+    <div class="cta-row">
+      <a class="btn primary" href="../labs/00_setup/README.md">Start Lab 00 — Setup</a>
+      <a class="btn" href="#roadmap">See full roadmap</a>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Starter labs (test these first)</h2>
+      <p class="hint">Do these in order. Each takes ~30–45 minutes in a real Snowflake account.</p>
+      <div class="grid">
+        <a class="card" href="../labs/00_setup/README.md">
+          <span class="num">00</span>
+          <h3>Course setup</h3>
+          <p>Create warehouse, roles, and demo database once. Everything else reuses this.</p>
+          <ul>
+            <li>SQL you paste into Snowsight</li>
+            <li>What “good” looks like in the UI</li>
+          </ul>
+        </a>
+        <a class="card" href="../labs/01_rbac_architect/README.md">
+          <span class="num">01</span>
+          <h3>RBAC like an architect</h3>
+          <p>Interview classic: functional vs access roles, least privilege, grant graphs.</p>
+          <ul>
+            <li>Build a 3-layer role model</li>
+            <li>Prove a user cannot see PII</li>
+            <li>Say the answer out loud</li>
+          </ul>
+        </a>
+        <a class="card" href="../labs/02_dbt_incremental/README.md">
+          <span class="num">02</span>
+          <h3>dbt incremental on Snowflake</h3>
+          <p>Bronze → Silver with incremental merge, when to use merge vs delete+insert.</p>
+          <ul>
+            <li>dbt project in this repo</li>
+            <li>Run, verify, explain cost</li>
+          </ul>
+        </a>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <h2>Planned modules (not built yet — wait for your feedback)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Topic</th>
+            <th>Interview weight</th>
+            <th>Exam overlap</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>03</td><td>Masking + row access policies</td><td>Very high</td><td>Domain 1</td></tr>
+          <tr><td>04</td><td>Medallion vs Data Vault — when & why</td><td>Very high</td><td>Domain 2</td></tr>
+          <tr><td>05</td><td>Streams, tasks, dynamic tables vs dbt</td><td>Very high</td><td>Domain 3</td></tr>
+          <tr><td>06</td><td>Snowpipe + landing zone design</td><td>High</td><td>Domain 3</td></tr>
+          <tr><td>07</td><td>Query Profile & warehouse sizing</td><td>Very high</td><td>Domain 4</td></tr>
+          <tr><td>08</td><td>Clustering & search optimization</td><td>High</td><td>Domain 4</td></tr>
+          <tr><td>09</td><td>Cloning, Time Travel, zero-copy Dev/QA</td><td>High</td><td>Domain 2</td></tr>
+          <tr><td>10</td><td>Secure data sharing & Marketplace patterns</td><td>Medium-High</td><td>Domain 2</td></tr>
+          <tr><td>11</td><td>Multi-account, replication, DR</td><td>High</td><td>Domain 1–2</td></tr>
+          <tr><td>12</td><td>dbt at scale (CI, contracts, Slim CI)</td><td>Very high</td><td>Interview</td></tr>
+          <tr><td>13</td><td>Cost / FinOps for architects</td><td>Very high</td><td>Domain 4</td></tr>
+          <tr><td>14</td><td>Mock interview pack (scenario drills)</td><td>Critical</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">
+        Exam guide helps for breadth.
+        We prioritize what a 6+ year Snowflake Architect is grilled on in interviews.
+        Official cert page:
+        <a href="https://learn.snowflake.com/en/certifications/snowpro-advanced-architect/" target="_blank" rel="noreferrer">SnowPro Advanced: Architect</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>How to give feedback</h2>
+      <ol class="feedback">
+        <li>Run Lab 00 and Lab 01 (Lab 02 if you have dbt ready).</li>
+        <li>Note: too slow / too fast / confusing step / want more screenshots / want less text.</li>
+        <li>Reply in chat with those notes — remaining labs will match that style.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <p>Repo: <code>snowflake_architect_fk</code> · Account: <code>fkhambaty</code></p>
+  </footer>
+</body>
+</html>
