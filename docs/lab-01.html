@@ -33,43 +33,53 @@
   </header>
 
   <div class="wrap">
-    <p class="eyebrow">Lab 01 · A story first · Then the same SQL as before</p>
-    <h1>The SnowShop vault</h1>
+    <p class="eyebrow">Lab 01 · Monday afternoon · You are Maya</p>
+    <h1>Keys for Alex, Jordan, and Sam</h1>
     <p class="lede">
-      Forget “RBAC” for a minute. We’re running a tiny online shop called <strong>SnowShop</strong>.
-      Customer secrets sit in a vault. You will hire three kinds of workers and hand out the right keys —
-      using the SQL below (unchanged). Read the orange story boxes. Then copy.
+      Same SQL as before. New frame: you are <strong>Maya</strong> at SnowShop.
+      Full cast and week: <a href="story.html">read the story</a> if you haven’t.
     </p>
 
     <div class="story">
-      <div class="story-label">Previously (Lab 00) — in one paragraph</div>
+      <div class="story-label">Previously — Monday morning (Lab 00)</div>
       <p>
-        You built SnowShop’s private workshop: a building named <code>ARCH_INTERVIEW</code>,
-        a small engine <code>WH_ARCH_XS</code>, and a workshop manager badge
-        <code>ROLE_ARCH_LAB_ADMIN</code>. Inside the building you put rooms (schemas) and
-        locked five fake customers into the back room <code>RAW.CUSTOMERS</code> —
-        including emails and SSN last-4. That back room is the vault.
+        Maya built workshop <code>ARCH_INTERVIEW</code>, generator <code>WH_ARCH_XS</code>,
+        and pinned on manager badge <code>ROLE_ARCH_LAB_ADMIN</code>.
+        Five customers (with emails + SSN last-4) sit in the vault <code>RAW.CUSTOMERS</code>.
       </p>
     </div>
 
     <div class="story">
-      <div class="story-label">Today’s story — the whole lab in 60 seconds</div>
+      <div class="story-label">Why FR_ and AR_ — say this until it sticks</div>
+      <table class="gloss">
+        <tr><th>Prefix</th><th>Full name</th><th>Who wears it?</th></tr>
+        <tr>
+          <td><code>FR_</code></td>
+          <td><strong>F</strong>unctional <strong>R</strong>ole</td>
+          <td>People / jobs — Alex=<code>FR_ANALYST</code>, Jordan=<code>FR_DATA_ENGINEER</code>, Sam=<code>FR_COMPLIANCE</code></td>
+        </tr>
+        <tr>
+          <td><code>AR_</code></td>
+          <td><strong>A</strong>ccess <strong>R</strong>ole</td>
+          <td>Key-rings only — never “Alex’s personal keys.” Example: <code>AR_CURATED_READ</code> = clean-shelf key-ring</td>
+        </tr>
+      </table>
       <p>
-        The boss says: “Analysts need customer <em>names</em> for charts.
-        Engineers need the messy vault to build pipelines.
-        Compliance needs SSN for audits.
-        Nobody else should wander the vault.”
+        Maya’s rule: hang doors on <code>AR_</code>, clip <code>AR_</code> onto <code>FR_</code>, give humans only <code>FR_</code>.
+        The letters are not random — they shout the purpose in every role list.
+      </p>
+    </div>
+
+    <div class="story">
+      <div class="story-label">Today — Priya’s order</div>
+      <p>
+        Priya: “Alex needs names for charts. Jordan needs the vault for pipes. Sam needs SSN for audit.
+        If Alex sees SSN, we’re done.”
       </p>
       <p>
-        You will not give each person random keys forever. You invent two kinds of plastic badges:
-      </p>
-      <ul class="cast">
-        <li><strong>Job badges (FR_*)</strong> — “I am an Analyst / Engineer / Compliance”</li>
-        <li><strong>Key-rings (AR_*)</strong> — “This ring opens the safe window / the vault / the PII drawer”</li>
-      </ul>
-      <p>
-        Then you clip key-rings onto job badges. When you wear “Analyst”, you only get the safe key-ring.
-        When Snowflake says <em>Insufficient privileges</em> on the vault — the story worked. Celebrate.
+        Maya prints job badges (<code>FR_*</code>) and key-rings (<code>AR_*</code>), builds a glass window
+        <code>V_CUSTOMERS_PUBLIC</code>, clips rings to jobs, then wears Alex’s badge and tries the vault.
+        It refuses. She smiles.
       </p>
     </div>
 
