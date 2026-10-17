@@ -1,22 +1,24 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 :root {
-  /* Option A — soft slate + sky (eye-friendly) */
-  --bg: #12171e;
-  --bg2: #161c26;
-  --panel: #1a222d;
-  --panel-2: #222b38;
-  --text: #e6edf5;
-  --muted: #8b9cb3;
-  --accent: #5eb8e8;
-  --accent-dim: rgba(94, 184, 232, 0.14);
-  --accent-2: #e0b35a;
-  --warn: #e0b35a;
-  --ok: #4ecf96;
-  --bad: #f07178;
-  --line: #2e3948;
-  --code-bg: #0d1218;
-  --shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  /* Option A — soft slate + sky (tuned: less black, no neon green chips) */
+  --bg: #1a2029;
+  --bg2: #1e2530;
+  --panel: #232b38;
+  --panel-2: #2a3342;
+  --text: #d5dee8;
+  --muted: #8f9eb2;
+  --accent: #6bb8e0;
+  --accent-dim: rgba(107, 184, 224, 0.12);
+  --accent-2: #c9a45c;
+  --warn: #c9a45c;
+  --ok: #5bbf96;
+  --bad: #e08086;
+  --line: #3a4556;
+  --code-bg: #151b24;
+  --code-inline-bg: #2a3342;
+  --code-inline-text: #9fd0ea;
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
   --radius: 14px;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --sans: "DM Sans", "Segoe UI", sans-serif;
@@ -28,11 +30,8 @@ body {
   margin: 0;
   font-family: var(--sans);
   color: var(--text);
-  background:
-    radial-gradient(900px 480px at 0% -10%, #1a2a38 0%, transparent 55%),
-    radial-gradient(700px 400px at 100% 0%, #2a2418 0%, transparent 50%),
-    var(--bg);
-  line-height: 1.6;
+  background: var(--bg);
+  line-height: 1.65;
   min-height: 100vh;
 }
 
@@ -44,7 +43,7 @@ a:hover { text-decoration: underline; }
   top: 0;
   z-index: 40;
   backdrop-filter: blur(12px);
-  background: rgba(11, 18, 32, 0.85);
+  background: rgba(26, 32, 41, 0.92);
   border-bottom: 1px solid var(--line);
 }
 .topbar-inner {
@@ -89,10 +88,12 @@ a:hover { text-decoration: underline; }
   margin: 0 0 0.8rem;
 }
 h1 {
-  font-size: clamp(2rem, 5vw, 3.1rem);
-  line-height: 1.12;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.85rem, 4.5vw, 2.6rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   margin: 0 0 0.9rem;
+  color: #e2eaf3;
+  font-weight: 600;
 }
 .lede {
   color: var(--muted);
@@ -118,9 +119,9 @@ h1 {
 }
 .btn:hover { transform: translateY(-1px); text-decoration: none; filter: brightness(1.08); }
 .btn.primary {
-  background: linear-gradient(135deg, #5eb8e8, #3a9fd4);
+  background: var(--accent);
   border-color: transparent;
-  color: #0c141c;
+  color: #12202a;
 }
 .btn.ghost { background: transparent; }
 
@@ -164,8 +165,8 @@ h1 {
 .card ul { margin: 0; padding-left: 1.1rem; font-size: 0.9rem; }
 .meta { color: var(--muted); font-size: 0.9rem; margin: 0.25rem 0 1rem; }
 
-h2 { font-size: 1.45rem; margin: 2.4rem 0 0.7rem; letter-spacing: -0.02em; }
-h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; }
+h2 { font-size: 1.45rem; margin: 2.4rem 0 0.7rem; letter-spacing: -0.02em; color: #d8e2ee; }
+h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; color: #cfd9e6; }
 
 .hint { color: var(--muted); }
 .callout {
@@ -265,7 +266,7 @@ h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; }
   gap: 0.75rem;
   padding: 0.55rem 0.7rem 0.55rem 0.9rem;
   border-bottom: 1px solid var(--line);
-  background: #1e2836;
+  background: var(--panel-2);
   border-radius: 12px 12px 0 0;
   font-size: 0.8rem;
   color: var(--muted);
@@ -275,7 +276,7 @@ h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; }
 }
 .code-head span {
   font-weight: 600;
-  color: #b8c7d9;
+  color: var(--muted);
 }
 .copy-btn {
   display: inline-flex;
@@ -285,7 +286,7 @@ h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; }
   flex: 0 0 auto;
   border: none;
   background: var(--accent);
-  color: #0c141c;
+  color: #12202a;
   border-radius: 9px;
   padding: 0.5rem 0.9rem;
   min-height: 40px;
@@ -330,15 +331,23 @@ h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; }
   border-radius: 0 0 12px 12px;
   -webkit-overflow-scrolling: touch;
 }
-.code-block code { color: #d7e7f7; background: none; padding: 0; }
+.code-block code {
+  color: #c8d6e6;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
 
-code {
+/* Inline code chips — soft sky on slate (NOT neon mint) */
+:not(pre) > code {
   font-family: var(--mono);
-  background: var(--code-bg);
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-  color: var(--ok);
-  font-size: 0.9em;
+  background: var(--code-inline-bg);
+  padding: 0.12rem 0.4rem;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  color: var(--code-inline-text);
+  font-size: 0.88em;
+  font-weight: 500;
 }
 
 /* Fake Snowsight UI mock */
@@ -539,9 +548,9 @@ table.plain th { color: var(--muted); }
   margin: 1rem 0 1rem;
   padding: 1.1rem 1.15rem;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(224, 179, 90, 0.12), rgba(94, 184, 232, 0.06));
-  border: 1px solid rgba(224, 179, 90, 0.4);
-  border-left: 4px solid var(--warn);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--warn);
 }
 .reading-rail {
   max-width: 42rem; /* comfortable measure for story prose */
