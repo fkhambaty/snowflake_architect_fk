@@ -50,3 +50,12 @@ FROM LANDING.CLIENTS;
 GRANT SELECT ON VIEW V_CLIENT_DIRECTORY TO ROLE AR_CURATED_READ;
 
 SELECT 'Lab 01 Meridian Bank RBAC ready' AS status;
+
+-- Proof as Alex (run separately). Snowsight keeps ROLE_BANK_LAB_ADMIN as a
+-- secondary role by default — without NONE, LANDING.CLIENTS still succeeds.
+-- USE ROLE FR_ANALYST;
+-- USE SECONDARY ROLES NONE;
+-- USE WAREHOUSE WH_BANK_XS;
+-- USE DATABASE MERIDIAN_BANK;
+-- SELECT * FROM CURATED.V_CLIENT_DIRECTORY;  -- OK
+-- SELECT * FROM LANDING.CLIENTS;             -- expect insufficient privileges

@@ -202,6 +202,12 @@ SELECT 'Safe view ready' AS status;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">9</div><div><h3>Proof: wear Alex — window yes, vault no</h3></div></div>
+      <div class="callout warn">
+        <strong>Snowsight gotcha — secondary roles</strong>
+        Your user also has <code>ROLE_BANK_LAB_ADMIN</code> (and maybe <code>ACCOUNTADMIN</code>).
+        Snowsight often keeps those as <em>secondary</em> roles, so the UI says <code>FR_ANALYST</code>
+        but you still have vault access. Always run <code>USE SECONDARY ROLES NONE;</code> before Alex/Sam proofs.
+      </div>
       <div class="ui-mock">
         <div class="ui-mock-bar">
           <div class="ui-chip glow"><span class="dot"></span> Role: FR_ANALYST ▾</div>
@@ -210,13 +216,15 @@ SELECT 'Safe view ready' AS status;</code></pre>
         </div>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Alex safe</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Alex safe (primary role only)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_ANALYST;
+USE SECONDARY ROLES NONE;   -- required: turn off lab-admin / accountadmin power
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
+SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();
 SELECT * FROM CURATED.V_CLIENT_DIRECTORY;</code></pre>
       </div>
-      <div class="badge-ok">✓ Names/countries only</div>
+      <div class="badge-ok">✓ Names/countries only · secondary roles should show NONE</div>
       <div class="code-block">
         <div class="code-head"><span>SQL · Alex blocked (celebrate)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT * FROM LANDING.CLIENTS;</code></pre>
@@ -229,15 +237,18 @@ SELECT * FROM CURATED.V_CLIENT_DIRECTORY;</code></pre>
       <div class="code-block">
         <div class="code-head"><span>SQL · Jordan</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_DATA_ENGINEER;
+USE SECONDARY ROLES NONE;
 SELECT CLIENT_ID, EMAIL FROM LANDING.CLIENTS LIMIT 5;</code></pre>
       </div>
       <div class="badge-ok">✓ Engineer can read landing</div>
       <div class="code-block">
         <div class="code-head"><span>SQL · Sam</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_COMPLIANCE;
+USE SECONDARY ROLES NONE;
 SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
       </div>
       <div class="badge-ok">✓ Compliance can read PII</div>
+      <p class="hint">When you go back to building objects: <code>USE ROLE ROLE_BANK_LAB_ADMIN;</code></p>
     </article>
 
     <div class="soundbite">

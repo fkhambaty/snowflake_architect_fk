@@ -163,6 +163,7 @@ SELECT 'Lab 03 policies on CURATED.CLIENTS_GOV' AS status;</code></pre>
       <div class="code-block">
         <div class="code-head"><span>SQL · Alex</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_ANALYST;
+USE SECONDARY ROLES NONE;   -- so CURRENT_ROLE() / privileges match Alex only
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
 SELECT CLIENT_ID, EMAIL, COUNTRY FROM CURATED.CLIENTS_GOV ORDER BY CLIENT_ID;</code></pre>
@@ -175,6 +176,7 @@ SELECT CLIENT_ID, EMAIL, COUNTRY FROM CURATED.CLIENTS_GOV ORDER BY CLIENT_ID;</c
       <div class="code-block">
         <div class="code-head"><span>SQL · Sam (FR_COMPLIANCE)</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_COMPLIANCE;
+USE SECONDARY ROLES NONE;
 SELECT CLIENT_ID, EMAIL, COUNTRY FROM CURATED.CLIENTS_GOV ORDER BY CLIENT_ID;</code></pre>
       </div>
       <div class="badge-ok">✓ Plain email for compliance · US/CA/UK rows visible</div>
