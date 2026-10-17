@@ -47,6 +47,14 @@
       Reproduce heavy joins in Snowsight, open Query Profile on the worst query, inspect warehouse settings with <code>SHOW WAREHOUSES</code>.
     </div>
 
+    <figure class="viz-panel">
+      <img src="assets/lab07-profile.jpg" alt="Elena opens Query Profile while Alex's board query crawls on WH_BANK_XS" width="1600" height="900" loading="eager" />
+      <figcaption>
+        <strong>Picture · Open the blueprint</strong>
+        Elena uses Query Profile while Alex’s board query crawls.
+      </figcaption>
+    </figure>
+
     <div class="story">
       <p>Elena: “Profile first — partitions scanned, spill, join order — then right-size WH_BANK_XS or fix SQL. Scaling out = more clusters on a multi-cluster warehouse; scaling up = larger size.”</p>
     </div>

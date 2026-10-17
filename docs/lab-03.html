@@ -84,6 +84,14 @@ SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
       Prove <code>FR_ANALYST</code> vs <code>FR_COMPLIANCE</code> on identical SQL.
     </div>
 
+    <figure class="viz-panel">
+      <img src="assets/lab03-masking.jpg" alt="Same CURATED table: Alex sees masked email and US-only rows; Sam sees full email and more countries via RISK_CTRL policies" width="1600" height="900" loading="eager" />
+      <figcaption>
+        <strong>Picture · Same table, two truths</strong>
+        Alex sees masked email/US-only; Sam sees full email + more countries (RISK_CTRL policies).
+      </figcaption>
+    </figure>
+
     <div class="story">
       <div class="story-label">FR_ vs AR_ reminder</div>
       <p>Alex wears <code>FR_ANALYST</code> (job badge) with <code>AR_CURATED_READ</code> (key-ring). Sam wears <code>FR_COMPLIANCE</code> with <code>AR_PII_READ</code>. Policies evaluate <code>CURRENT_ROLE()</code> — humans still only get FR_.</p>

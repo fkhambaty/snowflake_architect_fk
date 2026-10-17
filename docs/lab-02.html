@@ -49,6 +49,14 @@
       Profiles use <code>ROLE_BANK_LAB_ADMIN</code>, <code>MERIDIAN_BANK</code>, <code>WH_BANK_XS</code>.
     </div>
 
+    <figure class="viz-panel">
+      <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on LANDING.TXN_EVENTS" width="1600" height="900" loading="eager" />
+      <figcaption>
+        <strong>Picture · Only change the ledger</strong>
+        Jordan+Elena: full refresh crossed out; dbt incremental MERGE on TXN_EVENTS.
+      </figcaption>
+    </figure>
+
     <div class="story">
       <div class="story-label">Tuesday in the data team room</div>
       <p>Jordan: “I can land events in LANDING — you make dbt only touch deltas.” Elena: “Merge on txn id, watermark on updated_at, prove it with Day 2 updates.”</p>

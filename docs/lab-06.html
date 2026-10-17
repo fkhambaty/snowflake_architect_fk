@@ -47,6 +47,14 @@
       Internal stage in <code>FILE_IN</code>, file format, <code>COPY INTO LANDING.TXN_LANDING</code>. In production Elena would attach Snowpipe — same COPY, triggered when files land.
     </div>
 
+    <figure class="viz-panel">
+      <img src="assets/lab06-landing.jpg" alt="Night truck bay: FILE_IN stage and COPY into LANDING; Snowpipe as automated COPY" width="1600" height="900" loading="eager" />
+      <figcaption>
+        <strong>Picture · Night truck bay</strong>
+        FILE_IN stage + COPY into LANDING; Snowpipe = automated COPY.
+      </figcaption>
+    </figure>
+
     <div class="story">
       <p>Sam asks about audit trails — COPY history in Snowflake answers who loaded what. Snowpipe = “COPY on autopilot when a file hits the stage,” not a different load semantics.</p>
     </div>

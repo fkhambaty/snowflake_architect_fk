@@ -23,8 +23,11 @@ See `docs/BANK_NAMING.md`. Cleanup: `sql/cleanup_lab00_lab01.sql`.
 
 1. Business problem (`callout bad`)
 2. Solution (`callout ok`)
-3. Steps: explain → Copy SQL matching `sql/*.sql`
-4. Elena wrap-up (`.soundbite`: what she did + outcome)
+3. Hero `<figure class="viz-panel">` immediately after Solution — JPG from `docs/assets/`, caption per `docs/CAST_VISUAL.md`; story page uses `cast-sheet.jpg`
+4. Steps: explain → Copy SQL matching `sql/*.sql`
+5. Elena wrap-up (`.soundbite`: what she did + outcome)
+
+Lab art: follow `CAST_VISUAL.md` + `cast-sheet.jpg` cast likenesses; inline SVG diagrams must not overlap label text (clip paths / spacing).
 
 ## HARD RULE — role proofs (student already burned tokens on this)
 

@@ -47,6 +47,14 @@
       Replication + failover groups for RPO/RTO; validate config with SHOW commands; don’t confuse share (Nora) or clone (Dev) with geo-DR.
     </div>
 
+    <figure class="viz-panel">
+      <img src="assets/lab11-dr.jpg" alt="Three tools for Marcus: Share for Nora, Clone for Dev, Replication for region failover" width="1600" height="900" loading="eager" />
+      <figcaption>
+        <strong>Picture · Three tools</strong>
+        Share (Nora) vs Clone (Dev) vs Replication (region failover) for Marcus.
+      </figcaption>
+    </figure>
+
     <div class="story">
       <div class="story-label">Decision tree Elena draws for Marcus</div>
       <p>Partner read → Share (Lab 10). QA fork today → Clone (Lab 09). Warm copy in another account/region → Replication (this lab).</p>

@@ -82,6 +82,14 @@ SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
       Stream <code>LANDING.TXN_EVENTS_STR</code> + task <code>CURATED.TASK_TXN_CDC</code> on <code>WH_BANK_XS</code>, triggered when stream has data.
     </div>
 
+    <figure class="viz-panel">
+      <img src="assets/lab05-streams.jpg" alt="Stream and Task automate Jordan's txn handoff instead of hand-carrying; contrast with Dynamic Table and dbt" width="1600" height="900" loading="eager" />
+      <figcaption>
+        <strong>Picture · Stop hand-carrying</strong>
+        Stream + Task automate Jordan’s txn handoff (vs Dynamic Table / dbt).
+      </figcaption>
+    </figure>
+
     <div class="story">
       <p>Jordan: “Can Snowflake tell me what changed?” Elena: “Streams bookmark deltas; tasks run the MERGE path on a schedule or WHEN clause.”</p>
     </div>

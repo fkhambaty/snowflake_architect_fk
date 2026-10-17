@@ -9,7 +9,8 @@ You are **Elena Vasquez**, Snowflake Architect at **Meridian Bank**. Each lab is
 Local: open `docs/index.html`  
 Repo: [fkhambaty/snowflake_architect_fk](https://github.com/fkhambaty/snowflake_architect_fk)
 
-**Start here:** [docs/story.html](docs/story.html) → Lab 00.
+**Start here:** [docs/story.html](docs/story.html) → Lab 00.  
+Each lab has a **visual story panel** (same cast faces — see `docs/CAST_VISUAL.md`).
 
 ## Naming (bank story)
 
