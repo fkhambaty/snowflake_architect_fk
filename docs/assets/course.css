@@ -183,13 +183,15 @@ h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; }
 
 .step {
   border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
   border-radius: var(--radius);
   background: var(--panel);
   padding: 1.15rem 1.2rem 1.25rem;
-  margin: 1.25rem 0;
+  margin: 1.4rem 0;
   box-shadow: var(--shadow);
   animation: fadeUp 0.45s ease both;
 }
+.step + .step { margin-top: 1.6rem; }
 .step-head {
   display: flex;
   align-items: flex-start;
@@ -228,51 +230,105 @@ h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; }
   border-radius: 4px;
 }
 
+/* Action strip — separates “story” from “do this SQL” */
+.action-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.85rem 0 0.35rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(94, 184, 232, 0.35);
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.action-hint::before {
+  content: "▸";
+  font-size: 1rem;
+}
+
 .code-block {
   position: relative;
-  margin: 0.85rem 0;
-  border: 1px solid var(--line);
+  margin: 0.5rem 0 1.1rem;
+  border: 1px solid rgba(94, 184, 232, 0.35);
   border-radius: 12px;
   background: var(--code-bg);
-  overflow: hidden;
+  overflow: visible;
+  box-shadow: 0 0 0 1px rgba(94, 184, 232, 0.08);
 }
 .code-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.45rem 0.65rem 0.45rem 0.85rem;
+  padding: 0.55rem 0.7rem 0.55rem 0.9rem;
   border-bottom: 1px solid var(--line);
-  background: var(--panel-2);
-  font-size: 0.78rem;
+  background: #1e2836;
+  border-radius: 12px 12px 0 0;
+  font-size: 0.8rem;
   color: var(--muted);
+  position: sticky;
+  top: 3.25rem;
+  z-index: 5;
+}
+.code-head span {
+  font-weight: 600;
+  color: #b8c7d9;
 }
 .copy-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  border: 1px solid var(--line);
-  background: var(--panel-2);
-  color: var(--text);
-  border-radius: 8px;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.78rem;
-  font-weight: 600;
+  justify-content: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  border: none;
+  background: var(--accent);
+  color: #0c141c;
+  border-radius: 9px;
+  padding: 0.5rem 0.9rem;
+  min-height: 40px;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
   font-family: var(--sans);
+  box-shadow: 0 2px 8px rgba(94, 184, 232, 0.35);
+  transition: transform 0.12s ease, filter 0.12s ease, background 0.12s ease;
 }
-.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  color: #0c141c;
+  border: none;
+}
+.copy-btn:active { transform: translateY(0); }
 .copy-btn.copied {
-  border-color: var(--ok);
-  color: var(--ok);
+  background: var(--ok);
+  color: #0c141c;
+  box-shadow: 0 2px 8px rgba(78, 207, 150, 0.35);
 }
+.copy-btn svg {
+  flex-shrink: 0;
+}
+/* Floating copy on the code itself (always visible while scrolling code) */
+.copy-fab {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 4;
+  display: none; /* shown when no sticky head on some blocks */
+}
+.code-block.has-fab .copy-fab { display: inline-flex; }
 .code-block pre {
   margin: 0;
-  padding: 0.95rem 1rem;
+  padding: 1rem 1.05rem;
   overflow-x: auto;
   font-family: var(--mono);
-  font-size: 0.82rem;
-  line-height: 1.55;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  border-radius: 0 0 12px 12px;
+  -webkit-overflow-scrolling: touch;
 }
 .code-block code { color: #d7e7f7; background: none; padding: 0; }
 
@@ -480,11 +536,19 @@ table.plain th { color: var(--muted); }
 
 /* Story narration */
 .story {
-  margin: 1rem 0 1.25rem;
+  margin: 1rem 0 1rem;
   padding: 1.1rem 1.15rem;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(255, 176, 32, 0.1), rgba(41, 181, 232, 0.08));
-  border: 1px solid rgba(255, 176, 32, 0.35);
+  background: linear-gradient(135deg, rgba(224, 179, 90, 0.12), rgba(94, 184, 232, 0.06));
+  border: 1px solid rgba(224, 179, 90, 0.4);
+  border-left: 4px solid var(--warn);
+}
+.reading-rail {
+  max-width: 42rem; /* comfortable measure for story prose */
+}
+.step .story p,
+.wrap > .story p {
+  max-width: 40rem;
 }
 .story .story-label {
   display: inline-block;
@@ -706,29 +770,36 @@ html {
   }
 
   .code-block {
-    margin: 0.75rem 0;
+    margin: 0.65rem 0 1rem;
     border-radius: 10px;
   }
   .code-head {
     flex-wrap: wrap;
-    gap: 0.45rem;
-    padding: 0.5rem 0.55rem;
+    gap: 0.5rem;
+    padding: 0.55rem 0.6rem;
+    position: sticky;
+    top: 0;
   }
   .code-head span {
-    flex: 1 1 auto;
+    flex: 1 1 100%;
     min-width: 0;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     line-height: 1.35;
   }
   .copy-btn {
-    min-height: 40px;
-    padding: 0.45rem 0.75rem;
-    font-size: 0.85rem;
+    width: 100%;
+    min-height: 48px;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.95rem;
+  }
+  .action-hint {
+    font-size: 0.78rem;
+    padding: 0.5rem 0.65rem;
   }
   .code-block pre {
-    padding: 0.75rem 0.7rem;
-    font-size: 0.74rem;
-    line-height: 1.5;
+    padding: 0.8rem 0.75rem;
+    font-size: 0.76rem;
+    line-height: 1.55;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     max-width: 100%;
