@@ -17,8 +17,8 @@
   --line: #d0dae6;
   --code-bg: #1e2836;
   --code-inline-bg: #e4eef5;
-  --code-inline-text: #0d5a82;
-  --code-text: #d5e0ec;
+  --code-inline-text: #0a4d70;
+  --code-text: #e8eef5;
   --shadow: 0 10px 28px rgba(26, 36, 51, 0.08);
   --radius: 14px;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -927,13 +927,22 @@ html {
 .see-card p { margin: 0; font-size: 0.92rem; color: var(--muted); line-height: 1.45; }
 .see-card .see-example {
   margin-top: 0.65rem;
-  padding: 0.5rem 0.65rem;
+  padding: 0.55rem 0.7rem;
   border-radius: 8px;
-  background: var(--code-bg);
+  background: #e8f1f7;
+  border: 1px solid #c5d5e3;
   font-family: var(--mono);
-  font-size: 0.78rem;
-  color: var(--code-inline-text);
-  line-height: 1.4;
+  font-size: 0.8rem;
+  color: #122433;
+  line-height: 1.45;
+  font-weight: 500;
+}
+.see-card .see-example code {
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
 }
 
 /* Teach-first blocks (assume zero prior jargon) */
@@ -1029,12 +1038,20 @@ html {
 }
 .wm-mark {
   margin-top: 0.6rem !important;
-  padding: 0.45rem 0.55rem;
+  padding: 0.5rem 0.65rem;
   border-radius: 8px;
-  background: var(--code-bg);
-  color: var(--code-inline-text) !important;
+  background: #e8f1f7 !important;
+  border: 1px solid #c5d5e3;
+  color: #122433 !important;
   font-family: var(--mono);
   font-size: 0.8rem !important;
+  font-weight: 500;
+}
+.wm-mark code {
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
 }
 
 /* Visual memory panels (lab art) */
