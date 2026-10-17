@@ -350,7 +350,7 @@ code {
   padding: 0.45rem 0.55rem;
   text-align: left;
 }
-.ui-result th { background: #152033; color: var(--muted); }
+.ui-result th { background: var(--panel); color: var(--muted); }
 .badge-fail {
   display: inline-block;
   margin-top: 0.6rem;
