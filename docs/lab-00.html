@@ -51,7 +51,7 @@
         <tr><td>Warehouse</td><td><code>WH_ARCH_XS</code></td><td>The “engine” that runs SQL (X-Small = cheap)</td></tr>
         <tr><td>Role</td><td><code>ROLE_ARCH_LAB_ADMIN</code></td><td>Your lab “badge” with permission to own objects</td></tr>
         <tr><td>Database</td><td><code>ARCH_INTERVIEW</code></td><td>A folder for all interview practice data</td></tr>
-        <tr><td>Schemas</td><td><code>RAW</code>, <code>CURATED</code>, <code>SECURE</code>, <code>UTILS</code></td><td>Subfolders inside the database</td></tr>
+        <tr><td>Schemas we create</td><td><code>RAW</code>, <code>CURATED</code>, <code>SECURE</code>, <code>UTILS</code>, <code>MART</code>, <code>STAGE_DATA</code></td><td>Subfolders inside the database</td></tr>
       </table>
     </div>
 
@@ -62,7 +62,7 @@
       <div class="arrow">→</div>
       <div class="node">ARCH_INTERVIEW</div>
       <div class="arrow">→</div>
-      <div class="node">RAW / CURATED / SECURE / UTILS</div>
+      <div class="node">RAW · CURATED · SECURE · UTILS · MART · STAGE_DATA</div>
     </div>
 
     <!-- STEP 1 -->
@@ -179,7 +179,8 @@ GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER IDENTIFIER($uname);</code></pre>
       <div class="explain">
         <h4>Understand this before you copy</h4>
         <p>We switch into lab admin and try creating a throwaway role. If that fails, stop — Lab 01 will fail too.</p>
-        <p>Then we create four schemas (subfolders): RAW (landing), CURATED (clean), SECURE (sensitive), UTILS (helpers).</p>
+        <p>Then we create six schemas (subfolders): RAW (landing), CURATED (clean), SECURE (sensitive), UTILS (helpers), MART (gold reports), STAGE_DATA (file landing).</p>
+        <p>Snowflake also shows <code>PUBLIC</code> and <code>INFORMATION_SCHEMA</code> automatically — that is normal, not a mistake.</p>
         <span class="why">Naming layers like this is how you talk about medallion / zone architecture in interviews.</span>
       </div>
       <div class="code-block">
@@ -242,12 +243,11 @@ GRANT ROLE ROLE_ARCH_LAB_ADMIN TO USER "PASTE_YOUR_USERNAME_HERE";</code></pre>
         <div class="ui-mock-body">
           <div class="ui-tree">
             Data → Databases → <span class="hl">ARCH_INTERVIEW</span><br />
-            &nbsp;&nbsp;├── <span class="hl">RAW</span><br />
-            &nbsp;&nbsp;├── <span class="hl">CURATED</span><br />
-            &nbsp;&nbsp;├── <span class="hl">SECURE</span><br />
-            &nbsp;&nbsp;└── <span class="hl">UTILS</span>
+            &nbsp;&nbsp;├── <span class="hl">RAW</span> · <span class="hl">CURATED</span> · <span class="hl">SECURE</span><br />
+            &nbsp;&nbsp;├── <span class="hl">UTILS</span> · <span class="hl">MART</span> · <span class="hl">STAGE_DATA</span><br />
+            &nbsp;&nbsp;└── PUBLIC + INFORMATION_SCHEMA <span style="color:var(--muted)">(Snowflake defaults — OK)</span>
           </div>
-          <div class="badge-ok">✓ This is what “success” looks like in the Data browser</div>
+          <div class="badge-ok">✓ More than 6 names is normal — PUBLIC and INFORMATION_SCHEMA always appear</div>
         </div>
       </div>
 
@@ -264,7 +264,7 @@ SHOW SCHEMAS IN DATABASE ARCH_INTERVIEW;</code></pre>
         <li>Role shows <code>ROLE_ARCH_LAB_ADMIN</code></li>
         <li>Warehouse shows <code>WH_ARCH_XS</code></li>
         <li>Database shows <code>ARCH_INTERVIEW</code></li>
-        <li>You see schemas RAW, CURATED, SECURE, UTILS</li>
+        <li>You see our six schemas: RAW, CURATED, SECURE, UTILS, MART, STAGE_DATA (plus PUBLIC + INFORMATION_SCHEMA is fine)</li>
       </ul>
     </article>
 
@@ -334,7 +334,7 @@ SELECT * FROM CUSTOMERS ORDER BY CUSTOMER_ID;</code></pre>
 
     <div class="callout ok">
       <strong>You’re done with Lab 00 when…</strong>
-      You can switch to <code>ROLE_ARCH_LAB_ADMIN</code>, see four schemas, and <code>RAW.CUSTOMERS</code> has 5 rows.
+      You can switch to <code>ROLE_ARCH_LAB_ADMIN</code>, see our six schemas (plus PUBLIC / INFORMATION_SCHEMA is fine), and <code>RAW.CUSTOMERS</code> has 5 rows.
     </div>
 
     <div class="pager">
