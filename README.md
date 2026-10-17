@@ -2,13 +2,11 @@
 
 ## Open the course (HTML — not this README)
 
-Double-click:
+**On phone / any browser (GitHub Pages):**  
+https://fkhambaty.github.io/snowflake_architect_fk/
 
-```text
-docs/index.html
-```
-
-Full path on GitHub: [fkhambaty/snowflake_architect_fk](https://github.com/fkhambaty/snowflake_architect_fk)
+Local: double-click `docs/index.html`  
+Repo: [fkhambaty/snowflake_architect_fk](https://github.com/fkhambaty/snowflake_architect_fk)
 
 ## What this is
 
