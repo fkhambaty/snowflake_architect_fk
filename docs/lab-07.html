@@ -271,7 +271,7 @@ FROM BIG_EVENTS
 WHERE EVENT_DATE >= DATE_TRUNC('month', CURRENT_DATE())
   AND EVENT_DATE < DATEADD('month', 1, DATE_TRUNC('month', CURRENT_DATE()));</code></pre>
       </div>
-      <div class="badge-ok">✓ Compare PARTITIONS_SCANNED in history (step 6) — AFTER should not be worse</div>
+      <div class="badge-ok">✓ Compare bytes in history + partitions via GET_QUERY_OPERATOR_STATS (step 6)</div>
     </article>
 
     <article class="step">
@@ -307,32 +307,49 @@ ORDER BY VOLUME DESC;</code></pre>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">6</div><div><h3>Scenario 4 — Prove it with QUERY_HISTORY (not vibes)</h3></div></div>
+      <div class="step-head"><div class="step-num">6</div><div><h3>Scenario 4 — Prove it with metrics (not vibes)</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p>Pulls this session’s metrics: elapsed ms, bytes scanned, partitions scanned vs total. Same numbers interviewers expect you to cite from Profile.</p>
+        <p>
+          <code>QUERY_HISTORY_BY_SESSION</code> gives elapsed time and <code>BYTES_SCANNED</code> (it does <em>not</em> expose partition columns).
+          For partitions, re-run a BEFORE or AFTER query, then call <code>GET_QUERY_OPERATOR_STATS(LAST_QUERY_ID())</code> — same prune numbers as Query Profile.
+        </p>
         <h4>What you should see</h4>
-        <p>Recent <code>PERF_WIDE</code> / <code>BIG_EVENTS</code> queries with BEFORE rows reading more bytes/partitions than AFTER where applicable.</p>
+        <p>History: AFTER queries usually lower <code>BYTES_SCANNED</code>. Operator stats: TableScan rows with <code>PARTITIONS_SCANNED</code> / <code>PARTITIONS_TOTAL</code>.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · session metrics</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · session bytes / time</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT
   QUERY_ID,
   LEFT(QUERY_TEXT, 80) AS QUERY_SNIP,
   TOTAL_ELAPSED_TIME,
   BYTES_SCANNED,
-  PARTITIONS_SCANNED,
-  PARTITIONS_TOTAL,
-  ROUND(100 * PARTITIONS_SCANNED / NULLIF(PARTITIONS_TOTAL, 0), 1) AS PCT_PARTITIONS_READ
+  ROWS_PRODUCED
 FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY_BY_SESSION())
 WHERE QUERY_TEXT ILIKE '%BIG_EVENTS%'
    OR QUERY_TEXT ILIKE '%PERF_WIDE%'
 ORDER BY START_TIME DESC
 LIMIT 12;</code></pre>
       </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · partitions for last query</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Re-run one BEFORE or AFTER query from steps 3–5, then immediately:
+SELECT
+  OPERATOR_TYPE,
+  OPERATOR_STATISTICS:pruning:partitions_scanned::NUMBER AS PARTITIONS_SCANNED,
+  OPERATOR_STATISTICS:pruning:partitions_total::NUMBER AS PARTITIONS_TOTAL,
+  ROUND(
+    100 * OPERATOR_STATISTICS:pruning:partitions_scanned::NUMBER
+      / NULLIF(OPERATOR_STATISTICS:pruning:partitions_total::NUMBER, 0),
+    1
+  ) AS PCT_PARTITIONS_READ
+FROM TABLE(GET_QUERY_OPERATOR_STATS(LAST_QUERY_ID()))
+WHERE OPERATOR_STATISTICS:pruning:partitions_total IS NOT NULL
+ORDER BY PARTITIONS_SCANNED DESC NULLS LAST;</code></pre>
+      </div>
       <div class="callout tip">
         <strong>UI twin</strong>
-        Also open Query History → pick the BEFORE join → Query Profile → TableScan / Join.
+        Query History → that query → Query Profile → TableScan.
         Say: “bytes scanned” and “partitions scanned” — not “it felt slow.”
       </div>
     </article>

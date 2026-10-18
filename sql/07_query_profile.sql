@@ -78,21 +78,35 @@ GROUP BY c.COUNTRY
 ORDER BY VOLUME DESC;
 
 -- ---------------------------------------------------------------------------
--- Scenario 4 — Read profile metrics from history (same session)
+-- Scenario 4 — Prove with history + operator stats (partitions live here)
+-- INFORMATION_SCHEMA.QUERY_HISTORY* has BYTES_SCANNED, not PARTITIONS_*.
+-- Partition prune stats: GET_QUERY_OPERATOR_STATS (or Query Profile UI).
 -- ---------------------------------------------------------------------------
 SELECT
   QUERY_ID,
   LEFT(QUERY_TEXT, 80) AS QUERY_SNIP,
   TOTAL_ELAPSED_TIME,
   BYTES_SCANNED,
-  PARTITIONS_SCANNED,
-  PARTITIONS_TOTAL,
-  ROUND(100 * PARTITIONS_SCANNED / NULLIF(PARTITIONS_TOTAL, 0), 1) AS PCT_PARTITIONS_READ
+  ROWS_PRODUCED
 FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY_BY_SESSION())
 WHERE QUERY_TEXT ILIKE '%BIG_EVENTS%'
    OR QUERY_TEXT ILIKE '%PERF_WIDE%'
 ORDER BY START_TIME DESC
 LIMIT 12;
+
+-- Re-run one BEFORE and one AFTER board query, then immediately:
+SELECT
+  OPERATOR_TYPE,
+  OPERATOR_STATISTICS:pruning:partitions_scanned::NUMBER AS PARTITIONS_SCANNED,
+  OPERATOR_STATISTICS:pruning:partitions_total::NUMBER AS PARTITIONS_TOTAL,
+  ROUND(
+    100 * OPERATOR_STATISTICS:pruning:partitions_scanned::NUMBER
+      / NULLIF(OPERATOR_STATISTICS:pruning:partitions_total::NUMBER, 0),
+    1
+  ) AS PCT_PARTITIONS_READ
+FROM TABLE(GET_QUERY_OPERATOR_STATS(LAST_QUERY_ID()))
+WHERE OPERATOR_STATISTICS:pruning:partitions_total IS NOT NULL
+ORDER BY PARTITIONS_SCANNED DESC NULLS LAST;
 
 -- ---------------------------------------------------------------------------
 -- Scenario 5 — Last resort: temporary warehouse size bump, then restore
