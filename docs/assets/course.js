@@ -76,11 +76,18 @@
   }
 
   function describeSql(sql) {
-    var s = String(sql || "")
+    var raw = String(sql || "");
+    var s = raw
       .replace(/--.*$/gm, "")
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .trim();
-    if (!s) return "";
+
+    // Comment-only teaching blocks (replication / org admin demos)
+    if (!s) {
+      return raw.trim()
+        ? "Reference-only notes for this step — read them; run only if your account allows it."
+        : "";
+    }
 
     if (
       /^\s*version:\s*\d+/m.test(s) ||
@@ -97,10 +104,6 @@
     }
     if (/^\s*dbt\s+/m.test(s) || /^\s*cd\s+\S+/m.test(s)) {
       return "Terminal command for the dbt project — run locally or in CI, not in Snowsight.";
-    }
-    // Comment-only teaching blocks (replication / org admin demos)
-    if (!s.replace(/\s+/g, "")) {
-      return "Reference-only notes for this step — read them; run only if your account allows it.";
     }
 
     var contextOnly = s.replace(/\s+/g, " ").match(
