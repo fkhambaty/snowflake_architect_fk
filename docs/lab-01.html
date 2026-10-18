@@ -481,6 +481,34 @@ SELECT CLIENT_ID, SSN_LAST4 FROM BRONZE_LANDING.CLIENTS;</code></pre>
       <div class="badge-ok">✓ Smoke green → continue to Lab 02</div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Why FR_/AR_ instead of granting SELECT on BRONZE_LANDING directly to FR_ANALYST?</summary>
+        <p class="drill-say"><strong>Say:</strong> Direct grants become spaghetti every time a table is added. Access roles are key-rings: hang USAGE/SELECT once, clip rings onto jobs. When CLIENTS grows, grant the AR once — don’t reopen every FR. Interviewers want maintainability, not “we use RBAC.”</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Alex’s UI shows FR_ANALYST but the vault still opens — what failed?</summary>
+        <p class="drill-say"><strong>Say:</strong> Secondary roles. Snowsight kept ROLE_BANK_LAB_ADMIN or ACCOUNTADMIN active, so privileges were the union. USE SECONDARY ROLES NONE, confirm CURRENT_SECONDARY_ROLES(), then vault fails and V_CLIENT_DIRECTORY still works. Without NONE you’re demoing theater.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Masking uses CURRENT_ROLE() as primary — how do secondaries interact with table grants?</summary>
+        <p class="drill-say"><strong>Say:</strong> Table access unions secondaries; policy evaluation keys off primary role. Alex can “look like” FR_ANALYST and still open the vault via a secondary — and confuse masking proofs. Every FR_ proof is USE ROLE then USE SECONDARY ROLES NONE.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Why a view for Alex instead of column grants on CLIENTS?</summary>
+        <p class="drill-say"><strong>Say:</strong> Column grants still leave Alex on the vault object and don’t scale to joins. V_CLIENT_DIRECTORY is a deliberate window: no SSN path, owned in SILVER_CURATED. When Sam needs row-level audit on the same shelf, Lab 03 policies beat another shadow table.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Production multi-account: who owns FR_ creation vs AR grants?</summary>
+        <p class="drill-say"><strong>Say:</strong> Platform/IAM owns FR lifecycle tied to IdP groups; data owners own AR contents and which FR gets which ring. Trial collapses both under lab admin — call that out so you don’t imply one person owns IAM forever.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s problem was open access to client PII. I separated functional roles (jobs) from access roles (key-rings):

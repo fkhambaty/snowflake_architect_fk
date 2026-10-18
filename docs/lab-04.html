@@ -232,6 +232,34 @@ UNION ALL SELECT 'gold', COUNT(*) FROM GOLD_MART.GOLD_CLIENT_SUMMARY;</code></pr
       <div class="badge-ok">✓ Three rows — Alex should query GOLD_MART, not BRONZE_LANDING</div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> What belongs in BRONZE_LANDING that must never be Alex’s default path?</summary>
+        <p class="drill-say"><strong>Say:</strong> As-landed PII and raw events — CLIENTS vault, unvalidated TXN_EVENTS. Alex reads SILVER_CURATED windows and GOLD_MART tiles. Bronze is Jordan’s dock; promoting raw to Finance is a regulator story.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> When would you skip Gold and let Finance query Silver?</summary>
+        <p class="drill-say"><strong>Say:</strong> Early product, few consumers, metrics still changing — Gold is ceremony. Once Marcus’s KPIs stabilize, GOLD_MART freezes grain and stops Looker from re-implementing risk logic on Silver. Don’t invent Gold to “complete medallion.”</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Data Vault vs medallion — answer without dogma?</summary>
+        <p class="drill-say"><strong>Say:</strong> Medallion is landing → curated → mart for Meridian’s speed. Vault shines when many sources need stable hubs/links and audit historization. Vault inside Silver if source churn is brutal — don’t rename schemas to HUB_ for vocabulary points.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Failure mode of “everyone has USAGE on MERIDIAN_BANK”?</summary>
+        <p class="drill-say"><strong>Say:</strong> Database USAGE isn’t table SELECT — but over-granting schema USAGE plus future grants leaks new Bronze tables. Pair medallion with AR_BRONZE_LANDING_READ vs AR_SILVER_CURATED_READ; colors without AR boundaries are cosplay.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Multi-account: replicate all three layers or only Gold?</summary>
+        <p class="drill-say"><strong>Say:</strong> DR follows the recovery story (Lab 11) — often Silver+Gold or whole MERIDIAN_BANK. Replicating Bronze alone doesn’t save Alex; sharing Gold alone doesn’t help Jordan rebuild. Pick objects by RPO/RTO, not by color names.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Marcus needed a vocabulary. Bronze is BRONZE_LANDING where Jordan loads TXN_EVENTS; silver is SILVER_CURATED.SILVER_TXNS with status normalized and bad amounts filtered;

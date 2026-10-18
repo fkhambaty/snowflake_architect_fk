@@ -466,6 +466,34 @@ AS
       <div class="badge-ok">✓ Rows mirror BRONZE_LANDING — refresh managed by Snowflake</div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Streams+tasks vs Dynamic Tables vs dbt — pick for Meridian and when you’d refuse each.</summary>
+        <p class="drill-say"><strong>Say:</strong> Stream+task for near-real-time BRONZE→SILVER CDC with explicit control (and SUSPEND so credits don’t burn). Dynamic Tables for declarative lag. dbt for governed batch marts, tests, Slim CI. Refuse tasks left resumed forever in a demo; refuse DT for heavy procedural merge; refuse dbt for sub-minute risk ticks.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Stream offsets advance on consumption — silent data-loss mode?</summary>
+        <p class="drill-say"><strong>Say:</strong> Ad-hoc SELECT from the stream (or messy partial consume) can advance offsets outside the task. Production: task owns INSERT…SELECT from the stream; don’t “peek” the stream in worksheets. Monitor STREAM_HAS_DATA and task history for lag.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Why SUSPEND the lab task — what does prod do instead?</summary>
+        <p class="drill-say"><strong>Say:</strong> A resumed task still wakes warehouses; leaving it running burns trial credits. Prod keeps it resumed with WHEN STREAM HAS DATA, alerting on failures, warehouse auto-suspend. Suspend is a lab seatbelt, not the architecture.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Can Dynamic Tables replace RAP/masking on Silver?</summary>
+        <p class="drill-say"><strong>Say:</strong> No — DT moves data; policies govern reads. You can DT into a governed table and still attach RAP. Pipeline ≠ security.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Cost comparison in one sentence?</summary>
+        <p class="drill-say"><strong>Say:</strong> Tasks bill warehouse runtime per fire; DTs bill refresh compute to meet TARGET_LAG; dbt bills WH_BANK_XS per run — pick the freshness you can afford and measure lag; don’t stack all three on the same grain.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian couldn’t rely on Jordan’s calendar. I added a stream on BRONZE_LANDING.TXN_EVENTS — a change notebook — and task TASK_TXN_CDC that INSERTs from the stream into SILVER_CURATED.TXN_SILVER_CDC when SYSTEM$STREAM_HAS_DATA is true.

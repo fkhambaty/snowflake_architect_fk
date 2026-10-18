@@ -280,6 +280,34 @@ dbt deps</code></pre>
       </div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Why contract fct_orders_incremental but not every stg_ model?</summary>
+        <p class="drill-say"><strong>Say:</strong> Staging is an internal translator; published marts are Alex/Looker’s API. Contracting every stage slows the team without protecting consumers. Contract the boundary where silent rename becomes a NULL board tile.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Contract enforced — what still breaks Alex?</summary>
+        <p class="drill-say"><strong>Say:</strong> Semantic drift: same column name/type, wrong grain or business meaning; or updated_at “ok” but source stops updating it. Contracts catch schema breaks; tests and ownership catch meaning breaks.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Slim CI state:modified+ with --defer — failure if manifest is stale?</summary>
+        <p class="drill-say"><strong>Say:</strong> You defer to yesterday’s prod graph and miss broken upstream changes, or under-build and ship green CI that fails in prod. Manifest freshness is part of the pipeline contract — not an optional flag.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> When do you refuse Slim CI and run a fuller build?</summary>
+        <p class="drill-say"><strong>Say:</strong> Cross-cutting macro changes, shared staging refactors, or release trains where modified+ is known-blind. Slim CI is PR cost control; release gates can still full-build critical marts.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> How do contracts interact with Lab 02 incremental?</summary>
+        <p class="drill-say"><strong>Say:</strong> If updated_at or order_id type drifts, incremental MERGE and Alex’s “last refresh” both break — contract makes that a CI failure. The watermark column belongs in enforced YAML, not a wiki comment.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s mart broke because nobody enforced the published schema. I declared BRONZE_LANDING.TXN_EVENTS as a dbt source, enforced a contract on fct_orders_incremental, and described Slim CI so PRs only build state:modified+ with defer to prod manifest.

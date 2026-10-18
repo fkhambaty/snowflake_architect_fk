@@ -232,6 +232,34 @@ ORDER BY TOTAL_ELAPSED_TIME DESC NULLS LAST LIMIT 20;</code></pre>
       <div class="badge-ok">✓ Optional: <code>SHOW RESOURCE MONITORS LIKE 'RM_BANK_LAB';</code> in Snowsight to see triggers</div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> ACCOUNT_USAGE empty for “this morning’s spike” — what do you tell Finance?</summary>
+        <p class="drill-say"><strong>Say:</strong> Views lag about one to three hours — empty isn’t “SQL wrong.” Re-pull WAREHOUSE_METERING_HISTORY later and use QUERY_HISTORY for expensive statements once visible. Don’t promise live pennies from ACCOUNT_USAGE alone.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Why ACCOUNTADMIN for metering/monitors then back to ROLE_BANK_LAB_ADMIN?</summary>
+        <p class="drill-say"><strong>Say:</strong> Billing views and resource monitors are account-scoped; daily modeling isn’t. Separating “read the bill / set brakes” from “build Silver” is the privilege story — same pattern as Lab 00.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> NOTIFY at 75% vs SUSPEND at 100% — when is notify-only wrong?</summary>
+        <p class="drill-say"><strong>Say:</strong> Notify still lets a runaway finish and blow the weekend. Marcus asked for a hard brake — SUSPEND at quota. Notify-only when killing WH mid-board-refresh is worse than an email.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Resource monitor suspend — operational failure you plan for?</summary>
+        <p class="drill-say"><strong>Say:</strong> Legitimate month-end jobs hit the cap and dashboards die. Size quota to workload, alert at 75%, documented reset owner, separate BOARD_S monitors so a lab spike doesn’t freeze the board path.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Metering by warehouse vs QUERY_HISTORY — attribute to teams?</summary>
+        <p class="drill-say"><strong>Say:</strong> Warehouse first (WH_BANK_XS vs WH_BANK_BOARD_S as cost centers), then QUERY_HISTORY for who/role/SQL — Profile closes the loop (Lab 07). Tags/naming beat archaeology; monitors stop bleeding while engineering removes the scan.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s bill was a black box. I pulled WAREHOUSE_METERING_HISTORY and QUERY_HISTORY from ACCOUNT_USAGE for attribution and tuned WH_BANK_XS with RM_BANK_LAB suspend at 100%.

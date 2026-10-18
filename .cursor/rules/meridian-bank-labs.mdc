@@ -12,7 +12,8 @@ This repo is interview prep: **Meridian Bank**, student plays **Elena Vasquez**.
 | Object | Name |
 |--------|------|
 | Database | `MERIDIAN_BANK` |
-| Warehouse | `WH_BANK_XS` |
+| Warehouse (daily) | `WH_BANK_XS` |
+| Warehouse (board / heavy) | `WH_BANK_BOARD_S` |
 | Architect role | `ROLE_BANK_LAB_ADMIN` |
 | Bronze schema | `BRONZE_LANDING` (not `LANDING` / `RAW`) |
 | Silver schema | `SILVER_CURATED` (not `CURATED`) |
@@ -30,11 +31,18 @@ See `docs/BANK_NAMING.md`. Cleanup: `sql/cleanup_lab00_lab01.sql`.
 5. Contrast sections like Lab 03 “two different problems” / `.flow-pipeline` when ideas get mixed up
 6. **Teach-first** (`.teach`) — assume zero prior knowledge. Plain English before SQL.
 7. **Small explained chunks** — prefer ≤12 lines per Copy block. Never dump an entire `sql/*.sql` file as one unexplained block. Pattern: *What this does* → tiny SQL → *What you should see*.
-8. Elena wrap-up (`.soundbite`)
+8. **Interviewer presses further** (`#interview-drill` / `.drill-wrap`) — 4–5 hard Q&As with spoken answers — **before** wrap-up
+9. Elena wrap-up (`.soundbite`)
 
-See `docs/TEACHING_STANDARD.md`. Reference: Lab 03 (BEFORE/AFTER + see-cards), Lab 02 (animated pipeline + watermark).
+See `docs/TEACHING_STANDARD.md`. Reference: Lab 03 (BEFORE/AFTER + see-cards), Lab 02 (animated pipeline + watermark), Lab 07 (automation follow-up).
 
 Lab art: `CAST_VISUAL.md` + `cast-sheet.jpg`; no overlapping SVG text; use `.flow-pipeline` for multi-object flows.
+
+### Interview depth (do not skip — hiring bar)
+
+Think like a Snowflake Architect + dbt interviewer. After every lab change, ask: *“What will they ask next that blanks a basics-only candidate?”* Add that drill (and SQL if needed) in the same change. Do not wait for the student to catch it.
+
+Cover: tradeoffs, when NOT to use it, failure modes, automation/ops, cost, prod vs trial.
 
 ### Teach-first checklist (do not skip)
 
@@ -43,6 +51,7 @@ Lab art: `CAST_VISUAL.md` + `cast-sheet.jpg`; no overlapping SVG text; use `.flo
 - Why this option vs alternatives
 - What the student should see after each chunk
 - Student must not be able to “finish” by Run All on one giant block without reading
+- `#interview-drill` present with ≥4 hard follow-ups
 
 ## HARD RULE — role proofs (student already burned tokens on this)
 
@@ -71,3 +80,4 @@ Account grants live in `sql/00_bootstrap.sql` **and** `sql/00_privilege_repair.s
 1. Grep for `USE ROLE FR_` — every hit must be followed by `USE SECONDARY ROLES NONE` in the same copy block (or next line).
 2. Grep for `ARCH_INTERVIEW`, `WH_ARCH`, `ROLE_ARCH`, `AR_RAW`, `SnowShop` — must not appear in student-facing lab steps (cleanup SQL may mention old names).
 3. HTML SQL must match `sql/*.sql`.
+4. Labs 00–13 still have `#interview-drill` with ≥4 hard follow-ups (run `scripts/check_lab_invariants.ps1`).

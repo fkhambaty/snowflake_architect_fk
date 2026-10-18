@@ -278,6 +278,34 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
       <div class="badge-ok">✓ Out loud: lag minutes → RPO; runbook minutes → RTO</div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> “We share with Nora, so we’re DR-ready” — dismantle it.</summary>
+        <p class="drill-say"><strong>Say:</strong> Share is cross-account read of live provider objects; if Meridian’s region is down, Nora’s window dies too. DR needs replication/failover groups and a promotion runbook. Share ≠ secondary; clone ≠ secondary.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> RPO vs RTO with Meridian numbers — how do you speak to Marcus?</summary>
+        <p class="drill-say"><strong>Say:</strong> RPO is replication lag — how stale secondary MERIDIAN_BANK might be. RTO is people+steps: promote, repoint apps, smoke WH_BANK_XS, validate Gold. Small RPO with untested 4-hour manual RTO is still a board failure.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> What do you refuse to replicate, and why?</summary>
+        <p class="drill-say"><strong>Say:</strong> Maybe skip ephemeral junk and huge Bronze cold history if RTO only needs Silver+Gold — but document the rebuild path. Replicating everything blindly burns cost; replicating only share metadata helps nobody.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Clone for Dev vs share vs replication — three sentences.</summary>
+        <p class="drill-say"><strong>Say:</strong> Clone: same-account, zero-copy QA. Share: partner consume, not failover. Replication: cross-region/account continuity with lag and promotion. Mixing them is how architects sound confident and design wrong.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Trial can’t do org-admin replication — credible interview close?</summary>
+        <p class="drill-say"><strong>Say:</strong> Prove discipline with the SHOW/readiness checks you can run, then describe the production runbook: failover group, refresh cadence → RPO, drilled promotion → RTO. Don’t pretend a personal trial failover is a completed DR program.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Marcus needed DR language, not buzzwords. I separated share for Nora, clone for Dev, and replication for region loss with explicit RPO/RTO from lag and failover steps.

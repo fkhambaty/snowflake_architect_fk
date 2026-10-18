@@ -215,6 +215,34 @@ SELECT * FROM TT_DEMO_CLONE;</code></pre>
       <div class="badge-ok">✓ Status row · parity with <code>sql/09_timetravel_clone.sql</code></div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Time Travel vs UNDROP vs CLONE vs replication — one wrong-tool story each.</summary>
+        <p class="drill-say"><strong>Say:</strong> TT: table exists, need yesterday’s rows. UNDROP: someone DROP TABLE. CLONE: Dev’s same-account QA fork. Replication: region/account loss. Using clone as DR, or TT as geo-failover, is the classic fail.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Retention failure mode nobody mentions until prod?</summary>
+        <p class="drill-say"><strong>Say:</strong> Temporary/transient tables and short DATA_RETENTION_TIME_IN_DAYS shrink UNDROP/TT windows. Fail-safe isn’t self-serve. Set retention deliberately on SILVER/GOLD; don’t promise 90-day undo on a 1-day default.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Zero-copy clone — when does storage cost show up?</summary>
+        <p class="drill-say"><strong>Say:</strong> Day one shares micro-partitions; Dev writes and prod churn diverge and bill growth. Clone isn’t free forever, and isn’t cross-account for Nora. QA speed — not partner delivery or DR.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> AT (OFFSET =&gt; …) after a bad UPDATE — why not always UNDROP?</summary>
+        <p class="drill-say"><strong>Say:</strong> UNDROP restores a dropped object; a bad UPDATE leaves the table up. Point-in-time SELECT or CTAS … AT restores the good version. Pick the tool by what broke.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Trial vs Enterprise Time Travel depths — what do you say?</summary>
+        <p class="drill-say"><strong>Say:</strong> Max retention depends on edition — confirm before promising 90-day TT. Architecture answer is retention policy + tested restore runbook, not a number from a blog.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian had operator panic and QA freshness needs.

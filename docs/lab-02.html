@@ -418,6 +418,34 @@ FROM SILVER_CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
       </ul>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> When is full refresh cheaper or safer than incremental MERGE?</summary>
+        <p class="drill-say"><strong>Say:</strong> Small dimensions, broken watermarks, late deletes you don’t model, or schema-breaking rebuilds. Incremental wins on growing TXN_EVENTS; full refresh wins when the table is tiny or the MERGE contract is wrong. “Incremental always” is a buzzword fail.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Watermark on updated_at skips a late-corrected row — failure mode and fix?</summary>
+        <p class="drill-say"><strong>Say:</strong> Source corrected order_id 1001 but updated_at didn’t move — MERGE never re-reads it. Fix: trustworthy change signal with Jordan, periodic lookback window, or full refresh for that model — not “run dbt harder.”</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> unique_key MERGE vs append-only — when do you refuse MERGE?</summary>
+        <p class="drill-say"><strong>Say:</strong> If grain isn’t stable or you need immutable audit history, MERGE upserts hide the past. Board facts want current status per order_id; compliance event logs often append. Wrong unique_key duplicates or silently overwrites.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Why not keep the watermark only in a Snowsight worksheet outside dbt?</summary>
+        <p class="drill-say"><strong>Say:</strong> Then CI, Slim CI, and docs don’t own the contract — worksheets drift from prod. dbt incremental + unique_key keeps MERGE policy in git. WH_BANK_XS just executes it.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Does incremental always reduce credits?</summary>
+        <p class="drill-say"><strong>Say:</strong> Usually less scan — but a bad watermark (full table every run) or huge MERGE join can cost more than a disciplined full refresh. Prove Day-2 MERGE with new rows + status change — evidence, not hope.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s problem was a nightly full refresh on growing txn history. The main table is BRONZE_LANDING.TXN_EVENTS.

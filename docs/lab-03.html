@@ -360,6 +360,34 @@ ORDER BY CLIENT_ID;</code></pre>
       <p class="hint">Optional full smoke: <code>sql/smoke_lab03_policies.sql</code> (one statement at a time).</p>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Why one CLIENTS_GOV with masking + RAP instead of US_CLIENTS and CA_CLIENTS tables?</summary>
+        <p class="drill-say"><strong>Say:</strong> Shadow copies drift and double the governance surface. Policies centralize rules in RISK_CTRL; Alex and Sam run the same SELECT and CURRENT_ROLE() changes the answer. Physical split only when law demands separate accounts — not laziness.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> RAP filters countries; masking hides email — what breaks if you only do one?</summary>
+        <p class="drill-say"><strong>Say:</strong> Masking alone still leaks out-of-scope rows’ existence; RAP alone still shows full email for allowed countries. Meridian needs both: entitlement + mask unless FR_COMPLIANCE. Complementary controls, not “we have governance.”</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Can a secure view replace RAP for Alex?</summary>
+        <p class="drill-say"><strong>Say:</strong> A view can hardcode WHERE country IN (…) but every path must use it and engineers recreate bypass tables. RAP binds to the table so forgetful SELECT * still filters. Views trim columns for shares (Lab 10); RAP is role-driven row entitlement.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Why not grant APPLY MASKING/ROW ACCESS to FR_DATA_ENGINEER?</summary>
+        <p class="drill-say"><strong>Say:</strong> Policy apply is a loaded gun; Jordan loading TXN_EVENTS shouldn’t rewire Sam’s rules. Lab admin or a security role applies; FR_COMPLIANCE may own entitlement data. Trial collapses roles — prod separates apply from load.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Secondary roles NONE again — why do masking demos lie without it?</summary>
+        <p class="drill-say"><strong>Say:</strong> Policies key off primary CURRENT_ROLE(); table privilege still unions secondaries. You can get “masked but shouldn’t see the table” or unmasked via lab-admin secondary. NONE makes the FR_ badge the only coat in the room.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian needed one client shelf, not shadow copies. I built SILVER_CURATED.CLIENTS_GOV, stored rules in RISK_CTRL,

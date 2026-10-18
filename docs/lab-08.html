@@ -238,6 +238,34 @@ WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());</code></pre>
       <div class="badge-ok">✓ Status row · matches <code>sql/08_clustering.sql</code></div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> CLUSTER BY (EVENT_DATE) vs Search Optimization — how do you choose?</summary>
+        <p class="drill-say"><strong>Say:</strong> Date-window aggregates on BIG_EVENTS → clustering for micro-partition pruning. Point lookups on txn_id → search optimization. Clustering on a high-cardinality ID wastes credits; search opt on “last 7 days” is the wrong tool.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> When do you refuse to cluster?</summary>
+        <p class="drill-say"><strong>Say:</strong> Tiny tables, filters that never hit the cluster key, or write-heavy tables where recluster cost exceeds read savings. Poor SYSTEM$CLUSTERING_INFORMATION plus Profile showing no pruning → don’t set cluster and pray.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Does clustering replace a good WHERE clause?</summary>
+        <p class="drill-say"><strong>Say:</strong> No — pruning needs sargable predicates on the clustered expression. Wrapping EVENT_DATE in functions leaves shelves scanned. Lab 07 SQL hygiene still comes first.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Automatic clustering cost — honest FinOps line?</summary>
+        <p class="drill-say"><strong>Say:</strong> Background maintenance burns credits as DML lands. Enable when Profile proves repeated partition thrash on a hot path; avoid on cold archives. Marcus hears “maintenance tax vs scan tax,” not “Snowflake optimizes itself.”</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Multi-key CLUSTER BY (EVENT_DATE, COUNTRY) — when does that backfire?</summary>
+        <p class="drill-say"><strong>Say:</strong> When queries don’t co-filter that way — you pay recluster for a key nobody uses. Lead with the selective predicate in real workloads; don’t invent composites from ER diagrams.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Lab 07 fixed Alex’s SQL and proved bytes in Query Profile. Lab 08 finished the storage side:

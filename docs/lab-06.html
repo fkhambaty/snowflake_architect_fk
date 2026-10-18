@@ -279,6 +279,34 @@ SELECT 'Lab 06 BRONZE_LANDING COPY OK' AS status;</code></pre>
       <div class="badge-ok">✓ n = 3 · status row confirms lab script parity with <code>sql/06_BRONZE_LANDING_copy.sql</code></div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> COPY vs Snowpipe vs external tables — when is pipe wrong?</summary>
+        <p class="drill-say"><strong>Say:</strong> Snowpipe for continuous FILE_IN landings. Batch COPY for controlled backfills. External tables for query-in-place exploration, not Meridian’s Bronze dock of record. Pipe without file format/error handling just automates garbage.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> What fails if FILE_IN stage grants are wide open to FR_ANALYST?</summary>
+        <p class="drill-say"><strong>Say:</strong> Analysts can LIST/GET raw files with PII before policies exist — stage is another vault. Stage privileges stay with load roles; Alex reads SILVER/GOLD. Share publishes views, not stage URLs.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Snowpipe “exactly once” — what still duplicates in BRONZE_LANDING?</summary>
+        <p class="drill-say"><strong>Say:</strong> Redelivered files with new names, or COPY without idempotent discipline, insert again. Pipe dedupes same-file metadata; it doesn’t make your business key unique. Downstream MERGE/dedupe (Lab 02) still matters.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Trial vs prod loading — what do you refuse to call “done”?</summary>
+        <p class="drill-say"><strong>Say:</strong> Hardcoded keys in worksheets, public buckets, ACCOUNTADMIN as pipe owner. Prod: storage integrations, least-privilege pipe owner, error notification. Trial user-stage demos are teaching aids — say the gap out loud.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Why land in BRONZE_LANDING instead of COPY straight to GOLD_MART?</summary>
+        <p class="drill-say"><strong>Say:</strong> You lose replay, as-landed audit, and the ability to rebuild Silver when rules change. Gold is a product; Bronze is evidence. Skipping Bronze for “speed” puts Finance on brittle extracts.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s overnight files needed a truck bay and a loader. I used schema FILE_IN for the internal stage and CSV file format,

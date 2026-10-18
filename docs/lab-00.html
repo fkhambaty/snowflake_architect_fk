@@ -374,6 +374,34 @@ CREATE OR REPLACE TABLE CLIENTS (
       <div class="badge-ok">✓ 5 rows — emails and SSN_LAST4 visible while you’re still lab admin</div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Why give ROLE_BANK_LAB_ADMIN ownership of MERIDIAN_BANK instead of leaving everything under ACCOUNTADMIN?</summary>
+        <p class="drill-say"><strong>Say:</strong> ACCOUNTADMIN is break-glass, not a daily builder. Ownership lets Elena create schemas and grant privileges without wearing the god role for every change. Prod: account grants once; day-to-day DDL under an owned platform/architect role.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Why WITH GRANT OPTION on warehouse USAGE/OPERATE to lab admin — what breaks without it?</summary>
+        <p class="drill-say"><strong>Say:</strong> Lab 01 needs Elena to pass WH_BANK_XS to FR_ roles. Without GRANT OPTION she can use the warehouse but cannot grant it onward — RBAC proofs die on “insufficient privilege to grant.” Grant option is how you delegate without making everyone ACCOUNTADMIN.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> When would you not put Bronze, Silver, Gold, Risk, and Utils all in one database?</summary>
+        <p class="drill-say"><strong>Say:</strong> One database fits Meridian’s single domain and shared RBAC. Split when regulatory isolation, separate billing, or different replication scopes force separate buildings — not because medallion “needs” three databases. Schemas are rooms; databases are buildings.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Auto-suspend saves money — what’s the failure mode students miss?</summary>
+        <p class="drill-say"><strong>Say:</strong> Too-aggressive suspend + chatty short queries = resume latency and cold-cache pain; no suspend = idle credit burn. Tune suspend separately from size. Never leave a warehouse with no suspend “because trial feels free.”</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Bootstrap as ACCOUNTADMIN then switch — how do privilege repair and trial vs prod differ?</summary>
+        <p class="drill-say"><strong>Say:</strong> Trial often has one user as ACCOUNTADMIN; prod scripts account grants once (00_privilege_repair) and refuses daily build as ACCOUNTADMIN. If APPLY POLICY / EXECUTE TASK / CREATE SHARE fail later, that’s missing account grants — not a medallion bug.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian had no Snowflake home. As ACCOUNTADMIN I poured the foundation: warehouse WH_BANK_XS with auto-suspend,

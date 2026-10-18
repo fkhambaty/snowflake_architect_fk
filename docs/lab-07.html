@@ -463,6 +463,34 @@ SELECT 'Lab 07 OK — BIG_EVENTS + WH_BANK_BOARD_S kept; PERF_WIDE dropped' AS s
       Lab 08: clustering improves pruning on <code>EVENT_DATE</code> for the table you just kept.
     </div>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Profile shows high bytes scanned — why is ALTER WAREHOUSE … SIZE the wrong first move?</summary>
+        <p class="drill-say"><strong>Say:</strong> Size multiplies the same bad plan. Fix projection, sargable filters, filter-before-join; prove bytes/partitions; then route heavy board jobs to WH_BANK_BOARD_S. On-call ALTER SIZE is a war-room tactic, not an operating model.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Users will run the board query again — do they ping Elena to resize every time?</summary>
+        <p class="drill-say"><strong>Say:</strong> No. Snowflake does not auto-change one warehouse’s size per query. Give the board workload WH_BANK_BOARD_S with AUTO_RESUME/AUTO_SUSPEND; point Alex’s BI / FR_ANALYST at it. It wakes on query and sleeps idle. Daily work stays on WH_BANK_XS.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Auto-resume on WH_BANK_BOARD_S — cost/SLA tradeoff?</summary>
+        <p class="drill-say"><strong>Say:</strong> First query pays resume latency; idle doesn’t burn. Failure mode: BOARD_S with no auto-suspend, or every ad hoc query pointed at BOARD_S so XS discipline dies. Route by workload class.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Multi-cluster vs bigger warehouse — when is each wrong?</summary>
+        <p class="drill-say"><strong>Say:</strong> Multi-cluster = concurrency (many Alexes queuing). Larger size = one fat query needing more CPU/memory. Scaling out won’t fix SELECT * over a year of BIG_EVENTS; scaling up won’t fix 50 concurrent dashboards on XS.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Spill to remote storage in Profile — what do you say next?</summary>
+        <p class="drill-say"><strong>Say:</strong> Memory pressure from wide rows or bad joins — tighten columns, pre-aggregate, maybe bigger WH for that job class. Spill means SQL/WH pairing is wrong; clustering (Lab 08) helps pruning, not magic anti-spill.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “I loaded SILVER_CURATED.BIG_EVENTS so partitions exist, then triaged Alex’s board path:

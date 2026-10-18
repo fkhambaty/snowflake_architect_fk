@@ -254,6 +254,34 @@ SELECT 'Lab 10 share ready for Nora (add consumer account next)' AS status;</cod
       <div class="badge-ok">✓ Status row · parity with <code>sql/10_share_provider.sql</code></div>
     </article>
 
+        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>
+        Basics got you into the room. Cover each answer <em>before</em> you open it.
+        If you blank here, an Architect + dbt interviewer will know.
+      </p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Why SECURE view V_SHARE_TXNS instead of sharing the base table?</summary>
+        <p class="drill-say"><strong>Say:</strong> Secure hides definition and forces the trimmed column list — no BRONZE_LANDING vault, no join logic leakage. Sharing base tables invites SELECT * of tomorrow’s PII. Least columns on a secure view is the partner contract.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Who pays compute when Nora queries the share?</summary>
+        <p class="drill-say"><strong>Say:</strong> Nora — consumer warehouse in her account. Live data, Meridian keeps provider control, partner pays scans. Failure mode: Meridian running Nora’s reports on WH_BANK_XS “as a courtesy” and eating the bill.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Share revoked — what still hurts?</summary>
+        <p class="drill-say"><strong>Say:</strong> Cached extracts Nora already pulled, and any insecure objects once shared. Governance is ongoing: column review, secure view, CREATE SHARE discipline, no “temporary” share of CLIENTS. Clone is wrong here — same-account QA, not cross-org.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> Masking on provider objects — what does Nora see?</summary>
+        <p class="drill-say"><strong>Say:</strong> Don’t assume her roles map to FR_COMPLIANCE. Share only non-PII txn fields so we don’t rely on her role names matching ours. Cross-account role mapping is designed explicitly, not inherited from Lab 03.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> Trial limitation you’d call out?</summary>
+        <p class="drill-say"><strong>Say:</strong> Adding Nora’s real account locator and validating consume often isn’t available on personal trial. SHOW shares/grants locally, then production completes with consumer smoke tests — same honesty as Lab 11 replication.</p>
+      </details>
+    </section>
+
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Nora needed partner metrics without USB-era leaks. I built SILVER_CURATED.V_SHARE_TXNS as a secure view with least columns — no PII vault — and published it through SHARE_MERIDIAN_TXNS with database, schema, and view grants.

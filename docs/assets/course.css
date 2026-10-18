@@ -504,6 +504,47 @@ table.plain th { color: var(--muted); }
   font-size: 1.02rem;
 }
 
+/* Interviewer presses further — required on every lab */
+.drill-wrap {
+  border-color: rgba(201, 164, 92, 0.45);
+  background:
+    linear-gradient(160deg, rgba(201, 164, 92, 0.1), transparent 40%),
+    var(--panel);
+}
+.drill-wrap > p { margin: 0 0 0.85rem; }
+.drill {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  padding: 0.65rem 0.85rem;
+  margin: 0.45rem 0;
+}
+.drill summary {
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.45;
+  list-style: none;
+}
+.drill summary::-webkit-details-marker { display: none; }
+.drill summary::before {
+  content: "▸ ";
+  color: #8f6a18;
+  font-weight: 800;
+}
+.drill[open] summary::before { content: "▾ "; }
+.drill-say {
+  margin: 0.65rem 0 0.15rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  background: #e8f1f7;
+  border: 1px solid #c5d5e3;
+  color: #122433;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.drill-say strong { color: var(--accent-2); }
+
 /* Teach-then-run: explain code before copy */
 .explain {
   margin: 1rem 0 0.4rem;
