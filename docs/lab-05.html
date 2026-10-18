@@ -281,7 +281,58 @@
       <p>Jordan: “Can Snowflake tell me what changed?” Elena: “Streams bookmark deltas; tasks run the load path when the bookmark has unread rows.”</p>
     </div>
 
-    <article class="step">
+        <section class="comic-strip" id="comic-05a" aria-label="Jordan’s calendar vs a notebook">
+      <p class="comic-kicker">Episode 05 · Hand-carrying</p>
+      <h2 class="comic-title">Jordan’s calendar vs a notebook</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
+              </div>
+              <blockquote class="comic-bubble">I INSERT…SELECT new txns every hour. When I’m in meetings, silver is stale.</blockquote>
+            </figure>
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face elena" role="img" aria-label="Elena"></div>
+                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
+              </div>
+              <blockquote class="comic-bubble">Stream = change notebook. Task = worker that wakes when the notebook has pages. Then SUSPEND the lab worker so credits don’t party overnight.</blockquote>
+            </figure>
+      </div>
+      
+    </section>
+
+    <section class="comic-strip" id="comic-05b" aria-label="Stream+task vs dynamic table">
+      <p class="comic-kicker">Fork in the hallway</p>
+      <h2 class="comic-title">Stream+task vs dynamic table</h2>
+      <div class="comic-row three">
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
+              </div>
+              <blockquote class="comic-bubble">Can’t we just use a dynamic table and delete the task?</blockquote>
+            </figure>
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face elena" role="img" aria-label="Elena"></div>
+                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
+              </div>
+              <blockquote class="comic-bubble">Different job. DT = declare SELECT + lag, Snowflake refreshes. Stream+task = <em>you</em> write the CDC SQL and can audit every line.</blockquote>
+            </figure>
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+                <div><span class="comic-name">Marcus</span><span class="comic-role">COO</span></div>
+              </div>
+              <blockquote class="comic-bubble">I don’t care about the toy names. I care who owns freshness and who owns the bill.</blockquote>
+            </figure>
+      </div>
+      <p class="comic-caption">Click the Lab 05 picker — same fork, visual lanes.</p>
+    </section>
+
+<article class="step">
       <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if policies or tasks fail)</h3></div></div>
       <div class="explain">
         <h4>When you need this</h4>

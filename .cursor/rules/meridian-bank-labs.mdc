@@ -27,12 +27,13 @@ See `docs/BANK_NAMING.md`. Cleanup: `sql/cleanup_lab00_lab01.sql`.
 1. Business problem (`callout bad`)
 2. Solution (`callout ok`)
 3. **BEFORE / AFTER** (`.ba-grid` + `docs/assets/labXX-before.jpg` / `labXX-after.jpg`) — immediately after Solution; optional extra concept JPG/SVG later
-4. **See it** (`.see-grid` / `.see-card`) — concrete before→after examples; **not** Word/Layman/Metaphor dictionary tables
-5. Contrast sections like Lab 03 “two different problems” / `.flow-pipeline` when ideas get mixed up
-6. **Teach-first** (`.teach`) — assume zero prior knowledge. Plain English before SQL.
-7. **Small explained chunks** — prefer ≤12 lines per Copy block. Never dump an entire `sql/*.sql` file as one unexplained block. Pattern: *What this does* → tiny SQL → *What you should see*.
-8. **Interviewer presses further** (`#interview-drill` / `.drill-wrap`) — 4–5 hard Q&As with spoken answers — **before** wrap-up
-9. Elena wrap-up (`.soundbite`)
+4. **Comic strips** (`.comic-strip`) — cast dialogue after BEFORE/AFTER; faces via `cast-sheet.jpg` + `.comic-face.*`. Teach through conversation (Elena↔Alex CTE talk, etc.). See `scripts/inject_comics.js` + `docs/CAST_VISUAL.md`.
+5. **See it** (`.see-grid` / `.see-card`) — concrete before→after examples; **not** Word/Layman/Metaphor dictionary tables
+6. Contrast sections like Lab 03 “two different problems” / `.flow-pipeline` when ideas get mixed up
+7. **Teach-first** (`.teach`) — assume zero prior knowledge. Plain English before SQL.
+8. **Small explained chunks** — prefer ≤12 lines per Copy block. Never dump an entire `sql/*.sql` file as one unexplained block. Pattern: *What this does* → tiny SQL → *What you should see*.
+9. **Interviewer presses further** (`#interview-drill` / `.drill-wrap`) — 4–5 hard Q&As with spoken answers — **before** wrap-up
+10. Elena wrap-up (`.soundbite`)
 
 See `docs/TEACHING_STANDARD.md`. Reference: Lab 03 (BEFORE/AFTER + see-cards), Lab 02 (animated pipeline + watermark), Lab 07 (automation follow-up).
 

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 :root {
   /* Light theme — cool paper + deep sky (not purple, not cream) */
@@ -1565,4 +1565,160 @@ body {
 img, svg, video {
   max-width: 100%;
   height: auto;
+}
+
+/* ——— Comic strips (Meridian cast conversations) ——— */
+.comic-strip {
+  margin: 1.5rem 0 1.75rem;
+  padding: 1.1rem 1.15rem 1.25rem;
+  border-radius: 16px;
+  border: 3px solid #1a2433;
+  background:
+    repeating-linear-gradient(
+      -12deg,
+      transparent,
+      transparent 10px,
+      rgba(23, 111, 158, 0.03) 10px,
+      rgba(23, 111, 158, 0.03) 11px
+    ),
+    linear-gradient(180deg, #fffdf8, #f3f6f9 60%, #e9eef4);
+  box-shadow: 4px 4px 0 #1a2433;
+}
+.comic-kicker {
+  font-family: "Bangers", var(--sans);
+  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+  color: #8f6a18;
+  margin: 0 0 0.25rem;
+}
+.comic-strip h2,
+.comic-strip .comic-title {
+  font-family: "Bangers", var(--sans);
+  font-size: 1.55rem;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.85rem;
+  color: #1a2433;
+  font-weight: 400;
+  line-height: 1.2;
+}
+.comic-row {
+  display: grid;
+  gap: 0.75rem;
+}
+@media (min-width: 720px) {
+  .comic-row.two { grid-template-columns: 1fr 1fr; }
+  .comic-row.three { grid-template-columns: 1fr 1fr 1fr; }
+}
+.comic-panel {
+  margin: 0;
+  padding: 0.75rem 0.8rem 0.85rem;
+  border: 2.5px solid #1a2433;
+  border-radius: 12px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-height: 100%;
+  position: relative;
+}
+.comic-panel::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed rgba(26, 36, 51, 0.12);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.comic-who {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  position: relative;
+  z-index: 1;
+}
+.comic-face {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid #1a2433;
+  background-color: #1a2029;
+  background-image: url("cast-sheet.jpg");
+  background-repeat: no-repeat;
+  /* Zoom into head row of cast-sheet (7 characters across) */
+  background-size: 720% 320%;
+  box-shadow: 2px 2px 0 rgba(26, 36, 51, 0.25);
+}
+.comic-face.elena { background-position: 1% 8%; border-color: #c9a45c; }
+.comic-face.marcus { background-position: 17.5% 8%; border-color: #1a3658; }
+.comic-face.alex { background-position: 34% 8%; border-color: #176f9e; }
+.comic-face.jordan { background-position: 50.5% 8%; border-color: #0d7a6f; }
+.comic-face.sam { background-position: 67% 8%; border-color: #c9a45c; }
+.comic-face.nora { background-position: 83.5% 8%; border-color: #b76e79; }
+.comic-face.dev { background-position: 99.5% 8%; border-color: #6b7280; }
+.comic-name {
+  font-family: "Comic Neue", var(--sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1a2433;
+  line-height: 1.2;
+}
+.comic-role {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.comic-bubble {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 0.65rem 0.75rem 0.7rem;
+  border: 2px solid #1a2433;
+  border-radius: 14px;
+  background: #fffef6;
+  font-family: "Comic Neue", var(--sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #1a2433;
+}
+.comic-bubble::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: -8px;
+  width: 12px;
+  height: 12px;
+  background: #fffef6;
+  border-left: 2px solid #1a2433;
+  border-top: 2px solid #1a2433;
+  transform: rotate(45deg);
+}
+.comic-bubble code {
+  font-family: var(--mono);
+  font-size: 0.82em;
+  font-weight: 500;
+  background: #e8f1f7;
+  color: #0a4d70;
+  padding: 0.05em 0.3em;
+  border-radius: 4px;
+  border: none;
+}
+.comic-beat {
+  font-family: "Bangers", var(--sans);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: #c23d4a;
+  text-align: center;
+  margin: 0.35rem 0 0;
+}
+.comic-caption {
+  margin: 0.75rem 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.45;
 }

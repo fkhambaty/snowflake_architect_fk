@@ -118,7 +118,51 @@
           <div class="see-example">Day 2: rows 1006–1007 + update 1001</div>
         </div>
       </div>
-      <figure class="viz-panel" style="margin-top:1rem">
+          <section class="comic-strip" id="comic-02a" aria-label="Jordan’s full refresh vs Elena’s bookmark">
+      <p class="comic-kicker">Episode 02 · Midnight rebuild</p>
+      <h2 class="comic-title">Jordan’s full refresh vs Elena’s bookmark</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
+              </div>
+              <blockquote class="comic-bubble">Nightly we rebuild the whole ledger. Five million rows. Forty-five minutes. Credits cry.</blockquote>
+            </figure>
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face elena" role="img" aria-label="Elena"></div>
+                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
+              </div>
+              <blockquote class="comic-bubble">Stop re-reading the whole book. Put a <strong>watermark</strong> on <code>updated_at</code> — tonight only process pages after last night’s bookmark. That’s dbt incremental MERGE.</blockquote>
+            </figure>
+      </div>
+      <p class="comic-caption">Watermark = bookmark. Incremental = only new/changed pages.</p>
+    </section>
+
+    <section class="comic-strip" id="comic-02b" aria-label="Alex asks the dangerous question">
+      <p class="comic-kicker">Whiteboard</p>
+      <h2 class="comic-title">Alex asks the dangerous question</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face alex" role="img" aria-label="Alex"></div>
+                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
+              </div>
+              <blockquote class="comic-bubble">So incremental is always cheaper and better?</blockquote>
+            </figure>
+        <figure class="comic-panel">
+              <div class="comic-who">
+                <div class="comic-face elena" role="img" aria-label="Elena"></div>
+                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
+              </div>
+              <blockquote class="comic-bubble">No. Tiny tables, broken watermarks, weird deletes — full refresh can be safer. “Incremental always” is how juniors fail interviews.</blockquote>
+            </figure>
+      </div>
+      
+    </section>
+
+<figure class="viz-panel" style="margin-top:1rem">
         <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on BRONZE_LANDING.TXN_EVENTS" width="1600" height="900" loading="lazy" />
         <figcaption>
           <strong>Picture · Only change the ledger</strong>
