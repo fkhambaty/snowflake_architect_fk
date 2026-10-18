@@ -73,57 +73,35 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-01a" aria-label="Alex finds SSN. Sam finds Elena.">
-      <p class="comic-kicker">Episode 01 · Vault vs window</p>
-      <h2 class="comic-title">Alex finds SSN. Sam finds Elena.</h2>
+
+<section class="comic-strip" id="comic-01-open-0" aria-label="Alex saw SSN. Sam is not happy.">
+      <p class="comic-kicker">Episode 01 · Scary SELECT</p>
+      <h2 class="comic-title">Alex saw SSN. Sam is not happy.</h2>
       <div class="comic-row three">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face alex" role="img" aria-label="Alex"></div>
-                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
-              </div>
-              <blockquote class="comic-bubble">I just SELECT * from clients for a board deck… wait. Is that a social security number?!</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face sam" role="img" aria-label="Sam"></div>
-                <div><span class="comic-name">Sam</span><span class="comic-role">Compliance</span></div>
-              </div>
-              <blockquote class="comic-bubble">If Alex can see SSN, Meridian fails the exam with the regulator. Elena — doors. Now.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Job badge <code>FR_ANALYST</code>. Key-ring <code>AR_SILVER_CURATED_READ</code>. Window view — not the vault. And Alex: hang up your secondary coats.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
       </div>
-      <p class="comic-caption">Secondary roles = wearing two coats. USE SECONDARY ROLES NONE hangs the lab-admin coat.</p>
-    </section>
-
-    <section class="comic-strip" id="comic-01b" aria-label="Elena makes Alex prove it.">
-      <p class="comic-kicker">Same day · proof</p>
-      <h2 class="comic-title">Elena makes Alex prove it.</h2>
-      <div class="comic-row two">
+      <blockquote class="comic-bubble">I only wanted names for a slide… why is there a social security number on my screen?!</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face alex" role="img" aria-label="Alex"></div>
-                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
-              </div>
-              <blockquote class="comic-bubble">UI says I’m FR_ANALYST. Vault still opens? Magic?</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Not magic — leftovers. Run <code>USE SECONDARY ROLES NONE</code>, then try again. Theater isn’t least privilege.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face sam" role="img" aria-label="Sam"></div>
+        <div><span class="comic-name">Sam</span><span class="comic-role">Compliance — protects data</span></div>
       </div>
-      
+      <blockquote class="comic-bubble">If analysts can see SSN, we fail. Elena — lock the vault. Give Alex a window.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Two ideas only: <strong>job badge</strong> (who you are) and <strong>key-ring</strong> (what you can open). Alex never holds the vault key-ring.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Vault = scary table. Window = safe view. Badge ≠ keys.</p>
     </section>
-
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>Humans wear job badges. Badges inherit key-rings. Alex never gets the vault key.</p>
@@ -260,6 +238,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if CREATE ROLE failed)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-0" aria-label="Skip if Lab 00 already worked">
+      <p class="comic-kicker">Step 0 · coach</p>
+      <h2 class="comic-title">Skip if Lab 00 already worked</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Do I always run this repair?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Only if creating roles failed. It’s the mayor stamping “Elena may print badges.” Skip when Lab 00 smoke already passed.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>When you need this</h4>
         <p>Only ACCOUNTADMIN can stamp Elena’s role with “may print new badges.” Skip if Lab 00 smoke test already passed.</p>
@@ -287,6 +290,31 @@ SELECT 'Privilege repair OK' AS status;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Confirm the vault has clients</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-1" aria-label="Why check the vault first?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Why check the vault first?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why are we looking at CLIENTS if I shouldn’t use it?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">So you see the danger exists. Later the proof is: same you, Alex badge, vault blocked. Without this table the story has no villain.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this proves</h4>
         <p>Lab 00 data is present and PII column is populated — RBAC has something real to protect.</p>
@@ -303,6 +331,31 @@ SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM BRONZE_LANDING.CLIENTS;<
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Print blank badges (FR_ and AR_)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-2" aria-label="What are FR_ and AR_ in baby words?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">What are FR_ and AR_ in baby words?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">These names look like alphabet soup.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble"><code>FR_</code> = job badge (Analyst, Engineer…). <code>AR_</code> = key-ring of permissions. We print blank badges and empty rings first — then hang keys — then clip rings onto badges.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Order matters: print → hang keys → clip onto jobs. Don’t skip ahead.</p>
+    </section>
+
+
+
       <div class="explain">
         <h4>Why empty roles first?</h4>
         <p>Three job badges for humans, three key-rings for object grants. No powers until Steps 3–6.</p>
@@ -324,6 +377,31 @@ CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Let job badges use the bank engine</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-3" aria-label="Why give jobs the warehouse?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Why give jobs the warehouse?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">I have a badge. Why can’t I run SQL yet?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Badge without engine = ID card in a dark building. USAGE on <code>WH_BANK_XS</code> is permission to turn the lights on.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Why FR_ need warehouse USAGE?</h4>
         <p>Proof queries run as Alex/Jordan/Sam — each FR_ must be allowed to start <code>WH_BANK_XS</code>.</p>
@@ -339,6 +417,31 @@ GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_COMPLIANCE;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Building + floor keys on key-rings</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-4" aria-label="Building key vs floor key?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Building key vs floor key?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">USAGE on database AND schema… isn’t that the same?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Building door + floor door. Database USAGE = enter the building. Schema USAGE = enter that floor. You still need SELECT to open a cabinet (table).</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Database = building, schema = floor</h4>
         <p><code>USAGE ON DATABASE</code> plus <code>USAGE ON SCHEMA</code> must be granted before any SELECT works.</p>
@@ -361,6 +464,31 @@ GRANT USAGE ON SCHEMA BRONZE_LANDING TO ROLE AR_PII_READ;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Cabinet keys (SELECT) on key-rings</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-5" aria-label="Why SELECT on the key-ring not on Alex?">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Why SELECT on the key-ring not on Alex?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Faster to GRANT SELECT TO FR_ANALYST directly?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Then every new table means editing every job. Hang SELECT on the key-ring once; clip the ring to jobs. That’s how banks scale.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>ALL vs FUTURE</h4>
         <p><code>ALL TABLES</code> covers what exists today. <code>FUTURE TABLES</code> covers what Jordan creates tomorrow without a grant fire drill.</p>
@@ -385,6 +513,31 @@ GRANT SELECT ON FUTURE TABLES IN SCHEMA BRONZE_LANDING TO ROLE AR_PII_READ;</cod
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Clip key-rings onto job badges</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-6" aria-label="Clip rings onto badges">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">Clip rings onto badges</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">So my analyst badge gets the silver key-ring only?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Yes. Jordan gets bronze dock keys. Sam gets PII keys. Your human user will wear all three badges later only to <em>test</em> — Alex the person in real life would wear one job.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Who gets which ring?</h4>
         <ul class="checklist">
@@ -412,6 +565,31 @@ GRANT ROLE AR_SILVER_CURATED_READ TO ROLE FR_COMPLIANCE;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Let your user wear all three jobs (for testing)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-7" aria-label="Why grant all three jobs to me?">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">Why grant all three jobs to me?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Isn’t that insecure?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">On a trial you’re one human playing three costumes. In prod, Alex the employee only gets FR_ANALYST. Here we grant all three so you can switch costumes and prove locks.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Why grant FR_ to your login?</h4>
         <p>You play Alex, Jordan, and Sam in one Snowflake user — realistic for a lab, not production (one human = one FR_ there).</p>
@@ -428,6 +606,31 @@ GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">8</div><div><h3>Build the safe client directory window</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-8" aria-label="What is the window?">
+      <p class="comic-kicker">Step 8 · coach</p>
+      <h2 class="comic-title">What is the window?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is a VIEW a copy of the table?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">No — it’s a saved SELECT. Like a window that only shows safe columns. The vault still holds SSN; the window simply doesn’t look at that cabinet.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Why a view?</h4>
         <p>One governed projection — Alex gets IDs, names, countries, dates. Email, phone, and SSN never appear in the SELECT list.</p>
@@ -451,6 +654,31 @@ SELECT 'Lab 01 Meridian Bank RBAC ready' AS status;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">9</div><div><h3>Proof: wear Alex — window yes, vault no</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-9" aria-label="THE important proof — hang the coat">
+      <p class="comic-kicker">Step 9 · coach</p>
+      <h2 class="comic-title">THE important proof — hang the coat</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">UI says FR_ANALYST but vault still opens. Snowflake broken?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">You’re still wearing a second coat — lab admin. Run <code>USE SECONDARY ROLES NONE</code>. Now only Alex’s coat. Vault fails. Window works. Say this in every interview.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">If you remember one thing from Lab 01: SECONDARY ROLES NONE.</p>
+    </section>
+
+
+
       <figure class="viz-panel">
         <img src="assets/lab01-secondary-roles.jpg" alt="Wrong: FR_ANALYST still wearing ROLE_BANK_LAB_ADMIN coat walks into vault. Right: USE SECONDARY ROLES NONE hangs the coat; vault locked; window open." width="1600" height="900" loading="lazy" />
         <figcaption>
@@ -500,6 +728,38 @@ SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">10</div><div><h3>Proof: Jordan and Sam paths</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-10" aria-label="Jordan and Sam costumes">
+      <p class="comic-kicker">Step 10 · coach</p>
+      <h2 class="comic-title">Jordan and Sam costumes</h2>
+      <div class="comic-row three">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I should open the vault — that’s my dock.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face sam" role="img" aria-label="Sam"></div>
+        <div><span class="comic-name">Sam</span><span class="comic-role">Compliance — protects data</span></div>
+      </div>
+      <blockquote class="comic-bubble">And I need PII for audits — different key-ring.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Same pattern: wear the job, hang secondary coats, prove what opens. Three costumes, three truths.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Same rule every time</h4>
         <p><code>USE ROLE</code> then <code>USE SECONDARY ROLES NONE</code> before each proof — policies and table access both respect the primary badge.</p>
@@ -523,6 +783,31 @@ SELECT CLIENT_ID, SSN_LAST4 FROM BRONZE_LANDING.CLIENTS;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">11</div><div><h3>Smoke test (don’t skip)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-01-step-11" aria-label="Why smoke again?">
+      <p class="comic-kicker">Step 11 · coach</p>
+      <h2 class="comic-title">Why smoke again?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">We already tested…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Smoke = quick checklist that badges and grants still stick after a long lab. Two minutes now beats debugging Lab 03 later.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What “smoke” means</h4>
         <p>

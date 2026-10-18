@@ -68,28 +68,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-12" aria-label="Jordan “cleaned” a column. Looker cried.">
-      <p class="comic-kicker">Episode 12 · Silent rename</p>
-      <h2 class="comic-title">Jordan “cleaned” a column. Looker cried.</h2>
+
+<section class="comic-strip" id="comic-12-open-0" aria-label="CI was green. Alex’s tile was empty.">
+      <p class="comic-kicker">Episode 12 · Silent break</p>
+      <h2 class="comic-title">CI was green. Alex’s tile was empty.</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
-              </div>
-              <blockquote class="comic-bubble">Renamed a staging column. CI was green. Why is Alex’s tile NULL?</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I renamed a column. Tests passed. Why is Looker dead?</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">You contracted the wrong boundary. Contract <em>published</em> marts — Alex’s API — not every staging view. Slim CI still needs a fresh manifest or you’re deferring to yesterday’s fantasy.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">You protected the wrong door. Contract the <strong>published mart</strong> Alex uses — not every staging scratch view. And Slim CI needs a fresh map of prod or it compares to a ghost.</blockquote>
+    </figure>
       </div>
       
     </section>
-
 <div class="story">
       <div class="story-label">Sunday planning</div>
       <p>Jordan owns git; Elena owns what may break Alex — contracts on <strong>published marts</strong>, not every staging view.
@@ -171,6 +171,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Sources file — header and BRONZE_LANDING database</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-1" aria-label="What is a source YAML?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">What is a source YAML?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is this SQL?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">It’s a name tag: “this Snowflake table is our bronze dock.” dbt doesn’t create bronze here — it points at it.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>version: 2</code> tells dbt this is modern YAML schema. The <code>sources:</code> list begins the BRONZE_LANDING dock definition.</p>
@@ -191,6 +216,31 @@ sources:
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Sources file — table txn_events</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-2" aria-label="Why describe txn_events?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Why describe txn_events?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Extra typing…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">So humans and tests know which dock table matters. Documentation is part of the contract with future-you.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What each line does</h4>
         <p><code>tables:</code> lists physical tables at that dock. <code>name: txn_events</code> matches Snowflake object <code>TXN_EVENTS</code> (dbt lowercases in docs; Snowflake stores uppercase unless quoted).</p>
@@ -206,6 +256,29 @@ sources:
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Contract — turn enforcement on</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-3" aria-label="What is contract enforcement?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">What is contract enforcement?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Like a legal contract?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">A column promise: name + type must match. Break it → CI fails before Alex’s tile goes blank.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Under <code>models:</code>, target <code>fct_orders_incremental</code>. <code>contract.enforced: true</code> tells dbt to compare built columns to the YAML contract before succeeding.</p>
@@ -226,6 +299,29 @@ models:
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Contract — column order_id</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-4" aria-label="Why order_id in the contract?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Why order_id in the contract?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">It’s obvious…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Obvious until someone renames it. Unique + not_null on the grain is the seatbelt.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>Read the column block</h4>
         <p><code>data_type: number</code> must match Snowflake. <code>tests: [unique, not_null]</code> keeps the txn key trustworthy — same as Lab 02’s merge key.</p>
@@ -243,6 +339,29 @@ models:
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Contract — status, order_total, updated_at</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-5" aria-label="Why updated_at in the contract?">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Why updated_at in the contract?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">That’s the watermark thing from Lab 02?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Yes — if type drifts, incremental MERGE and “last refresh” both break. Put the watermark in the promise, not a wiki.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>Why list every published column</h4>
         <p>Contract mode requires the YAML to be complete. <code>updated_at</code> is the watermark column — if its type drifts, incremental logic and Alex’s “last refresh” both break.</p>
@@ -262,6 +381,29 @@ models:
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Slim CI — install packages</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-6" aria-label="dbt deps?">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">dbt deps?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why install packages?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Slim CI helpers live in packages. deps = download the toolbox before you build.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>dbt deps</code> pulls package dependencies (if any) before CI compiles the graph — same as local dev.</p>
@@ -275,6 +417,31 @@ dbt deps</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Slim CI — list what would run</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-7" aria-label="Slim CI list">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">Slim CI list</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why not rebuild the world every PR?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Credits and time. First we <em>list</em> what would run — modified models + downstream. Sanity check before spending.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>dbt ls --select state:modified+</code> prints model names that differ from <code>prod_artifact/manifest.json</code>, plus downstream. No Snowflake build yet — cheap sanity check for Jordan’s PR.</p>
@@ -289,6 +456,29 @@ dbt deps</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">8</div><div><h3>Slim CI — build with defer</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-8" aria-label="Defer means what?">
+      <p class="comic-kicker">Step 8 · coach</p>
+      <h2 class="comic-title">Defer means what?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Defer sounds like procrastination…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">It means “reuse prod for things we didn’t change.” Needs a fresh prod manifest. Stale map = false safety.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>dbt build</code> runs models and tests for the selected slice. <code>--defer</code> reads unchanged parents from prod relations named in the manifest — so CI does not rebuild the entire Meridian graph on every PR.</p>

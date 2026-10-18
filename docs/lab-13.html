@@ -68,35 +68,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-13" aria-label="Finance forwards pain">
-      <p class="comic-kicker">Episode 13 · Surprise invoice</p>
-      <h2 class="comic-title">Finance forwards pain</h2>
-      <div class="comic-row three">
+
+<section class="comic-strip" id="comic-13-open-0" aria-label="Finance forwarded the invoice">
+      <p class="comic-kicker">Episode 13 · Bill shock</p>
+      <h2 class="comic-title">Finance forwarded the invoice</h2>
+      <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-                <div><span class="comic-name">Marcus</span><span class="comic-role">COO</span></div>
-              </div>
-              <blockquote class="comic-bubble">Who burned the weekend credits on WH_BANK_XS?!</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Who left the lights on all weekend?!</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">ACCOUNT_USAGE will tell us — with lag. Meanwhile RM_BANK_LAB suspends at quota so next weekend can’t. BOARD_S is a separate cost center.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
-              </div>
-              <blockquote class="comic-bubble">I’ll stop leaving worksheets running. …After coffee.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">We’ll read the meter (<code>ACCOUNT_USAGE</code>) — it lags a bit — and put a breaker (<code>RM_BANK_LAB</code>) so next weekend can’t melt the budget.</blockquote>
+    </figure>
       </div>
       
     </section>
-
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>After-the-fact attribution, then a guardrail before the next weekend.</p>
@@ -169,6 +162,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Switch to ACCOUNTADMIN</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-13-step-1" aria-label="Why ACCOUNTADMIN for billing views?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Why ACCOUNTADMIN for billing views?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">I thought Elena’s badge does everything…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Bill and breakers are account powers. Daily table building is not. Wear the mayor briefly, then switch back.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Account usage views and creating resource monitors require elevated role — not Elena’s normal lab badge alone.</p>
@@ -183,6 +201,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Credits by warehouse (last 7 days)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-13-step-2" aria-label="Meter lag">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Meter lag</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">I want this morning’s spike now.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Meter views can lag 1–3 hours. Empty isn’t “SQL wrong.” Re-check later; use query history when it appears.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Sums <code>CREDITS_USED</code> from metering history, grouped by <code>WAREHOUSE_NAME</code>, last seven days.</p>
@@ -204,6 +247,31 @@ GROUP BY 1 ORDER BY 2 DESC NULLS LAST;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Top queries by runtime (last 24 hours)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-13-step-3" aria-label="Notify vs suspend">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Notify vs suspend</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Email at 75% is enough?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Email still lets a runaway finish. Marcus asked for a hard stop — suspend at 100%. Plan a reset owner so month-end isn’t a surprise outage.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Lists the 20 longest queries — who (<code>USER_NAME</code>, <code>ROLE_NAME</code>), which warehouse, seconds elapsed, bytes scanned.</p>

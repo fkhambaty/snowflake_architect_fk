@@ -71,28 +71,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-06" aria-label="Files don’t jump into tables">
-      <p class="comic-kicker">Episode 06 · Night truck bay</p>
-      <h2 class="comic-title">Files don’t jump into tables</h2>
+
+<section class="comic-strip" id="comic-06-open-0" aria-label="Files pause in the bay first">
+      <p class="comic-kicker">Episode 06 · Truck at night</p>
+      <h2 class="comic-title">Files pause in the bay first</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
-              </div>
-              <blockquote class="comic-bubble">Partner dropped a CSV. Can I COPY straight into gold so Alex is happy by 8am?</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">CSV landed. Can I dump it straight into gold for Alex?</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">No. Stage in <code>FILE_IN</code> first — truck bay. Then COPY into <code>BRONZE_LANDING</code>. Gold is a product, not a loading dock. Snowpipe = the bay door that opens itself.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">No. Truck bay first (<code>FILE_IN</code> stage) → then load dock (<code>BRONZE_LANDING</code>). Gold is a finished product. Snowpipe = bay door that opens when a truck arrives.</blockquote>
+    </figure>
       </div>
       
     </section>
-
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>Files pause on the stage first — never jump straight into a table.</p>
@@ -180,6 +180,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Set session + open FILE_IN</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-06-step-1" aria-label="What is FILE_IN?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">What is FILE_IN?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is FILE_IN the staging layer? Like silver?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">No — it’s the <em>file</em> room: stage + file format objects. Medallion staging in dbt is different. Here “stage” means Snowflake’s parking spot for files.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Two meanings of “stage” — file parking vs dbt folder. Ask which one.</p>
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Elena’s lab badge, cheap warehouse, bank database. <code>FILE_IN</code> is the schema where inbound file objects live (stage + format).</p>
@@ -199,6 +224,31 @@ USE SCHEMA FILE_IN;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Define how to read CSV</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-06-step-2" aria-label="Why a file format?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Why a file format?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Can’t COPY guess CSV?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Tell Snowflake how commas and headers work. File format = reading glasses for the file.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Creates <code>FF_CSV_SIMPLE</code>: CSV type, optional double-quote wrapping, no header row in our tiny lab file.</p>
@@ -215,6 +265,31 @@ USE SCHEMA FILE_IN;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Create the internal stage</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-06-step-3" aria-label="Internal stage?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Internal stage?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is this Amazon S3?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Internal stage = parking inside Snowflake’s lot (fine for labs). Prod often uses external stages to your cloud bucket with storage integrations.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>STG_TXN_INTERNAL</code> defaults to the file format above so every file in the bay parses the same way.</p>
@@ -247,6 +322,31 @@ USE SCHEMA FILE_IN;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Park a “partner file” on the stage</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-06-step-5" aria-label="Fake a file for the lab">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Fake a file for the lab</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">We don’t have a real partner drop…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">We COPY FROM values into the stage to simulate a file. Same idea: bytes appear in the bay, then we load the dock.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>
@@ -268,6 +368,31 @@ USE SCHEMA FILE_IN;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>COPY from stage into BRONZE_LANDING</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-06-step-6" aria-label="COPY INTO bronze">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">COPY INTO bronze</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">When is Alex allowed to use this data?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">After it’s in bronze and then cleaned toward silver/gold. COPY lands raw. It does not mean “board ready.”</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>

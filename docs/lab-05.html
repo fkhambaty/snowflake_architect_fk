@@ -69,7 +69,29 @@
       </figure>
     </div>
 
-    <!-- Animated Lab 05 workflow (visual memory) -->
+
+<section class="comic-strip" id="comic-05-open-0" aria-label="Copy-paste every hour is not a pipeline">
+      <p class="comic-kicker">Episode 05 · Tired Jordan</p>
+      <h2 class="comic-title">Copy-paste every hour is not a pipeline</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I manually copy new txns into silver when I remember.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">We’ll give you a <strong>notebook</strong> that only lists changes (stream) and a <strong>worker</strong> that runs when the notebook has pages (task). You shouldn’t be the cron job.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Stream = notebook of changes. Task = worker. Dynamic table = different tool (later).</p>
+    </section>
+<!-- Animated Lab 05 workflow (visual memory) -->
     <section class="teach cdc-wrap" id="cdc-flow" aria-label="Animated stream and task workflow">
       <h2>Watch the whole Lab 05 flow</h2>
       <p>Press play. Follow the glowing step — this is everything you build below, in order.</p>
@@ -281,59 +303,35 @@
       <p>Jordan: “Can Snowflake tell me what changed?” Elena: “Streams bookmark deltas; tasks run the load path when the bookmark has unread rows.”</p>
     </div>
 
-        <section class="comic-strip" id="comic-05a" aria-label="Jordan’s calendar vs a notebook">
-      <p class="comic-kicker">Episode 05 · Hand-carrying</p>
-      <h2 class="comic-title">Jordan’s calendar vs a notebook</h2>
+
+
+<article class="step">
+      <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if policies or tasks fail)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-05-step-0" aria-label="Repair only if tasks fail">
+      <p class="comic-kicker">Step 0 · coach</p>
+      <h2 class="comic-title">Repair only if tasks fail</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
-              </div>
-              <blockquote class="comic-bubble">I INSERT…SELECT new txns every hour. When I’m in meetings, silver is stale.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">EXECUTE TASK denied…</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Stream = change notebook. Task = worker that wakes when the notebook has pages. Then SUSPEND the lab worker so credits don’t party overnight.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Mayor must stamp EXECUTE TASK on Elena’s badge. Same idea as Lab 00 privilege repair — account powers, not table SQL.</blockquote>
+    </figure>
       </div>
       
     </section>
 
-    <section class="comic-strip" id="comic-05b" aria-label="Stream+task vs dynamic table">
-      <p class="comic-kicker">Fork in the hallway</p>
-      <h2 class="comic-title">Stream+task vs dynamic table</h2>
-      <div class="comic-row three">
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
-              </div>
-              <blockquote class="comic-bubble">Can’t we just use a dynamic table and delete the task?</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Different job. DT = declare SELECT + lag, Snowflake refreshes. Stream+task = <em>you</em> write the CDC SQL and can audit every line.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-                <div><span class="comic-name">Marcus</span><span class="comic-role">COO</span></div>
-              </div>
-              <blockquote class="comic-bubble">I don’t care about the toy names. I care who owns freshness and who owns the bill.</blockquote>
-            </figure>
-      </div>
-      <p class="comic-caption">Click the Lab 05 picker — same fork, visual lanes.</p>
-    </section>
 
-<article class="step">
-      <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if policies or tasks fail)</h3></div></div>
+
       <div class="explain">
         <h4>When you need this</h4>
         <p>Marcus escalated: “Elena’s role can’t run tasks.” Only ACCOUNTADMIN can stamp <code>EXECUTE TASK</code> and related grants. Skip if Lab 00 bootstrap already succeeded.</p>
@@ -377,6 +375,31 @@ SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Session + SILVER_CURATED target table</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-05-step-1" aria-label="Empty shelf first">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Empty shelf first</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why create an empty table?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">That’s the destination shelf. The worker will put rows there. Empty on purpose — so when txn 1099 appears, you know the pipeline did it.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What TXN_SILVER_CDC is</h4>
         <p>Append-only SILVER_CURATED copy fed by the task — not the same object as Lab 04’s SILVER_TXNS CTAS, but same idea: rows leave BRONZE_LANDING via automation.</p>
@@ -400,6 +423,31 @@ USE SCHEMA SILVER_CURATED;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Attach the change notebook (stream)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-05-step-2" aria-label="What is a stream really?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">What is a stream really?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is it a live firehose like Kafka?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Simpler: Snowflake keeps a bookmark on a table. “What changed since I last read?” That’s the notebook. <code>APPEND_ONLY</code> = we only care about new inserts here.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What the stream watches</h4>
         <p><code>ON TABLE BRONZE_LANDING.TXN_EVENTS</code> — requires Lab 02 source table. <code>APPEND_ONLY = TRUE</code> matches insert-only dock behavior in this lab.</p>
@@ -414,6 +462,31 @@ USE SCHEMA SILVER_CURATED;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Define the worker (task)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-05-step-3" aria-label="What is the task body doing?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">What is the task body doing?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why SELECT from the stream not the table?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">If you SELECT the base table you reprocess history. The stream is “unread changes only.” Worker reads the notebook, writes silver, notebook pages get marked read.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Read the task header</h4>
         <p>
@@ -436,6 +509,31 @@ AS
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Resume the task</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-05-step-4" aria-label="Why RESUME?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Why RESUME?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">We created it. Isn’t it on?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">New tasks start asleep (suspended) so they don’t burn money by surprise. RESUME = allow it to run. Later we SUSPEND again for the lab.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Why RESUME?</h4>
         <p>New tasks are suspended by default — resume so <code>EXECUTE TASK</code> can run the body when the stream has data.</p>
@@ -449,6 +547,31 @@ AS
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Lab proof — one txn through the pipe</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-05-step-5" aria-label="Insert 1099 — make a page appear">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Insert 1099 — make a page appear</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Watch the stream after insert…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Dock gets 1099 → notebook gets a page → we EXECUTE TASK once → silver should show 1099. That’s the whole movie.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Story of txn 1099</h4>
         <p>Clean slate for 1099 in SILVER_CURATED and BRONZE_LANDING, insert fresh row at dock, manually execute task, verify SILVER_CURATED row — same sequence as <code>sql/05_streams_tasks.sql</code>.</p>
@@ -475,6 +598,31 @@ DELETE FROM BRONZE_LANDING.TXN_EVENTS WHERE TXN_ID = 1099;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Suspend the task (don’t leave workers running)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-05-step-6" aria-label="Put the worker to bed">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">Put the worker to bed</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Don’t leave engines idling.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">SUSPEND the task. In real life you’d leave it resumed with monitoring — labs suspend so trial credits survive.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Why suspend at the end?</h4>
         <p>Interview hygiene: prove automation works, then stop background warehouse use in a shared lab account.</p>
@@ -489,6 +637,31 @@ SELECT 'Lab 05 OK — task suspended' AS status;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Optional: dynamic table pattern</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-05-step-7" aria-label="Optional dynamic table">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">Optional dynamic table</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">When do I skip stream+task?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">When you only need “keep this SELECT fresh” and you’re okay with Snowflake managing refresh. Custom CDC logic you must audit line-by-line → stay stream+task.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>When Elena picks dynamic tables</h4>
         <p>

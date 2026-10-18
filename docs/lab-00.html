@@ -71,28 +71,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-00" aria-label="Marcus wants a home. Elena pours concrete.">
-      <p class="comic-kicker">Episode 00 · Monday morning</p>
-      <h2 class="comic-title">Marcus wants a home. Elena pours concrete.</h2>
+
+<section class="comic-strip" id="comic-00-open-0" aria-label="Marcus is lost. Elena draws a building.">
+      <p class="comic-kicker">Episode 00 · Start here</p>
+      <h2 class="comic-title">Marcus is lost. Elena draws a building.</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-                <div><span class="comic-name">Marcus</span><span class="comic-role">COO</span></div>
-              </div>
-              <blockquote class="comic-bubble">We have CSV chaos and three Slack channels named “final_v2”. Where does Meridian’s data <em>live</em>?</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">In one building: <code>MERIDIAN_BANK</code>. Rooms for bronze, silver, gold. Engine <code>WH_BANK_XS</code> that sleeps when idle — Finance will thank us.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
       </div>
-      <p class="comic-caption">Remember the building metaphor — schemas are rooms, warehouse is the engine.</p>
+      <blockquote class="comic-bubble">I hear “data platform” and see twenty random tables. Where does Meridian’s data <em>live</em>?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Think of a building. Database = the building name <code>MERIDIAN_BANK</code>. Schemas = rooms. Warehouse = the engine that runs when we ask questions — then sleeps so we don’t burn money.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">If you remember only one picture today: building → rooms → engine.</p>
     </section>
-
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>Look at what you’re about to create in Snowsight — names you’ll reuse all week.</p>
@@ -189,6 +189,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Open Snowsight as ACCOUNTADMIN</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-00-step-1" aria-label="Why a tiny warehouse?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Why a tiny warehouse?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why not a huge warehouse so everything is fast?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Big engines cost more every second they’re on. We start tiny (<code>XSMALL</code>) and only go bigger when a real query proves we need it. Sleep after 60 seconds idle.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">AUTO_SUSPEND = the engine turns off when nobody is driving.</p>
+    </section>
+
+
+
       <div class="explain">
         <h4>What this step is</h4>
         <p>
@@ -208,6 +233,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Create the cheap engine (warehouse)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-00-step-2" aria-label="Why create a special role for Elena?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Why create a special role for Elena?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Can’t we just use ACCOUNTADMIN for everything? It’s easier.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">ACCOUNTADMIN is the master key to the whole bank. You don’t wear it to make a table. Elena’s badge <code>ROLE_BANK_LAB_ADMIN</code> is for building labs — safer habit for interviews too.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>
@@ -231,6 +281,31 @@ CREATE WAREHOUSE IF NOT EXISTS WH_BANK_XS
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Print Elena’s architect badge</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-00-step-3" aria-label="Why grant the warehouse to lab admin?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Why grant the warehouse to lab admin?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I created the warehouse as mayor. Why grant it again?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Creating it doesn’t auto-share it. Grant = “Elena’s badge may use this engine.” Later she can pass that to Alex’s badge too.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Creates an empty custom role. It has no powers until the next grants — like a blank ID before HR activates it.</p>
@@ -245,6 +320,31 @@ CREATE WAREHOUSE IF NOT EXISTS WH_BANK_XS
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Account-level powers Elena will need later</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-00-step-4" aria-label="Why WITH GRANT OPTION?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Why WITH GRANT OPTION?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">What’s that extra WITH GRANT OPTION words?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">It means Elena can <em>pass</em> the warehouse to other badges (Alex, Jordan). Without it she can drive but can’t hand keys to the team.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Read each grant like English</h4>
         <ul class="checklist">
@@ -270,6 +370,31 @@ GRANT CREATE SHARE ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Let the lab admin turn the engine on</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-00-step-5" aria-label="Why give Elena the database?">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Why give Elena the database?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Who owns MERIDIAN_BANK?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Lab admin owns it so she can create rooms and tables without asking the mayor every time. Mayor still owns account-wide safety switches.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>USAGE vs OPERATE</h4>
         <p><code>USAGE</code> = run queries on the warehouse. <code>OPERATE</code> = resume/suspend it. <code>WITH GRANT OPTION</code> lets Elena pass warehouse access to FR_ roles in Lab 01.</p>
@@ -284,6 +409,31 @@ GRANT OPERATE ON WAREHOUSE WH_BANK_XS TO ROLE ROLE_BANK_LAB_ADMIN WITH GRANT OPT
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Create the bank building (database)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-00-step-6" aria-label="Why attach the badge to me?">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">Why attach the badge to me?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">I logged in. Why doesn’t the badge stick automatically?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Badges are clipped onto users. This step clips <code>ROLE_BANK_LAB_ADMIN</code> onto <em>you</em> so you can wear it in Snowsight.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Creates <code>MERIDIAN_BANK</code> and transfers ownership to Elena’s role so she controls schemas and tables inside it.</p>
@@ -300,6 +450,31 @@ GRANT OWNERSHIP ON DATABASE MERIDIAN_BANK TO ROLE ROLE_BANK_LAB_ADMIN COPY CURRE
 
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Give your user the architect badge</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-00-step-7" aria-label="Why smoke-test create/drop role?">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">Why smoke-test create/drop role?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Seems pointless — create a temp role then drop it?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">It’s a fire drill: proves Elena is allowed to print new badges. If this fails, Lab 01 RBAC will fail too. Fix privileges now.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Why SET uname?</h4>
         <p>Snowflake needs your login name to attach the role. <code>CURRENT_USER()</code> avoids typing it wrong.</p>
@@ -314,6 +489,31 @@ GRANT ROLE ROLE_BANK_LAB_ADMIN TO USER IDENTIFIER($uname);</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">8</div><div><h3>Smoke test: CREATE ROLE works</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-00-step-8" aria-label="Why so many rooms?">
+      <p class="comic-kicker">Step 8 · coach</p>
+      <h2 class="comic-title">Why so many rooms?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">BRONZE, SILVER, GOLD, RISK, FILE_IN… my head hurts.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Same building, different jobs. Dock vs clean shelves vs board reports vs rules vs file truck bay. You’ll use each room when the story needs it — not all today.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">You don’t need to memorize every room yet — just that rooms have names with jobs.</p>
+    </section>
+
+
+
       <div class="explain">
         <h4>Why before Lab 01?</h4>
         <p>If this create+drop fails, Lab 01’s FR_/AR_ roles will fail — fix grants now, not mid-RBAC drama.</p>

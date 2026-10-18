@@ -70,35 +70,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-03" aria-label="Sam needs email. Alex gets stars.">
-      <p class="comic-kicker">Episode 03 · Same SELECT, two truths</p>
-      <h2 class="comic-title">Sam needs email. Alex gets stars.</h2>
-      <div class="comic-row three">
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face alex" role="img" aria-label="Alex"></div>
-                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
-              </div>
-              <blockquote class="comic-bubble">Why does Sam see real emails and I see <code>***@…</code> on the same table?!</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face sam" role="img" aria-label="Sam"></div>
-                <div><span class="comic-name">Sam</span><span class="comic-role">Compliance</span></div>
-              </div>
-              <blockquote class="comic-bubble">Because I’m FR_COMPLIANCE. Masking is the glass disguise. RAP is which countries I’m allowed to walk.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">One shelf. Two policies. No US_CLIENTS / CA_CLIENTS copy-paste twins. Twins drift. Policies don’t.</blockquote>
-            </figure>
-      </div>
-      
-    </section>
 
+<section class="comic-strip" id="comic-03-open-0" aria-label="Why Alex sees stars and Sam sees email">
+      <p class="comic-kicker">Episode 03 · Same table, two answers</p>
+      <h2 class="comic-title">Why Alex sees stars and Sam sees email</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">We query the same table. Sam sees real email. I see <code>***@…</code>. How?!</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Two stickers on the glass: <strong>masking</strong> = disguise a column. <strong>Row access</strong> = hide whole rows (countries). Same shelf. Rules change what each badge sees.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Masking = cover the number on a jersey. RAP = which players leave the locker room.</p>
+    </section>
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>Forget theory lists. Look at what actually changes on the screen.</p>
@@ -164,6 +157,29 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">0</div><div><h3>Only if CREATE POLICY fails</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-0" aria-label="Only if policies won’t create">
+      <p class="comic-kicker">Step 0 · coach</p>
+      <h2 class="comic-title">Only if policies won’t create</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">CREATE MASKING POLICY failed…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Mayor must allow Elena to apply policies. Same privilege-repair idea as Lab 00 — skip if Lab 00 already stamped it.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What “APPLY MASKING POLICY” means</h4>
         <p>
@@ -182,6 +198,31 @@ GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;</code></pr
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Set session + make the policy office</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-1" aria-label="Why a RISK_CTRL room?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Why a RISK_CTRL room?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Another schema? My brain is full…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Think “rulebook office.” Policies live in <code>RISK_CTRL</code> so rules aren’t mixed into Alex’s report tables. Session first so SQL knows which building.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Put on Elena’s badge, pick the cheap warehouse, open the bank DB, ensure <code>RISK_CTRL</code> / <code>SILVER_CURATED</code> folders exist.</p>
@@ -199,6 +240,31 @@ CREATE SCHEMA IF NOT EXISTS SILVER_CURATED;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Build the one governed table</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-2" aria-label="Why a governed copy of clients?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Why a governed copy of clients?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why not put policies on BRONZE_LANDING.CLIENTS?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">We could. Today we make <code>CLIENTS_GOV</code> so Lab 01 vault demos stay simple and this lab has a clean practice shelf.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Why a copy from BRONZE_LANDING?</h4>
         <p>
@@ -217,6 +283,31 @@ FROM BRONZE_LANDING.CLIENTS;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Write the email “frosted glass” rule</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-3" aria-label="What is masking in baby words?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">What is masking in baby words?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is it encrypting the email?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Not encryption. It’s a rule: “If you’re Sam’s badge, show real email; else show stars.” Data stays; the <em>answer</em> changes by badge.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Read the CASE like English</h4>
         <p>
@@ -241,6 +332,31 @@ CREATE OR REPLACE MASKING POLICY MP_EMAIL_MASK AS (val STRING)
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Country permission list (entitlements)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-4" aria-label="What is the entitlement list?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">What is the entitlement list?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face sam" role="img" aria-label="Sam"></div>
+        <div><span class="comic-name">Sam</span><span class="comic-role">Compliance — protects data</span></div>
+      </div>
+      <blockquote class="comic-bubble">Who decides which countries Alex may see?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">A small mapping table — badge → allowed countries. RAP will read that list. It’s the guest list for the party.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Why a table?</h4>
         <p>
@@ -273,6 +389,31 @@ INSERT INTO RISK_CTRL.RAP_COUNTRY_ENTITLEMENT VALUES
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Write the “hide whole rows” rule</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-5" aria-label="What is RAP?">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">What is RAP?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Masking already hid email. Why more?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Masking hides a <em>field</em>. RAP hides <em>rows</em>. Without RAP Alex still sees customers in countries he shouldn’t — even with starred emails.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What RETURNS BOOLEAN means</h4>
         <p>
@@ -296,6 +437,29 @@ AS (country_code STRING) RETURNS BOOLEAN ->
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Hang both rules on CLIENTS_GOV</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-6" aria-label="Why attach both rules?">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">Why attach both rules?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I created the policies. Nothing changed on SELECT…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Creating the rulebook ≠ sticking it on the shelf. ALTER TABLE attaches masking + RAP. Without attach, rules sit in a drawer.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>Attach ≠ create (common gotcha)</h4>
         <p>
@@ -327,6 +491,29 @@ FROM TABLE(INFORMATION_SCHEMA.POLICY_REFERENCES(
 
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Let Alex’s and Sam’s key-rings read the shelf</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-7" aria-label="Why grant read to Alex and Sam?">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">Why grant read to Alex and Sam?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">I have FR_ANALYST — why more grants?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Policies change what you see; you still need SELECT on the shelf. We hang read on the key-rings so both costumes can query.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>Grants vs policies</h4>
         <p>
@@ -346,6 +533,29 @@ SELECT 'Lab 03 policies attached' AS status;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">8</div><div><h3>Proof as Alex</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-8" aria-label="Proof as Alex — coats off">
+      <p class="comic-kicker">Step 8 · coach</p>
+      <h2 class="comic-title">Proof as Alex — coats off</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face sam" role="img" aria-label="Sam"></div>
+        <div><span class="comic-name">Sam</span><span class="comic-role">Compliance — protects data</span></div>
+      </div>
+      <blockquote class="comic-bubble">Show me Alex is limited.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Wear FR_ANALYST, <code>USE SECONDARY ROLES NONE</code>, SELECT. Stars on email + fewer countries. If vault coat still on, the demo lies.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>Why SECONDARY ROLES NONE again?</h4>
         <p>
@@ -371,6 +581,29 @@ ORDER BY CLIENT_ID;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">9</div><div><h3>Proof as Sam — identical SQL</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-03-step-9" aria-label="Proof as Sam — same SQL">
+      <p class="comic-kicker">Step 9 · coach</p>
+      <h2 class="comic-title">Proof as Sam — same SQL</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">We change the query for Sam?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">No — identical SELECT. Only the badge changes. That’s the whole point of policies.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>Interview soundbite</h4>
         <p>“We didn’t give Alex a different table. We changed the result with policies evaluated on CURRENT_ROLE().”</p>

@@ -69,35 +69,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-09" aria-label="Dev wants a twin. Marcus hears “DR.”">
-      <p class="comic-kicker">Episode 09 · Undo button</p>
-      <h2 class="comic-title">Dev wants a twin. Marcus hears “DR.”</h2>
-      <div class="comic-row three">
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face dev" role="img" aria-label="Dev"></div>
-                <div><span class="comic-name">Dev</span><span class="comic-role">QA</span></div>
-              </div>
-              <blockquote class="comic-bubble">I need a prod-like sandbox today without breaking Alex.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">CLONE — same-account fast fork. Not geo-DR. Time Travel for yesterday’s rows. UNDROP if someone DROP TABLE’d.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-                <div><span class="comic-name">Marcus</span><span class="comic-role">COO</span></div>
-              </div>
-              <blockquote class="comic-bubble">Clone is not our disaster plan. Say that louder for the people in the back.</blockquote>
-            </figure>
-      </div>
-      
-    </section>
 
+<section class="comic-strip" id="comic-09-open-0" aria-label="Four tools — don’t mix them up">
+      <p class="comic-kicker">Episode 09 · Undo</p>
+      <h2 class="comic-title">Four tools — don’t mix them up</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face dev" role="img" aria-label="Dev"></div>
+        <div><span class="comic-name">Dev</span><span class="comic-role">QA — needs a safe copy</span></div>
+      </div>
+      <blockquote class="comic-bubble">I need a prod-like copy to break safely.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">CLONE = twin in the same account. Time Travel = yesterday’s rows while table still exists. UNDROP = bring back a dropped table. Replication = other region when the building burns — Lab 11.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Clone ≠ disaster recovery. Say it until it’s boring.</p>
+    </section>
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>Three different “undo” tools — pick by what broke.</p>
@@ -172,6 +165,24 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Set session</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-09-step-1" aria-label="Session">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Session</h2>
+      <div class="comic-row ">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Badge, engine, silver room — let’s break a tiny demo table on purpose.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="code-block">
         <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
@@ -183,6 +194,31 @@ USE SCHEMA SILVER_CURATED;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Demo A — Time Travel after DELETE</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-09-step-2" aria-label="Time Travel after DELETE">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Time Travel after DELETE</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">I deleted the row — it’s gone forever?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Not yet. Ask Snowflake for the table <em>as of a few minutes ago</em>. That’s Time Travel. The trash didn’t leave the building immediately.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Create tiny table, mutate it, delete the row, then SELECT with <code>AT (OFFSET => -60*2)</code> (~2 minutes back) to see the row again.</p>
@@ -205,6 +241,31 @@ DELETE FROM TT_DEMO WHERE ID = 1;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Demo B — UNDROP after DROP TABLE</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-09-step-3" aria-label="UNDROP">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">UNDROP</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I DROP TABLE by mistake…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">UNDROP is the “retrieve from dumpster” for whole tables — if you’re still inside retention. Different tool than Time Travel on a table that’s still there.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Second table, one row, drop it, then <code>UNDROP TABLE</code> while retention allows.</p>
@@ -227,6 +288,38 @@ UNDROP TABLE TT_DEMO2;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Demo C — zero-copy CLONE for Dev</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-09-step-4" aria-label="CLONE for Dev">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">CLONE for Dev</h2>
+      <div class="comic-row three">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face dev" role="img" aria-label="Dev"></div>
+        <div><span class="comic-name">Dev</span><span class="comic-role">QA — needs a safe copy</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is clone our DR plan?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">No.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Clone = Dev’s playground today. DR = other region + failover — different lab.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>CREATE TABLE TT_DEMO_CLONE CLONE TT_DEMO2</code> — Dev gets identical data; storage shared until clone diverges.</p>

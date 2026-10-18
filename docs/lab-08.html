@@ -71,28 +71,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-08" aria-label="Last 7 days was scanning a year">
+
+<section class="comic-strip" id="comic-08-open-0" aria-label="Last 7 days still opened old shelves">
       <p class="comic-kicker">Episode 08 · Messy library</p>
-      <h2 class="comic-title">Last 7 days was scanning a year</h2>
+      <h2 class="comic-title">Last 7 days still opened old shelves</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face alex" role="img" aria-label="Alex"></div>
-                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
-              </div>
-              <blockquote class="comic-bubble">I filtered last 7 days. Profile still opened half the shelves?!</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">I filtered last 7 days — why so much scanning?</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Dates were scattered across micro-partitions — random piles. <code>CLUSTER BY (EVENT_DATE)</code> re-shelves so prune can skip. Search optimization is for ID lookups — different tool.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Dates were scattered like books on the floor. Clustering re-shelves by date so Snowflake can skip whole shelves. Different tool than “search optimization” (that’s for ID lookups).</blockquote>
+    </figure>
       </div>
       
     </section>
-
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <div class="story">
@@ -165,6 +165,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Set session + SILVER_CURATED</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-08-step-1" aria-label="Same session habit">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Same session habit</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Again with USE ROLE…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Yes. Badge + engine + room. Boring = reliable.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Lab admin context; SILVER_CURATED schema holds the demo fact table.</p>
@@ -180,6 +205,31 @@ USE SCHEMA SILVER_CURATED;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Confirm BIG_EVENTS from Lab 07</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-08-step-2" aria-label="Table from Lab 07">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Table from Lab 07</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Did we rebuild 400k?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Prefer the table Lab 07 left you. Only rebuild if you skipped Lab 07. Clustering needs real volume.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Lab 07 created ~400k unclustered rows and kept them on purpose. Confirm volume before you cluster.</p>
@@ -207,6 +257,31 @@ FROM TABLE(GENERATOR(ROWCOUNT => 400000));</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Read clustering health (before)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-08-step-3" aria-label="What is clustering information?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">What is clustering information?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Looks like scary JSON…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">It’s a health report: how mixed are dates across shelves? We glance before/after — you don’t need every field memorized.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Asks Snowflake how well rows align on <code>EVENT_DATE</code> before we declare a clustering key.</p>
@@ -223,6 +298,31 @@ FROM TABLE(GENERATOR(ROWCOUNT => 400000));</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Declare the clustering key</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-08-step-4" aria-label="CLUSTER BY does what?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">CLUSTER BY does what?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Does this rewrite the table tonight?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">It tells Snowflake to maintain better order over time (background work, costs some credits). Worth it when Profile shows date filters still reading the world.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>ALTER TABLE … CLUSTER BY (EVENT_DATE)</code> tells Snowflake to maintain better date locality over time (automatic background work).</p>
@@ -236,6 +336,31 @@ FROM TABLE(GENERATOR(ROWCOUNT => 400000));</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Run Alex’s “last 7 days” aggregate</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-08-step-5" aria-label="Run the 7-day question again">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Run the 7-day question again</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Should it be instant now?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">On a lab it may still be quick either way. The interview sentence is: clustering helps pruning for date windows; we measure partitions/bytes, not vibes.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Same business filter Risk runs daily — count and sum only recent events.</p>

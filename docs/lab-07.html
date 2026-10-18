@@ -72,79 +72,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-07a" aria-label="Alex wrote SELECT *. Elena smells blood.">
-      <p class="comic-kicker">Episode 07 · Board deck is dying</p>
-      <h2 class="comic-title">Alex wrote SELECT *. Elena smells blood.</h2>
+
+<section class="comic-strip" id="comic-07-open-0" aria-label="Alex wants a bigger engine. Elena wants a better question.">
+      <p class="comic-kicker">Episode 07 · Board panic</p>
+      <h2 class="comic-title">Alex wants a bigger engine. Elena wants a better question.</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face alex" role="img" aria-label="Alex"></div>
-                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
-              </div>
-              <blockquote class="comic-bubble">Board in two hours. Query crawls. Buy a bigger warehouse?!</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">First: stop <code>SELECT *</code>. You hauled three PAD columns Marcus never charts. Profile the bytes — then we talk engines.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
       </div>
-      <p class="comic-caption">This is the CTE / filter-early moment — shrink what enters the join.</p>
-    </section>
-
-    <section class="comic-strip" id="comic-07b" aria-label="Why filter before the join">
-      <p class="comic-kicker">Whiteboard · the CTE talk</p>
-      <h2 class="comic-title">Why filter before the join</h2>
-      <div class="comic-row two">
+      <blockquote class="comic-bubble">Query is dying. Buy a bigger warehouse — now!</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face alex" role="img" aria-label="Alex"></div>
-                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
-              </div>
-              <blockquote class="comic-bubble">Why wrap it in a CTE? My join to clients already works… eventually.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Because you joined a <em>year</em> of events, then hoped. CTE <code>recent</code> keeps last 7 days first — fewer rows into the join. Same answer, less pain. That’s the habit interviewers listen for.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      
-    </section>
-
-    <section class="comic-strip" id="comic-07c" aria-label="Marcus asks who Alex pings at 7am">
-      <p class="comic-kicker">Ops · no Slack resize rota</p>
-      <h2 class="comic-title">Marcus asks who Alex pings at 7am</h2>
-      <div class="comic-row three">
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-                <div><span class="comic-name">Marcus</span><span class="comic-role">COO</span></div>
-              </div>
-              <blockquote class="comic-bubble">So every board morning Alex Slacks you to ALTER SIZE?</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Never. Board path uses <code>WH_BANK_BOARD_S</code> — auto-resume, auto-suspend. Daily work stays on XS.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face alex" role="img" aria-label="Alex"></div>
-                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
-              </div>
-              <blockquote class="comic-bubble">…so I just point Looker at BOARD_S and stop texting Elena. Got it.</blockquote>
-            </figure>
+      <blockquote class="comic-bubble">Maybe later. First we fix the question: stop selecting junk columns, filter early, prove bytes. Bigger engine on a dumb question just burns money faster.</blockquote>
+    </figure>
       </div>
-      
+      <p class="comic-caption">Fix the question before you buy a louder engine.</p>
     </section>
-
 <section class="teach">
       <h2>See it — what Query Profile is for</h2>
       <p>After each before/after pair: Query History → that query → <strong>Query Profile</strong>. Compare bytes scanned and partitions.</p>
@@ -258,6 +207,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">0</div><div><h3>Session + fair A/B (no result-cache cheat)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-0" aria-label="Why turn cache off?">
+      <p class="comic-kicker">Step 0 · coach</p>
+      <h2 class="comic-title">Why turn cache off?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Second run was instant — I’m a genius?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Snowflake remembered the answer (result cache). We turn that off so before/after comparisons are fair — otherwise “fast” is a trick.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Lab context, then turn off result cache so “after” queries really re-execute — otherwise Snowsight looks magically fast.</p>
@@ -278,6 +252,31 @@ ALTER SESSION SET USE_CACHED_RESULT = FALSE;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Load volume — BIG_EVENTS (kept for Lab 08)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-1" aria-label="Why load so many rows?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Why load so many rows?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">400k feels heavy for a lab…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Tiny tables hide the lesson. We need enough chunks (micro-partitions) so “how much did we read?” is visible. Lab 08 keeps this table.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>
@@ -306,6 +305,31 @@ FROM BIG_EVENTS;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Fat twin for SELECT * (Lab 07 only — will drop)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-2" aria-label="Why the fat twin table?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Why the fat twin table?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Extra PAD columns look fake.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">They’re fake on purpose — so <code>SELECT *</code> hurts. You’ll feel bytes drop when we pick only useful columns. Then we delete this toy table.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Copies events and pads wide text columns so <code>SELECT *</code> really burns bytes vs a slim projection.</p>
@@ -326,6 +350,31 @@ FROM BIG_EVENTS;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Scenario 1 — Query fix: stop SELECT *</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-3" aria-label="SELECT * is the enemy">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">SELECT * is the enemy</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">SELECT * is shorter to type…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Shorter for you, longer for the engine. You dragged stuffing Marcus never charts. Ask only for columns you need.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Problem</h4>
         <p>Alex pulls every padded column for a 7-day window — TableScan hauls junk Marcus never charts.</p>
@@ -348,6 +397,31 @@ WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Scenario 2 — Filter that fights pruning</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-4" aria-label="Why not YEAR(date)?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Why not YEAR(date)?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">YEAR(EVENT_DATE) = 2026 feels natural.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Wrapping the date column can stop Snowflake from skipping whole shelves of data. Use a date range instead — same question, friendlier to pruning.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Pruning = skipping shelves that can’t match your filter.</p>
+    </section>
+
+
+
       <div class="explain">
         <h4>Problem</h4>
         <p><code>YEAR(EVENT_DATE)</code> / <code>MONTH(EVENT_DATE)</code> wraps the column — Snowflake can’t use min/max metadata as cleanly → more partitions opened.</p>
@@ -373,6 +447,31 @@ WHERE EVENT_DATE >= DATE_TRUNC('month', CURRENT_DATE())
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Scenario 3 — Alex’s board join: filter before join</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-5" aria-label="The CTE talk you asked for">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">The CTE talk you asked for</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why a CTE? My join already works…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Your join invited a <em>year</em> of events to the party. CTE <code>recent</code> invites only last week, <em>then</em> joins clients. Smaller party, same board answer. This is the habit.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Filter first, join second. Say it out loud.</p>
+    </section>
+
+
+
       <div class="explain">
         <h4>Problem</h4>
         <p>Join all ~400k events to clients, then aggregate — the join builds on a year of rows for a board chart that only needs recent activity.</p>
@@ -405,6 +504,31 @@ ORDER BY VOLUME DESC;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Scenario 4 — Prove it with metrics (not vibes)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-6" aria-label="Numbers not vibes">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">Numbers not vibes</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">“It felt faster” is not a status update.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">We read bytes from history and partitions from operator stats — or Query Profile pictures. Architects cite numbers.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>
@@ -453,6 +577,31 @@ ORDER BY PARTITIONS_SCANNED DESC NULLS LAST;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Scenario 5 — Automate size: dedicated board warehouse</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-7" aria-label="Who do you Slack to resize?">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">Who do you Slack to resize?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">So every morning I ping you to ALTER SIZE?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Never. Board work uses <code>WH_BANK_BOARD_S</code> — wakes when you run, sleeps when you stop. Daily toy queries stay on XS. I’m not your resize bot.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Problem this solves</h4>
         <p>
@@ -513,6 +662,31 @@ SHOW WAREHOUSES LIKE 'WH_BANK%';</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">8</div><div><h3>Cleanup — drop Lab 07-only fat table</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-07-step-8" aria-label="Cleanup — keep the useful table">
+      <p class="comic-kicker">Step 8 · coach</p>
+      <h2 class="comic-title">Cleanup — keep the useful table</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Delete everything?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Delete the fat toy. Keep <code>BIG_EVENTS</code> for clustering next lab. Keep the board warehouse for FinOps story.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>

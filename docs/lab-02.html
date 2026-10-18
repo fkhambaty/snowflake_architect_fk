@@ -71,7 +71,29 @@
       </figure>
     </div>
 
-    <!-- ========== TEACH FIRST ========== -->
+
+<section class="comic-strip" id="comic-02-open-0" aria-label="Jordan rebuilds the whole book every night">
+      <p class="comic-kicker">Episode 02 · Tired computer</p>
+      <h2 class="comic-title">Jordan rebuilds the whole book every night</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Every night I reload <em>all</em> transactions. Millions of rows. Slow. Expensive.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Imagine a bookmark. Last night you finished page Tuesday 2pm. Tonight start <em>after</em> the bookmark. That bookmark is a <strong>watermark</strong>. dbt incremental does that with MERGE.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Watermark = bookmark in the book of time.</p>
+    </section>
+<!-- ========== TEACH FIRST ========== -->
     <section class="teach">
       <h2>Teach first — the whole pipeline in one picture</h2>
       <p class="lede" style="font-size:1.05rem;margin-top:0">
@@ -118,49 +140,8 @@
           <div class="see-example">Day 2: rows 1006–1007 + update 1001</div>
         </div>
       </div>
-          <section class="comic-strip" id="comic-02a" aria-label="Jordan’s full refresh vs Elena’s bookmark">
-      <p class="comic-kicker">Episode 02 · Midnight rebuild</p>
-      <h2 class="comic-title">Jordan’s full refresh vs Elena’s bookmark</h2>
-      <div class="comic-row two">
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
-              </div>
-              <blockquote class="comic-bubble">Nightly we rebuild the whole ledger. Five million rows. Forty-five minutes. Credits cry.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Stop re-reading the whole book. Put a <strong>watermark</strong> on <code>updated_at</code> — tonight only process pages after last night’s bookmark. That’s dbt incremental MERGE.</blockquote>
-            </figure>
-      </div>
-      <p class="comic-caption">Watermark = bookmark. Incremental = only new/changed pages.</p>
-    </section>
 
-    <section class="comic-strip" id="comic-02b" aria-label="Alex asks the dangerous question">
-      <p class="comic-kicker">Whiteboard</p>
-      <h2 class="comic-title">Alex asks the dangerous question</h2>
-      <div class="comic-row two">
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face alex" role="img" aria-label="Alex"></div>
-                <div><span class="comic-name">Alex</span><span class="comic-role">Analyst</span></div>
-              </div>
-              <blockquote class="comic-bubble">So incremental is always cheaper and better?</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">No. Tiny tables, broken watermarks, weird deletes — full refresh can be safer. “Incremental always” is how juniors fail interviews.</blockquote>
-            </figure>
-      </div>
-      
-    </section>
+
 
 <figure class="viz-panel" style="margin-top:1rem">
         <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on BRONZE_LANDING.TXN_EVENTS" width="1600" height="900" loading="lazy" />
@@ -341,6 +322,31 @@ from {{ ref('stg_orders') }}
     <!-- ========== RUN STEPS ========== -->
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Wire dbt to Meridian Bank</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-02-step-1" aria-label="What is profiles.yml?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">What is profiles.yml?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is dbt inside Snowflake?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">dbt is a tool on your laptop (or CI) that <em>talks to</em> Snowflake. <code>profiles.yml</code> is the phone number + password so dbt can call Meridian Bank. Keep secrets out of git.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>profiles.yml = dbt’s login card</h4>
         <p>dbt runs as <code>ROLE_BANK_LAB_ADMIN</code>. Models land in <code>SILVER_CURATED</code>. Copy from <code>dbt_project/profiles.yml.example</code> → <code>profiles.yml</code> (keep passwords out of git).</p>
@@ -371,6 +377,31 @@ dbt debug</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Day 1 — create the main table at the dock</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-02-step-2" aria-label="Why create TXN_EVENTS by hand first?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Why create TXN_EVENTS by hand first?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Can’t dbt create the source too?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Today the “dock table” is already in Snowflake — like a truck already parked. dbt <em>reads</em> it as a source and builds cleaner tables. Lab 06 is how files become dock tables.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>TXN_EVENTS is the source of truth</h4>
         <p>dbt will not create this. Run this SQL in Snowsight first. Every later model is a lens on this table.</p>
@@ -404,6 +435,31 @@ SELECT 'day1' AS batch, COUNT(*) AS n FROM TXN_EVENTS;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>First dbt run — build view + fact</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-02-step-3" aria-label="First dbt run — what am I building?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">First dbt run — what am I building?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">View? Fact? Staging? I’m lost.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Two toys: a small clean <strong>view</strong> (stg) and a <strong>fact table</strong> that stores history. First run has no bookmark yet — so it loads everything once. That’s normal.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">First run = fill the shelf. Later runs = only new pages.</p>
+    </section>
+
+
+
       <div class="explain">
         <h4>What happens under the hood</h4>
         <p><code>is_incremental()</code> is false → watermark filter is omitted → all 5 staging rows load into a new table. Staging becomes a view.</p>
@@ -425,6 +481,31 @@ SELECT COUNT(*) AS rows_after_first_run FROM SILVER_CURATED.FCT_ORDERS_INCREMENT
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Day 2 — change the source, then prove the watermark</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-02-step-4" aria-label="Day 2 — prove the bookmark moved">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Day 2 — prove the bookmark moved</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I added new rows and changed one old row’s status.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Run dbt again. Incremental should MERGE only changes — not rebuild the universe. If the changed order updates and new ids appear, your watermark brain works.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>This is the whole point of the lab</h4>
         <p>Two inserts + one update with a <em>newer</em> <code>UPDATED_AT</code>. Second run MERGEs only those rows — history is not rebuilt.</p>

@@ -10,7 +10,7 @@ This course exists so Elena clears a **Snowflake Architect + dbt** interview —
 2. **BEFORE / AFTER** screens (`.ba-grid` + `labXX-before.jpg` / `labXX-after.jpg`) — first thing after Solution  
 3. Optional extra concept art (`.viz-panel` JPG/SVG) **after** see-cards — not instead of BEFORE/AFTER  
 4. **See it** cards (`.see-grid` / `.see-card`) — concrete examples, not Word/Layman/Metaphor dictionaries  
-5. **Comic strips** (`.comic-strip`) — Meridian cast conversations right after BEFORE/AFTER; faces from `cast-sheet.jpg`. Real dialogue that teaches the concept (Elena correcting Alex, Marcus asking cost, etc.). Re-run `node scripts/inject_comics.js` or hand-edit strips; keep cast voice consistent (`docs/CAST_VISUAL.md`).  
+5. **Comic strips** (`.comic-strip`) — Meridian cast dialogue **throughout** the lab: opener after BEFORE/AFTER **and** a coach strip (`.comic-step`) before each major step. Faces from `cast-sheet.jpg`. Alex asks like a learner; Elena always explains *why* in plain words. Re-run `node scripts/inject_comics.js`. Cast bible: `docs/CAST_VISUAL.md`.  
 6. Contrast visuals like Lab 03 “two different problems” / `.flow-pipeline` when ideas get mixed up  
 7. **Small code chunks** (≤12 lines) — *what / why / what you should see*  
 8. **Interviewer presses further** (`.drill-wrap` / `#interview-drill`) — **required**, before Elena wrap-up  

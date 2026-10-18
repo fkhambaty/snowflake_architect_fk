@@ -71,35 +71,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-15" aria-label="Who wakes dbt — hope or a DAG?">
+
+<section class="comic-strip" id="comic-15-open-0" aria-label="Hope is not an orchestrator">
       <p class="comic-kicker">Episode 15 · 2 a.m.</p>
-      <h2 class="comic-title">Who wakes dbt — hope or a DAG?</h2>
-      <div class="comic-row three">
+      <h2 class="comic-title">Hope is not an orchestrator</h2>
+      <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-                <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer</span></div>
-              </div>
-              <blockquote class="comic-bubble">Models are in git. Overnight gold still depends on my laptop cron. That’s… not a platform.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">dbt models exist. Overnight gold still depends on my laptop.</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">CDC stays on Tasks. File → bronze → dbt silver/gold → Slack is Airflow-shaped. Don’t wrap every Task in Airflow. One writer per table.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-                <div><span class="comic-name">Marcus</span><span class="comic-role">COO</span></div>
-              </div>
-              <blockquote class="comic-bubble">When gold is late, who gets paged? Put a name on it.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Something must wake the graph. Tasks for Snowflake CDC. Airflow when files + dbt + Slack share one night story. Don’t wrap every Task in Airflow.</blockquote>
+    </figure>
       </div>
       
     </section>
-
 <section class="teach">
       <h2>See it — three different jobs</h2>
       <div class="see-grid three">
@@ -153,6 +146,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Read the Meridian night DAG (no cluster required)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-15-step-1" aria-label="Why a whiteboard DAG?">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Why a whiteboard DAG?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">We don’t even have Airflow installed…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Interviewers care you can <em>draw</em> the night: wait for file → load bronze → dbt silver/gold → test → notify. Tools change; the story stays.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this is</h4>
         <p>
@@ -181,6 +199,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Prove the dbt piece locally (same as Lab 04B)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-15-step-2" aria-label="Run the dbt middle">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Run the dbt middle</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">So Airflow just calls this?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Yes — with retries and alerts. Your hands run the same command Airflow would. Muscle memory > mythology.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Airflow’s middle operators are just this command with retries. Run it so your mouth and hands agree.</p>
@@ -195,6 +238,31 @@ dbt test --select gold_client_summary</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Contrast — when Elena keeps it in Snowflake Tasks</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-15-step-3" aria-label="Don’t double-orchestrate CDC">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Don’t double-orchestrate CDC</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Should Airflow also trigger the Lab 05 task?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Usually no. Task already wakes on stream data. Two bosses writing one table = two truths. One writer per table.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>Remember Lab 05</h4>
         <p>

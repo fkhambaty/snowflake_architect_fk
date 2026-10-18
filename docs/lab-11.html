@@ -69,35 +69,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-11" aria-label="Share is not DR">
-      <p class="comic-kicker">Episode 11 · Region on fire</p>
-      <h2 class="comic-title">Share is not DR</h2>
-      <div class="comic-row three">
+
+<section class="comic-strip" id="comic-11-open-0" aria-label="Share is not a fire escape">
+      <p class="comic-kicker">Episode 11 · Fire drill</p>
+      <h2 class="comic-title">Share is not a fire escape</h2>
+      <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-                <div><span class="comic-name">Marcus</span><span class="comic-role">COO</span></div>
-              </div>
-              <blockquote class="comic-bubble">We share with Nora — so we’re DR-ready, right?</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">We share with Nora — so we’re DR-ready?</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">No. If our region dies, her window dies too. Share ≠ secondary. Clone ≠ secondary. Replication + failover group + a drilled runbook = DR.</blockquote>
-            </figure>
-        <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face sam" role="img" aria-label="Sam"></div>
-                <div><span class="comic-name">Sam</span><span class="comic-role">Compliance</span></div>
-              </div>
-              <blockquote class="comic-bubble">Write RPO and RTO in numbers Marcus can take to the board — lag vs people-minutes.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">If our region dies, her window dies too. Share ≠ secondary. Clone ≠ secondary. Replication + failover + practice = DR.</blockquote>
+    </figure>
       </div>
       
     </section>
-
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>Three tools — three business questions. Don’t swap them in the interview.</p>
@@ -227,6 +220,31 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Set session (Elena’s lab badge)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-11-step-1" aria-label="RPO vs RTO baby words">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">RPO vs RTO baby words</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Board wants numbers.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble"><strong>RPO</strong> = how much data we might lose (lag). <strong>RTO</strong> = how long until people work again (our runbook speed). Different clocks.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Uses <code>ROLE_BANK_LAB_ADMIN</code> and the cheap warehouse — same as other labs. <code>SHOW</code> commands are read-only catalog checks.</p>
@@ -244,6 +262,31 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>SHOW replication databases</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-11-step-2" aria-label="What we can show on trial">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">What we can show on trial</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I can’t failover a personal trial…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Honest answer: show the commands and the plan; production drills the promotion. Don’t fake a completed DR program.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Lists databases in <em>this</em> account that participate in replication (as primary or secondary). Empty on a fresh trial is normal — you still explain what production would show.</p>

@@ -1,23 +1,25 @@
 /**
- * Inject Meridian cast comic strips into Labs 00–15.
- * Run: node scripts/inject_comics.js
+ * Meridian comics throughout labs — opener + a coach strip before each step.
+ * Plain language: Alex asks, Elena explains WHY. Run: node scripts/inject_comics.js
  */
 const fs = require("fs");
 const path = require("path");
 
+const META = {
+  elena: ["Elena", "Architect — explains why"],
+  marcus: ["Marcus", "COO — business pressure"],
+  alex: ["Alex", "Analyst — still learning"],
+  jordan: ["Jordan", "Engineer — builds pipelines"],
+  sam: ["Sam", "Compliance — protects data"],
+  nora: ["Nora", "Partner — needs a safe window"],
+  dev: ["Dev", "QA — needs a safe copy"]
+};
+
 function face(who) {
-  const meta = {
-    elena: ["Elena", "Architect"],
-    marcus: ["Marcus", "COO"],
-    alex: ["Alex", "Analyst"],
-    jordan: ["Jordan", "Engineer"],
-    sam: ["Sam", "Compliance"],
-    nora: ["Nora", "Partner"],
-    dev: ["Dev", "QA"]
-  }[who];
+  const [n, r] = META[who];
   return `<div class="comic-who">
-        <div class="comic-face ${who}" role="img" aria-label="${meta[0]}"></div>
-        <div><span class="comic-name">${meta[0]}</span><span class="comic-role">${meta[1]}</span></div>
+        <div class="comic-face ${who}" role="img" aria-label="${n}"></div>
+        <div><span class="comic-name">${n}</span><span class="comic-role">${r}</span></div>
       </div>`;
 }
 
@@ -28,315 +30,713 @@ function panel(who, html) {
     </figure>`;
 }
 
-function strip(id, kicker, title, cols, panels, caption) {
-  const rowClass = cols === 3 ? "three" : cols === 1 ? "" : "two";
-  return `    <section class="comic-strip" id="${id}" aria-label="${title.replace(/"/g, "")}">
+function strip({ id, kicker, title, panels, caption, mini }) {
+  const cols = panels.length >= 3 ? "three" : panels.length === 1 ? "" : "two";
+  const cls = mini ? "comic-strip comic-step" : "comic-strip";
+  return `<section class="${cls}" id="${id}" aria-label="${title.replace(/"/g, "")}">
       <p class="comic-kicker">${kicker}</p>
       <h2 class="comic-title">${title}</h2>
-      <div class="comic-row ${rowClass}">
-${panels.map((p) => "        " + p.replace(/\n/g, "\n        ")).join("\n")}
+      <div class="comic-row ${cols}">
+${panels.map(([w, t]) => "        " + panel(w, t)).join("\n")}
       </div>
       ${caption ? `<p class="comic-caption">${caption}</p>` : ""}
-    </section>
-
-`;
+    </section>`;
 }
 
-/** labId -> array of HTML strip sections (injected after first .ba-grid) */
-const comics = {
-  "00": [
-    strip(
-      "comic-00",
-      "Episode 00 · Monday morning",
-      "Marcus wants a home. Elena pours concrete.",
-      2,
-      [
-        panel("marcus", "We have CSV chaos and three Slack channels named “final_v2”. Where does Meridian’s data <em>live</em>?"),
-        panel("elena", "In one building: <code>MERIDIAN_BANK</code>. Rooms for bronze, silver, gold. Engine <code>WH_BANK_XS</code> that sleeps when idle — Finance will thank us.")
+/** @type {Record<string, { open: object[], steps: Record<string, object> }>} */
+const L = {};
+
+function S(title, panels, caption) {
+  return { title, panels, caption };
+}
+
+// ——— Lab 00 ———
+L["00"] = {
+  open: [
+    {
+      kicker: "Episode 00 · Start here",
+      title: "Marcus is lost. Elena draws a building.",
+      panels: [
+        ["marcus", "I hear “data platform” and see twenty random tables. Where does Meridian’s data <em>live</em>?"],
+        ["elena", "Think of a building. Database = the building name <code>MERIDIAN_BANK</code>. Schemas = rooms. Warehouse = the engine that runs when we ask questions — then sleeps so we don’t burn money."]
       ],
-      "Remember the building metaphor — schemas are rooms, warehouse is the engine."
-    )
+      caption: "If you remember only one picture today: building → rooms → engine."
+    }
   ],
-  "01": [
-    strip(
-      "comic-01a",
-      "Episode 01 · Vault vs window",
-      "Alex finds SSN. Sam finds Elena.",
-      3,
-      [
-        panel("alex", "I just SELECT * from clients for a board deck… wait. Is that a social security number?!"),
-        panel("sam", "If Alex can see SSN, Meridian fails the exam with the regulator. Elena — doors. Now."),
-        panel("elena", "Job badge <code>FR_ANALYST</code>. Key-ring <code>AR_SILVER_CURATED_READ</code>. Window view — not the vault. And Alex: hang up your secondary coats.")
-      ],
-      "Secondary roles = wearing two coats. USE SECONDARY ROLES NONE hangs the lab-admin coat."
-    ),
-    strip(
-      "comic-01b",
-      "Same day · proof",
-      "Elena makes Alex prove it.",
-      2,
-      [
-        panel("alex", "UI says I’m FR_ANALYST. Vault still opens? Magic?"),
-        panel("elena", "Not magic — leftovers. Run <code>USE SECONDARY ROLES NONE</code>, then try again. Theater isn’t least privilege.")
-      ]
-    )
-  ],
-  "02": [
-    strip(
-      "comic-02a",
-      "Episode 02 · Midnight rebuild",
-      "Jordan’s full refresh vs Elena’s bookmark",
-      2,
-      [
-        panel("jordan", "Nightly we rebuild the whole ledger. Five million rows. Forty-five minutes. Credits cry."),
-        panel("elena", "Stop re-reading the whole book. Put a <strong>watermark</strong> on <code>updated_at</code> — tonight only process pages after last night’s bookmark. That’s dbt incremental MERGE.")
-      ],
-      "Watermark = bookmark. Incremental = only new/changed pages."
-    ),
-    strip(
-      "comic-02b",
-      "Whiteboard",
-      "Alex asks the dangerous question",
-      2,
-      [
-        panel("alex", "So incremental is always cheaper and better?"),
-        panel("elena", "No. Tiny tables, broken watermarks, weird deletes — full refresh can be safer. “Incremental always” is how juniors fail interviews.")
-      ]
-    )
-  ],
-  "03": [
-    strip(
-      "comic-03",
-      "Episode 03 · Same SELECT, two truths",
-      "Sam needs email. Alex gets stars.",
-      3,
-      [
-        panel("alex", "Why does Sam see real emails and I see <code>***@…</code> on the same table?!"),
-        panel("sam", "Because I’m FR_COMPLIANCE. Masking is the glass disguise. RAP is which countries I’m allowed to walk."),
-        panel("elena", "One shelf. Two policies. No US_CLIENTS / CA_CLIENTS copy-paste twins. Twins drift. Policies don’t.")
-      ]
-    )
-  ],
-  "04": [
-    strip(
-      "comic-04a",
-      "Episode 04 · Lost COO",
-      "Marcus points BI at the dock",
-      2,
-      [
-        panel("marcus", "Alex’s board number doesn’t match Risk. Which table is “the truth”?"),
-        panel("elena", "You pointed Looker at <code>BRONZE_LANDING</code> — the truck dock. Gold is <code>GOLD_MART</code>. Silver is cleaned shelves. Stop shopping in the loading bay.")
-      ],
-      "Bronze = dock · Silver = shelves · Gold = report wall."
-    ),
-    strip(
-      "comic-04b",
-      "Part B · Git owns the floors",
-      "Jordan brings dbt to the same path",
-      2,
-      [
-        panel("jordan", "Cool CTAS demo. In prod I’m not hand-running Elena’s worksheet every night."),
-        panel("elena", "Agreed. Same floors — <code>silver_txns</code> → <code>SILVER_CURATED</code>, <code>gold_client_summary</code> → <code>GOLD_MART</code>. Folders aren’t schemas. dbt maps to floors.")
-      ]
-    )
-  ],
-  "05": [
-    strip(
-      "comic-05a",
-      "Episode 05 · Hand-carrying",
-      "Jordan’s calendar vs a notebook",
-      2,
-      [
-        panel("jordan", "I INSERT…SELECT new txns every hour. When I’m in meetings, silver is stale."),
-        panel("elena", "Stream = change notebook. Task = worker that wakes when the notebook has pages. Then SUSPEND the lab worker so credits don’t party overnight.")
-      ]
-    ),
-    strip(
-      "comic-05b",
-      "Fork in the hallway",
-      "Stream+task vs dynamic table",
-      3,
-      [
-        panel("jordan", "Can’t we just use a dynamic table and delete the task?"),
-        panel("elena", "Different job. DT = declare SELECT + lag, Snowflake refreshes. Stream+task = <em>you</em> write the CDC SQL and can audit every line."),
-        panel("marcus", "I don’t care about the toy names. I care who owns freshness and who owns the bill.")
-      ],
-      "Click the Lab 05 picker — same fork, visual lanes."
-    )
-  ],
-  "06": [
-    strip(
-      "comic-06",
-      "Episode 06 · Night truck bay",
-      "Files don’t jump into tables",
-      2,
-      [
-        panel("jordan", "Partner dropped a CSV. Can I COPY straight into gold so Alex is happy by 8am?"),
-        panel("elena", "No. Stage in <code>FILE_IN</code> first — truck bay. Then COPY into <code>BRONZE_LANDING</code>. Gold is a product, not a loading dock. Snowpipe = the bay door that opens itself.")
-      ]
-    )
-  ],
-  "07": [
-    strip(
-      "comic-07a",
-      "Episode 07 · Board deck is dying",
-      "Alex wrote SELECT *. Elena smells blood.",
-      2,
-      [
-        panel("alex", "Board in two hours. Query crawls. Buy a bigger warehouse?!"),
-        panel("elena", "First: stop <code>SELECT *</code>. You hauled three PAD columns Marcus never charts. Profile the bytes — then we talk engines.")
-      ],
-      "This is the CTE / filter-early moment — shrink what enters the join."
-    ),
-    strip(
-      "comic-07b",
-      "Whiteboard · the CTE talk",
-      "Why filter before the join",
-      2,
-      [
-        panel("alex", "Why wrap it in a CTE? My join to clients already works… eventually."),
-        panel("elena", "Because you joined a <em>year</em> of events, then hoped. CTE <code>recent</code> keeps last 7 days first — fewer rows into the join. Same answer, less pain. That’s the habit interviewers listen for.")
-      ]
-    ),
-    strip(
-      "comic-07c",
-      "Ops · no Slack resize rota",
-      "Marcus asks who Alex pings at 7am",
-      3,
-      [
-        panel("marcus", "So every board morning Alex Slacks you to ALTER SIZE?"),
-        panel("elena", "Never. Board path uses <code>WH_BANK_BOARD_S</code> — auto-resume, auto-suspend. Daily work stays on XS."),
-        panel("alex", "…so I just point Looker at BOARD_S and stop texting Elena. Got it.")
-      ]
-    )
-  ],
-  "08": [
-    strip(
-      "comic-08",
-      "Episode 08 · Messy library",
-      "Last 7 days was scanning a year",
-      2,
-      [
-        panel("alex", "I filtered last 7 days. Profile still opened half the shelves?!"),
-        panel("elena", "Dates were scattered across micro-partitions — random piles. <code>CLUSTER BY (EVENT_DATE)</code> re-shelves so prune can skip. Search optimization is for ID lookups — different tool.")
-      ]
-    )
-  ],
-  "09": [
-    strip(
-      "comic-09",
-      "Episode 09 · Undo button",
-      "Dev wants a twin. Marcus hears “DR.”",
-      3,
-      [
-        panel("dev", "I need a prod-like sandbox today without breaking Alex."),
-        panel("elena", "CLONE — same-account fast fork. Not geo-DR. Time Travel for yesterday’s rows. UNDROP if someone DROP TABLE’d."),
-        panel("marcus", "Clone is not our disaster plan. Say that louder for the people in the back.")
-      ]
-    )
-  ],
-  "10": [
-    strip(
-      "comic-10",
-      "Episode 10 · Partner window",
-      "Nora wants data. Not a CSV dump truck.",
-      2,
-      [
-        panel("nora", "Can you email us the ledger every Friday? Our analysts are drowning in attachments."),
-        panel("elena", "Secure share + secure view — live window, minimum columns. You pay your warehouse. We don’t ship the vault. Friday dump trucks are how PII grows legs.")
-      ]
-    )
-  ],
-  "11": [
-    strip(
-      "comic-11",
-      "Episode 11 · Region on fire",
-      "Share is not DR",
-      3,
-      [
-        panel("marcus", "We share with Nora — so we’re DR-ready, right?"),
-        panel("elena", "No. If our region dies, her window dies too. Share ≠ secondary. Clone ≠ secondary. Replication + failover group + a drilled runbook = DR."),
-        panel("sam", "Write RPO and RTO in numbers Marcus can take to the board — lag vs people-minutes.")
-      ]
-    )
-  ],
-  "12": [
-    strip(
-      "comic-12",
-      "Episode 12 · Silent rename",
-      "Jordan “cleaned” a column. Looker cried.",
-      2,
-      [
-        panel("jordan", "Renamed a staging column. CI was green. Why is Alex’s tile NULL?"),
-        panel("elena", "You contracted the wrong boundary. Contract <em>published</em> marts — Alex’s API — not every staging view. Slim CI still needs a fresh manifest or you’re deferring to yesterday’s fantasy.")
-      ]
-    )
-  ],
-  "13": [
-    strip(
-      "comic-13",
-      "Episode 13 · Surprise invoice",
-      "Finance forwards pain",
-      3,
-      [
-        panel("marcus", "Who burned the weekend credits on WH_BANK_XS?!"),
-        panel("elena", "ACCOUNT_USAGE will tell us — with lag. Meanwhile RM_BANK_LAB suspends at quota so next weekend can’t. BOARD_S is a separate cost center."),
-        panel("jordan", "I’ll stop leaving worksheets running. …After coffee.")
-      ]
-    )
-  ],
-  "14": [
-    strip(
-      "comic-14",
-      "Episode 14 · Interview chair",
-      "No laptop. Just Elena’s mouth.",
-      2,
-      [
-        panel("marcus", "(as interviewer) Walk me through how Meridian keeps Alex off SSN — and what breaks if you skip secondary-role NONE."),
-        panel("elena", "Context → decision → proof → outcome. FR_/AR_, window view, USE SECONDARY ROLES NONE. If I blank on the coat trick, I don’t get the offer.")
-      ],
-      "Open each lab’s comic + Interviewer presses further. Say it out loud."
-    )
-  ],
-  "15": [
-    strip(
-      "comic-15",
-      "Episode 15 · 2 a.m.",
-      "Who wakes dbt — hope or a DAG?",
-      3,
-      [
-        panel("jordan", "Models are in git. Overnight gold still depends on my laptop cron. That’s… not a platform."),
-        panel("elena", "CDC stays on Tasks. File → bronze → dbt silver/gold → Slack is Airflow-shaped. Don’t wrap every Task in Airflow. One writer per table."),
-        panel("marcus", "When gold is late, who gets paged? Put a name on it.")
-      ]
-    )
-  ]
+  steps: {
+    "1": S("Why a tiny warehouse?", [
+      ["alex", "Why not a huge warehouse so everything is fast?"],
+      ["elena", "Big engines cost more every second they’re on. We start tiny (<code>XSMALL</code>) and only go bigger when a real query proves we need it. Sleep after 60 seconds idle."]
+    ], "AUTO_SUSPEND = the engine turns off when nobody is driving."),
+    "2": S("Why create a special role for Elena?", [
+      ["alex", "Can’t we just use ACCOUNTADMIN for everything? It’s easier."],
+      ["elena", "ACCOUNTADMIN is the master key to the whole bank. You don’t wear it to make a table. Elena’s badge <code>ROLE_BANK_LAB_ADMIN</code> is for building labs — safer habit for interviews too."]
+    ]),
+    "3": S("Why grant the warehouse to lab admin?", [
+      ["jordan", "I created the warehouse as mayor. Why grant it again?"],
+      ["elena", "Creating it doesn’t auto-share it. Grant = “Elena’s badge may use this engine.” Later she can pass that to Alex’s badge too."]
+    ]),
+    "4": S("Why WITH GRANT OPTION?", [
+      ["alex", "What’s that extra WITH GRANT OPTION words?"],
+      ["elena", "It means Elena can <em>pass</em> the warehouse to other badges (Alex, Jordan). Without it she can drive but can’t hand keys to the team."]
+    ]),
+    "5": S("Why give Elena the database?", [
+      ["marcus", "Who owns MERIDIAN_BANK?"],
+      ["elena", "Lab admin owns it so she can create rooms and tables without asking the mayor every time. Mayor still owns account-wide safety switches."]
+    ]),
+    "6": S("Why attach the badge to me?", [
+      ["alex", "I logged in. Why doesn’t the badge stick automatically?"],
+      ["elena", "Badges are clipped onto users. This step clips <code>ROLE_BANK_LAB_ADMIN</code> onto <em>you</em> so you can wear it in Snowsight."]
+    ]),
+    "7": S("Why smoke-test create/drop role?", [
+      ["jordan", "Seems pointless — create a temp role then drop it?"],
+      ["elena", "It’s a fire drill: proves Elena is allowed to print new badges. If this fails, Lab 01 RBAC will fail too. Fix privileges now."]
+    ]),
+    "8": S("Why so many rooms?", [
+      ["alex", "BRONZE, SILVER, GOLD, RISK, FILE_IN… my head hurts."],
+      ["elena", "Same building, different jobs. Dock vs clean shelves vs board reports vs rules vs file truck bay. You’ll use each room when the story needs it — not all today."]
+    ], "You don’t need to memorize every room yet — just that rooms have names with jobs.")
+  }
 };
 
-const docs = path.join(__dirname, "..", "docs");
-let n = 0;
-
-for (const [lab, strips] of Object.entries(comics)) {
-  const file = path.join(docs, `lab-${lab}.html`);
-  let html = fs.readFileSync(file, "utf8");
-  const block = strips.join("");
-
-  // Remove prior injected comics
-  html = html.replace(/\s*<section class="comic-strip"[\s\S]*?<\/section>\s*/g, "\n");
-
-  if (html.includes('class="ba-grid"')) {
-    html = html.replace(
-      /(<\/div>\s*\n\s*)(<section class="teach"|<figure class="viz-panel"|<section class="teach cdc|<div class="story"|<article class="step")/,
-      `$1${block}$2`
-    );
-  } else {
-    console.error("no ba-grid", file);
-    continue;
+// ——— Lab 01 ———
+L["01"] = {
+  open: [
+    {
+      kicker: "Episode 01 · Scary SELECT",
+      title: "Alex saw SSN. Sam is not happy.",
+      panels: [
+        ["alex", "I only wanted names for a slide… why is there a social security number on my screen?!"],
+        ["sam", "If analysts can see SSN, we fail. Elena — lock the vault. Give Alex a window."],
+        ["elena", "Two ideas only: <strong>job badge</strong> (who you are) and <strong>key-ring</strong> (what you can open). Alex never holds the vault key-ring."]
+      ],
+      caption: "Vault = scary table. Window = safe view. Badge ≠ keys."
+    }
+  ],
+  steps: {
+    "0": S("Skip if Lab 00 already worked", [
+      ["jordan", "Do I always run this repair?"],
+      ["elena", "Only if creating roles failed. It’s the mayor stamping “Elena may print badges.” Skip when Lab 00 smoke already passed."]
+    ]),
+    "1": S("Why check the vault first?", [
+      ["alex", "Why are we looking at CLIENTS if I shouldn’t use it?"],
+      ["elena", "So you see the danger exists. Later the proof is: same you, Alex badge, vault blocked. Without this table the story has no villain."]
+    ]),
+    "2": S("What are FR_ and AR_ in baby words?", [
+      ["alex", "These names look like alphabet soup."],
+      ["elena", "<code>FR_</code> = job badge (Analyst, Engineer…). <code>AR_</code> = key-ring of permissions. We print blank badges and empty rings first — then hang keys — then clip rings onto badges."]
+    ], "Order matters: print → hang keys → clip onto jobs. Don’t skip ahead."),
+    "3": S("Why give jobs the warehouse?", [
+      ["alex", "I have a badge. Why can’t I run SQL yet?"],
+      ["elena", "Badge without engine = ID card in a dark building. USAGE on <code>WH_BANK_XS</code> is permission to turn the lights on."]
+    ]),
+    "4": S("Building key vs floor key?", [
+      ["alex", "USAGE on database AND schema… isn’t that the same?"],
+      ["elena", "Building door + floor door. Database USAGE = enter the building. Schema USAGE = enter that floor. You still need SELECT to open a cabinet (table)."]
+    ]),
+    "5": S("Why SELECT on the key-ring not on Alex?", [
+      ["jordan", "Faster to GRANT SELECT TO FR_ANALYST directly?"],
+      ["elena", "Then every new table means editing every job. Hang SELECT on the key-ring once; clip the ring to jobs. That’s how banks scale."]
+    ]),
+    "6": S("Clip rings onto badges", [
+      ["alex", "So my analyst badge gets the silver key-ring only?"],
+      ["elena", "Yes. Jordan gets bronze dock keys. Sam gets PII keys. Your human user will wear all three badges later only to <em>test</em> — Alex the person in real life would wear one job."]
+    ]),
+    "7": S("Why grant all three jobs to me?", [
+      ["marcus", "Isn’t that insecure?"],
+      ["elena", "On a trial you’re one human playing three costumes. In prod, Alex the employee only gets FR_ANALYST. Here we grant all three so you can switch costumes and prove locks."]
+    ]),
+    "8": S("What is the window?", [
+      ["alex", "Is a VIEW a copy of the table?"],
+      ["elena", "No — it’s a saved SELECT. Like a window that only shows safe columns. The vault still holds SSN; the window simply doesn’t look at that cabinet."]
+    ]),
+    "9": S("THE important proof — hang the coat", [
+      ["alex", "UI says FR_ANALYST but vault still opens. Snowflake broken?"],
+      ["elena", "You’re still wearing a second coat — lab admin. Run <code>USE SECONDARY ROLES NONE</code>. Now only Alex’s coat. Vault fails. Window works. Say this in every interview."]
+    ], "If you remember one thing from Lab 01: SECONDARY ROLES NONE."),
+    "10": S("Jordan and Sam costumes", [
+      ["jordan", "I should open the vault — that’s my dock."],
+      ["sam", "And I need PII for audits — different key-ring."],
+      ["elena", "Same pattern: wear the job, hang secondary coats, prove what opens. Three costumes, three truths."]
+    ]),
+    "11": S("Why smoke again?", [
+      ["alex", "We already tested…"],
+      ["elena", "Smoke = quick checklist that badges and grants still stick after a long lab. Two minutes now beats debugging Lab 03 later."]
+    ])
   }
+};
 
-  fs.writeFileSync(file, html);
-  n++;
-  console.log("comics → lab-" + lab, strips.length, "strip(s)");
+// ——— Lab 02 ———
+L["02"] = {
+  open: [
+    {
+      kicker: "Episode 02 · Tired computer",
+      title: "Jordan rebuilds the whole book every night",
+      panels: [
+        ["jordan", "Every night I reload <em>all</em> transactions. Millions of rows. Slow. Expensive."],
+        ["elena", "Imagine a bookmark. Last night you finished page Tuesday 2pm. Tonight start <em>after</em> the bookmark. That bookmark is a <strong>watermark</strong>. dbt incremental does that with MERGE."]
+      ],
+      caption: "Watermark = bookmark in the book of time."
+    }
+  ],
+  steps: {
+    "1": S("What is profiles.yml?", [
+      ["alex", "Is dbt inside Snowflake?"],
+      ["elena", "dbt is a tool on your laptop (or CI) that <em>talks to</em> Snowflake. <code>profiles.yml</code> is the phone number + password so dbt can call Meridian Bank. Keep secrets out of git."]
+    ]),
+    "2": S("Why create TXN_EVENTS by hand first?", [
+      ["jordan", "Can’t dbt create the source too?"],
+      ["elena", "Today the “dock table” is already in Snowflake — like a truck already parked. dbt <em>reads</em> it as a source and builds cleaner tables. Lab 06 is how files become dock tables."]
+    ]),
+    "3": S("First dbt run — what am I building?", [
+      ["alex", "View? Fact? Staging? I’m lost."],
+      ["elena", "Two toys: a small clean <strong>view</strong> (stg) and a <strong>fact table</strong> that stores history. First run has no bookmark yet — so it loads everything once. That’s normal."]
+    ], "First run = fill the shelf. Later runs = only new pages."),
+    "4": S("Day 2 — prove the bookmark moved", [
+      ["jordan", "I added new rows and changed one old row’s status."],
+      ["elena", "Run dbt again. Incremental should MERGE only changes — not rebuild the universe. If the changed order updates and new ids appear, your watermark brain works."]
+    ])
+  }
+};
+
+// ——— Lab 03 ———
+L["03"] = {
+  open: [
+    {
+      kicker: "Episode 03 · Same table, two answers",
+      title: "Why Alex sees stars and Sam sees email",
+      panels: [
+        ["alex", "We query the same table. Sam sees real email. I see <code>***@…</code>. How?!"],
+        ["elena", "Two stickers on the glass: <strong>masking</strong> = disguise a column. <strong>Row access</strong> = hide whole rows (countries). Same shelf. Rules change what each badge sees."]
+      ],
+      caption: "Masking = cover the number on a jersey. RAP = which players leave the locker room."
+    }
+  ],
+  steps: {
+    "0": S("Only if policies won’t create", [
+      ["jordan", "CREATE MASKING POLICY failed…"],
+      ["elena", "Mayor must allow Elena to apply policies. Same privilege-repair idea as Lab 00 — skip if Lab 00 already stamped it."]
+    ]),
+    "1": S("Why a RISK_CTRL room?", [
+      ["alex", "Another schema? My brain is full…"],
+      ["elena", "Think “rulebook office.” Policies live in <code>RISK_CTRL</code> so rules aren’t mixed into Alex’s report tables. Session first so SQL knows which building."]
+    ]),
+    "2": S("Why a governed copy of clients?", [
+      ["jordan", "Why not put policies on BRONZE_LANDING.CLIENTS?"],
+      ["elena", "We could. Today we make <code>CLIENTS_GOV</code> so Lab 01 vault demos stay simple and this lab has a clean practice shelf."]
+    ]),
+    "3": S("What is masking in baby words?", [
+      ["alex", "Is it encrypting the email?"],
+      ["elena", "Not encryption. It’s a rule: “If you’re Sam’s badge, show real email; else show stars.” Data stays; the <em>answer</em> changes by badge."]
+    ]),
+    "4": S("What is the entitlement list?", [
+      ["sam", "Who decides which countries Alex may see?"],
+      ["elena", "A small mapping table — badge → allowed countries. RAP will read that list. It’s the guest list for the party."]
+    ]),
+    "5": S("What is RAP?", [
+      ["alex", "Masking already hid email. Why more?"],
+      ["elena", "Masking hides a <em>field</em>. RAP hides <em>rows</em>. Without RAP Alex still sees customers in countries he shouldn’t — even with starred emails."]
+    ]),
+    "6": S("Why attach both rules?", [
+      ["jordan", "I created the policies. Nothing changed on SELECT…"],
+      ["elena", "Creating the rulebook ≠ sticking it on the shelf. ALTER TABLE attaches masking + RAP. Without attach, rules sit in a drawer."]
+    ]),
+    "7": S("Why grant read to Alex and Sam?", [
+      ["alex", "I have FR_ANALYST — why more grants?"],
+      ["elena", "Policies change what you see; you still need SELECT on the shelf. We hang read on the key-rings so both costumes can query."]
+    ]),
+    "8": S("Proof as Alex — coats off", [
+      ["sam", "Show me Alex is limited."],
+      ["elena", "Wear FR_ANALYST, <code>USE SECONDARY ROLES NONE</code>, SELECT. Stars on email + fewer countries. If vault coat still on, the demo lies."]
+    ]),
+    "9": S("Proof as Sam — same SQL", [
+      ["alex", "We change the query for Sam?"],
+      ["elena", "No — identical SELECT. Only the badge changes. That’s the whole point of policies."]
+    ])
+  }
+};
+
+// ——— Lab 04 ———
+L["04"] = {
+  open: [
+    {
+      kicker: "Episode 04 · Wrong floor",
+      title: "Marcus shopped in the loading dock",
+      panels: [
+        ["marcus", "Alex’s board number doesn’t match Risk. Who’s lying?"],
+        ["elena", "Alex pointed the dashboard at the <strong>dock</strong> (<code>BRONZE_LANDING</code>). Board numbers should come from the <strong>report wall</strong> (<code>GOLD_MART</code>). Middle floor = cleaned shelves (<code>SILVER_CURATED</code>)."]
+      ],
+      caption: "Dock → shelves → report wall. Don’t skip."
+    }
+  ],
+  steps: {
+    "1": S("Session — same as always", [
+      ["alex", "Why repeat USE ROLE every lab?"],
+      ["elena", "Snowsight forgets your costume between worksheets. We put the badge and engine on again so SQL doesn’t fail for mysterious reasons."]
+    ]),
+    "2": S("Why a GOLD_MART room?", [
+      ["jordan", "Can’t gold tables live in silver schema?"],
+      ["elena", "They can — but separate rooms make permissions and mental models easier. Alex’s dashboards point at gold. Engineers live in silver. Clean story for interviews."]
+    ]),
+    "3": S("What did we change from bronze?", [
+      ["alex", "It’s almost the same SELECT…"],
+      ["elena", "Almost — we UPPER(status) so “paid/PAID” become one spelling, and we drop negative amounts so board math isn’t garbage. Silver = rules applied."]
+    ]),
+    "4": S("Why aggregate for gold?", [
+      ["marcus", "I want one number per client for the deck."],
+      ["elena", "That’s gold’s job: counts and lifetime value. Gold reads silver — never jumps back to the messy dock."]
+    ]),
+    "5": S("Why count each layer?", [
+      ["alex", "Just to see numbers?"],
+      ["elena", "To feel the funnel: dock has many rows → silver maybe fewer → gold is one row per client. If gold > silver, something’s wrong."]
+    ]),
+    "6": S("Why dbt after CTAS?", [
+      ["jordan", "We already built the tables by hand…"],
+      ["elena", "Hand SQL proves the floors. dbt is how we ship the same floors from git every night. Interviewers want both: pattern + tool."]
+    ], "Folders on disk ≠ Snowflake room names."),
+    "7": S("Prove dbt wrote the rooms", [
+      ["alex", "How do I know dbt didn’t invent a fourth place?"],
+      ["elena", "Count again. Silver and gold should be in <code>SILVER_CURATED</code> and <code>GOLD_MART</code> — same rooms, now owned by Jordan’s project."]
+    ])
+  }
+};
+
+// ——— Lab 05 ———
+L["05"] = {
+  open: [
+    {
+      kicker: "Episode 05 · Tired Jordan",
+      title: "Copy-paste every hour is not a pipeline",
+      panels: [
+        ["jordan", "I manually copy new txns into silver when I remember."],
+        ["elena", "We’ll give you a <strong>notebook</strong> that only lists changes (stream) and a <strong>worker</strong> that runs when the notebook has pages (task). You shouldn’t be the cron job."]
+      ],
+      caption: "Stream = notebook of changes. Task = worker. Dynamic table = different tool (later)."
+    }
+  ],
+  steps: {
+    "0": S("Repair only if tasks fail", [
+      ["jordan", "EXECUTE TASK denied…"],
+      ["elena", "Mayor must stamp EXECUTE TASK on Elena’s badge. Same idea as Lab 00 privilege repair — account powers, not table SQL."]
+    ]),
+    "1": S("Empty shelf first", [
+      ["alex", "Why create an empty table?"],
+      ["elena", "That’s the destination shelf. The worker will put rows there. Empty on purpose — so when txn 1099 appears, you know the pipeline did it."]
+    ]),
+    "2": S("What is a stream really?", [
+      ["alex", "Is it a live firehose like Kafka?"],
+      ["elena", "Simpler: Snowflake keeps a bookmark on a table. “What changed since I last read?” That’s the notebook. <code>APPEND_ONLY</code> = we only care about new inserts here."]
+    ]),
+    "3": S("What is the task body doing?", [
+      ["jordan", "Why SELECT from the stream not the table?"],
+      ["elena", "If you SELECT the base table you reprocess history. The stream is “unread changes only.” Worker reads the notebook, writes silver, notebook pages get marked read."]
+    ]),
+    "4": S("Why RESUME?", [
+      ["alex", "We created it. Isn’t it on?"],
+      ["elena", "New tasks start asleep (suspended) so they don’t burn money by surprise. RESUME = allow it to run. Later we SUSPEND again for the lab."]
+    ]),
+    "5": S("Insert 1099 — make a page appear", [
+      ["jordan", "Watch the stream after insert…"],
+      ["elena", "Dock gets 1099 → notebook gets a page → we EXECUTE TASK once → silver should show 1099. That’s the whole movie."]
+    ]),
+    "6": S("Put the worker to bed", [
+      ["marcus", "Don’t leave engines idling."],
+      ["elena", "SUSPEND the task. In real life you’d leave it resumed with monitoring — labs suspend so trial credits survive."]
+    ]),
+    "7": S("Optional dynamic table", [
+      ["jordan", "When do I skip stream+task?"],
+      ["elena", "When you only need “keep this SELECT fresh” and you’re okay with Snowflake managing refresh. Custom CDC logic you must audit line-by-line → stay stream+task."]
+    ])
+  }
+};
+
+// ——— Lab 06 ———
+L["06"] = {
+  open: [
+    {
+      kicker: "Episode 06 · Truck at night",
+      title: "Files pause in the bay first",
+      panels: [
+        ["jordan", "CSV landed. Can I dump it straight into gold for Alex?"],
+        ["elena", "No. Truck bay first (<code>FILE_IN</code> stage) → then load dock (<code>BRONZE_LANDING</code>). Gold is a finished product. Snowpipe = bay door that opens when a truck arrives."]
+      ]
+    }
+  ],
+  steps: {
+    "1": S("What is FILE_IN?", [
+      ["alex", "Is FILE_IN the staging layer? Like silver?"],
+      ["elena", "No — it’s the <em>file</em> room: stage + file format objects. Medallion staging in dbt is different. Here “stage” means Snowflake’s parking spot for files."]
+    ], "Two meanings of “stage” — file parking vs dbt folder. Ask which one."),
+    "2": S("Why a file format?", [
+      ["jordan", "Can’t COPY guess CSV?"],
+      ["elena", "Tell Snowflake how commas and headers work. File format = reading glasses for the file."]
+    ]),
+    "3": S("Internal stage?", [
+      ["alex", "Is this Amazon S3?"],
+      ["elena", "Internal stage = parking inside Snowflake’s lot (fine for labs). Prod often uses external stages to your cloud bucket with storage integrations."]
+    ]),
+    "5": S("Fake a file for the lab", [
+      ["jordan", "We don’t have a real partner drop…"],
+      ["elena", "We COPY FROM values into the stage to simulate a file. Same idea: bytes appear in the bay, then we load the dock."]
+    ]),
+    "6": S("COPY INTO bronze", [
+      ["marcus", "When is Alex allowed to use this data?"],
+      ["elena", "After it’s in bronze and then cleaned toward silver/gold. COPY lands raw. It does not mean “board ready.”"]
+    ])
+  }
+};
+
+// ——— Lab 07 ———
+L["07"] = {
+  open: [
+    {
+      kicker: "Episode 07 · Board panic",
+      title: "Alex wants a bigger engine. Elena wants a better question.",
+      panels: [
+        ["alex", "Query is dying. Buy a bigger warehouse — now!"],
+        ["elena", "Maybe later. First we fix the question: stop selecting junk columns, filter early, prove bytes. Bigger engine on a dumb question just burns money faster."]
+      ],
+      caption: "Fix the question before you buy a louder engine."
+    }
+  ],
+  steps: {
+    "0": S("Why turn cache off?", [
+      ["alex", "Second run was instant — I’m a genius?"],
+      ["elena", "Snowflake remembered the answer (result cache). We turn that off so before/after comparisons are fair — otherwise “fast” is a trick."]
+    ]),
+    "1": S("Why load so many rows?", [
+      ["jordan", "400k feels heavy for a lab…"],
+      ["elena", "Tiny tables hide the lesson. We need enough chunks (micro-partitions) so “how much did we read?” is visible. Lab 08 keeps this table."]
+    ]),
+    "2": S("Why the fat twin table?", [
+      ["alex", "Extra PAD columns look fake."],
+      ["elena", "They’re fake on purpose — so <code>SELECT *</code> hurts. You’ll feel bytes drop when we pick only useful columns. Then we delete this toy table."]
+    ]),
+    "3": S("SELECT * is the enemy", [
+      ["alex", "SELECT * is shorter to type…"],
+      ["elena", "Shorter for you, longer for the engine. You dragged stuffing Marcus never charts. Ask only for columns you need."]
+    ]),
+    "4": S("Why not YEAR(date)?", [
+      ["alex", "YEAR(EVENT_DATE) = 2026 feels natural."],
+      ["elena", "Wrapping the date column can stop Snowflake from skipping whole shelves of data. Use a date range instead — same question, friendlier to pruning."]
+    ], "Pruning = skipping shelves that can’t match your filter."),
+    "5": S("The CTE talk you asked for", [
+      ["alex", "Why a CTE? My join already works…"],
+      ["elena", "Your join invited a <em>year</em> of events to the party. CTE <code>recent</code> invites only last week, <em>then</em> joins clients. Smaller party, same board answer. This is the habit."]
+    ], "Filter first, join second. Say it out loud."),
+    "6": S("Numbers not vibes", [
+      ["marcus", "“It felt faster” is not a status update."],
+      ["elena", "We read bytes from history and partitions from operator stats — or Query Profile pictures. Architects cite numbers."]
+    ]),
+    "7": S("Who do you Slack to resize?", [
+      ["alex", "So every morning I ping you to ALTER SIZE?"],
+      ["elena", "Never. Board work uses <code>WH_BANK_BOARD_S</code> — wakes when you run, sleeps when you stop. Daily toy queries stay on XS. I’m not your resize bot."]
+    ]),
+    "8": S("Cleanup — keep the useful table", [
+      ["jordan", "Delete everything?"],
+      ["elena", "Delete the fat toy. Keep <code>BIG_EVENTS</code> for clustering next lab. Keep the board warehouse for FinOps story."]
+    ])
+  }
+};
+
+// ——— Lab 08 ———
+L["08"] = {
+  open: [
+    {
+      kicker: "Episode 08 · Messy library",
+      title: "Last 7 days still opened old shelves",
+      panels: [
+        ["alex", "I filtered last 7 days — why so much scanning?"],
+        ["elena", "Dates were scattered like books on the floor. Clustering re-shelves by date so Snowflake can skip whole shelves. Different tool than “search optimization” (that’s for ID lookups)."]
+      ]
+    }
+  ],
+  steps: {
+    "1": S("Same session habit", [
+      ["alex", "Again with USE ROLE…"],
+      ["elena", "Yes. Badge + engine + room. Boring = reliable."]
+    ]),
+    "2": S("Table from Lab 07", [
+      ["jordan", "Did we rebuild 400k?"],
+      ["elena", "Prefer the table Lab 07 left you. Only rebuild if you skipped Lab 07. Clustering needs real volume."]
+    ]),
+    "3": S("What is clustering information?", [
+      ["alex", "Looks like scary JSON…"],
+      ["elena", "It’s a health report: how mixed are dates across shelves? We glance before/after — you don’t need every field memorized."]
+    ]),
+    "4": S("CLUSTER BY does what?", [
+      ["marcus", "Does this rewrite the table tonight?"],
+      ["elena", "It tells Snowflake to maintain better order over time (background work, costs some credits). Worth it when Profile shows date filters still reading the world."]
+    ]),
+    "5": S("Run the 7-day question again", [
+      ["alex", "Should it be instant now?"],
+      ["elena", "On a lab it may still be quick either way. The interview sentence is: clustering helps pruning for date windows; we measure partitions/bytes, not vibes."]
+    ])
+  }
+};
+
+// ——— Lab 09 ———
+L["09"] = {
+  open: [
+    {
+      kicker: "Episode 09 · Undo",
+      title: "Four tools — don’t mix them up",
+      panels: [
+        ["dev", "I need a prod-like copy to break safely."],
+        ["elena", "CLONE = twin in the same account. Time Travel = yesterday’s rows while table still exists. UNDROP = bring back a dropped table. Replication = other region when the building burns — Lab 11."]
+      ],
+      caption: "Clone ≠ disaster recovery. Say it until it’s boring."
+    }
+  ],
+  steps: {
+    "1": S("Session", [["elena", "Badge, engine, silver room — let’s break a tiny demo table on purpose."]]),
+    "2": S("Time Travel after DELETE", [
+      ["alex", "I deleted the row — it’s gone forever?"],
+      ["elena", "Not yet. Ask Snowflake for the table <em>as of a few minutes ago</em>. That’s Time Travel. The trash didn’t leave the building immediately."]
+    ]),
+    "3": S("UNDROP", [
+      ["jordan", "I DROP TABLE by mistake…"],
+      ["elena", "UNDROP is the “retrieve from dumpster” for whole tables — if you’re still inside retention. Different tool than Time Travel on a table that’s still there."]
+    ]),
+    "4": S("CLONE for Dev", [
+      ["dev", "Is clone our DR plan?"],
+      ["marcus", "No."],
+      ["elena", "Clone = Dev’s playground today. DR = other region + failover — different lab."]
+    ])
+  }
+};
+
+// ——— Lab 10 ———
+L["10"] = {
+  open: [
+    {
+      kicker: "Episode 10 · Partner",
+      title: "Nora wants data — not a USB dump",
+      panels: [
+        ["nora", "Can you email the ledger every Friday?"],
+        ["elena", "We’ll share a <strong>secure window</strong> — live, few columns, you pay your own compute. Friday dump trucks grow legs and walk into the wrong inbox."]
+      ]
+    }
+  ],
+  steps: {
+    "1": S("Secure view first", [
+      ["sam", "What’s on the share?"],
+      ["elena", "Only columns Nora needs. Secure view = she can’t peek at the SQL recipe either. No CLIENTS vault."]
+    ]),
+    "2": S("Create share", [
+      ["alex", "Is a share a copy?"],
+      ["elena", "No — it’s a permission to read live objects. Nora’s account queries; data stays in Meridian until she pulls results."]
+    ]),
+    "3": S("Who pays?", [
+      ["marcus", "Do we pay when Nora queries?"],
+      ["elena", "Nora’s warehouse pays her scans. That’s why share beats us running reports for her on WH_BANK_XS “as a favor.”"]
+    ])
+  }
+};
+
+// ——— Lab 11 ———
+L["11"] = {
+  open: [
+    {
+      kicker: "Episode 11 · Fire drill",
+      title: "Share is not a fire escape",
+      panels: [
+        ["marcus", "We share with Nora — so we’re DR-ready?"],
+        ["elena", "If our region dies, her window dies too. Share ≠ secondary. Clone ≠ secondary. Replication + failover + practice = DR."]
+      ]
+    }
+  ],
+  steps: {
+    "1": S("RPO vs RTO baby words", [
+      ["marcus", "Board wants numbers."],
+      ["elena", "<strong>RPO</strong> = how much data we might lose (lag). <strong>RTO</strong> = how long until people work again (our runbook speed). Different clocks."]
+    ]),
+    "2": S("What we can show on trial", [
+      ["jordan", "I can’t failover a personal trial…"],
+      ["elena", "Honest answer: show the commands and the plan; production drills the promotion. Don’t fake a completed DR program."]
+    ])
+  }
+};
+
+// ——— Lab 12 ———
+L["12"] = {
+  open: [
+    {
+      kicker: "Episode 12 · Silent break",
+      title: "CI was green. Alex’s tile was empty.",
+      panels: [
+        ["jordan", "I renamed a column. Tests passed. Why is Looker dead?"],
+        ["elena", "You protected the wrong door. Contract the <strong>published mart</strong> Alex uses — not every staging scratch view. And Slim CI needs a fresh map of prod or it compares to a ghost."]
+      ]
+    }
+  ],
+  steps: {
+    "1": S("What is a source YAML?", [
+      ["alex", "Is this SQL?"],
+      ["elena", "It’s a name tag: “this Snowflake table is our bronze dock.” dbt doesn’t create bronze here — it points at it."]
+    ]),
+    "2": S("Why describe txn_events?", [
+      ["jordan", "Extra typing…"],
+      ["elena", "So humans and tests know which dock table matters. Documentation is part of the contract with future-you."]
+    ]),
+    "3": S("What is contract enforcement?", [
+      ["alex", "Like a legal contract?"],
+      ["elena", "A column promise: name + type must match. Break it → CI fails before Alex’s tile goes blank."]
+    ]),
+    "4": S("Why order_id in the contract?", [
+      ["jordan", "It’s obvious…"],
+      ["elena", "Obvious until someone renames it. Unique + not_null on the grain is the seatbelt."]
+    ]),
+    "5": S("Why updated_at in the contract?", [
+      ["alex", "That’s the watermark thing from Lab 02?"],
+      ["elena", "Yes — if type drifts, incremental MERGE and “last refresh” both break. Put the watermark in the promise, not a wiki."]
+    ]),
+    "6": S("dbt deps?", [
+      ["jordan", "Why install packages?"],
+      ["elena", "Slim CI helpers live in packages. deps = download the toolbox before you build."]
+    ]),
+    "7": S("Slim CI list", [
+      ["marcus", "Why not rebuild the world every PR?"],
+      ["elena", "Credits and time. First we <em>list</em> what would run — modified models + downstream. Sanity check before spending."]
+    ]),
+    "8": S("Defer means what?", [
+      ["alex", "Defer sounds like procrastination…"],
+      ["elena", "It means “reuse prod for things we didn’t change.” Needs a fresh prod manifest. Stale map = false safety."]
+    ])
+  }
+};
+
+// ——— Lab 13 ———
+L["13"] = {
+  open: [
+    {
+      kicker: "Episode 13 · Bill shock",
+      title: "Finance forwarded the invoice",
+      panels: [
+        ["marcus", "Who left the lights on all weekend?!"],
+        ["elena", "We’ll read the meter (<code>ACCOUNT_USAGE</code>) — it lags a bit — and put a breaker (<code>RM_BANK_LAB</code>) so next weekend can’t melt the budget."]
+      ]
+    }
+  ],
+  steps: {
+    "1": S("Why ACCOUNTADMIN for billing views?", [
+      ["alex", "I thought Elena’s badge does everything…"],
+      ["elena", "Bill and breakers are account powers. Daily table building is not. Wear the mayor briefly, then switch back."]
+    ]),
+    "2": S("Meter lag", [
+      ["marcus", "I want this morning’s spike now."],
+      ["elena", "Meter views can lag 1–3 hours. Empty isn’t “SQL wrong.” Re-check later; use query history when it appears."]
+    ]),
+    "3": S("Notify vs suspend", [
+      ["jordan", "Email at 75% is enough?"],
+      ["elena", "Email still lets a runaway finish. Marcus asked for a hard stop — suspend at 100%. Plan a reset owner so month-end isn’t a surprise outage."]
+    ])
+  }
+};
+
+// ——— Lab 14 ———
+L["14"] = {
+  open: [
+    {
+      kicker: "Episode 14 · No laptop",
+      title: "Interview chair — mouth only",
+      panels: [
+        ["marcus", "(as interviewer) Keep Alex off SSN. What breaks if you skip secondary-role NONE?"],
+        ["elena", "I say: job badge + key-ring + window view + hang the extra coat. Context → decision → proof → outcome. If I blank, I don’t get the job."]
+      ],
+      caption: "Do Lab 15 first. Open each lab’s comics + Interviewer presses further. Speak."
+    }
+  ],
+  steps: {}
+};
+
+// ——— Lab 15 ———
+L["15"] = {
+  open: [
+    {
+      kicker: "Episode 15 · 2 a.m.",
+      title: "Hope is not an orchestrator",
+      panels: [
+        ["jordan", "dbt models exist. Overnight gold still depends on my laptop."],
+        ["elena", "Something must wake the graph. Tasks for Snowflake CDC. Airflow when files + dbt + Slack share one night story. Don’t wrap every Task in Airflow."]
+      ]
+    }
+  ],
+  steps: {
+    "1": S("Why a whiteboard DAG?", [
+      ["alex", "We don’t even have Airflow installed…"],
+      ["elena", "Interviewers care you can <em>draw</em> the night: wait for file → load bronze → dbt silver/gold → test → notify. Tools change; the story stays."]
+    ]),
+    "2": S("Run the dbt middle", [
+      ["jordan", "So Airflow just calls this?"],
+      ["elena", "Yes — with retries and alerts. Your hands run the same command Airflow would. Muscle memory > mythology."]
+    ]),
+    "3": S("Don’t double-orchestrate CDC", [
+      ["jordan", "Should Airflow also trigger the Lab 05 task?"],
+      ["elena", "Usually no. Task already wakes on stream data. Two bosses writing one table = two truths. One writer per table."]
+    ])
+  }
+};
+
+function buildOpen(lab, o, i) {
+  return strip({
+    id: `comic-${lab}-open-${i}`,
+    kicker: o.kicker,
+    title: o.title,
+    panels: o.panels,
+    caption: o.caption,
+    mini: false
+  });
 }
 
-console.log("done", n);
+function buildStep(lab, num, s) {
+  return strip({
+    id: `comic-${lab}-step-${num}`,
+    kicker: `Step ${num} · coach`,
+    title: s.title,
+    panels: s.panels,
+    caption: s.caption,
+    mini: true
+  });
+}
+
+const docs = path.join(__dirname, "..", "docs");
+let labsDone = 0;
+let stripsTotal = 0;
+
+for (const [lab, cfg] of Object.entries(L)) {
+  const file = path.join(docs, `lab-${lab}.html`);
+  let html = fs.readFileSync(file, "utf8");
+
+  // Remove all existing comics
+  html = html.replace(/\s*<section class="comic-strip[\s\S]*?<\/section>/g, "\n");
+
+  const openHtml = (cfg.open || []).map((o, i) => buildOpen(lab, o, i)).join("\n\n");
+
+  // Insert openers after ba-grid block (figures only — first closing div of ba-grid)
+  if (openHtml && html.includes('class="ba-grid"')) {
+    html = html.replace(
+      /(<div class="ba-grid">[\s\S]*?<\/div>\s*)/,
+      `$1\n${openHtml}\n`
+    );
+  }
+
+  // Insert step comics after each step-head
+  html = html.replace(
+    /<div class="step-head">\s*<div class="step-num">(\d+)<\/div>\s*<div>\s*<h3>[\s\S]*?<\/h3>[\s\S]*?<\/div>\s*<\/div>/g,
+    (full, num) => {
+      const s = cfg.steps && cfg.steps[num];
+      if (!s) return full;
+      stripsTotal++;
+      return `${full}\n\n      ${buildStep(lab, num, s)}\n`;
+    }
+  );
+
+  stripsTotal += (cfg.open || []).length;
+  fs.writeFileSync(file, html);
+  labsDone++;
+  const stepCount = Object.keys(cfg.steps || {}).length;
+  console.log(`lab-${lab}: open=${(cfg.open || []).length} stepComics=${stepCount}`);
+}
+
+console.log("labs", labsDone, "strip defs ~", stripsTotal);

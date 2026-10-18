@@ -70,28 +70,28 @@
       </figure>
     </div>
 
-        <section class="comic-strip" id="comic-10" aria-label="Nora wants data. Not a CSV dump truck.">
-      <p class="comic-kicker">Episode 10 · Partner window</p>
-      <h2 class="comic-title">Nora wants data. Not a CSV dump truck.</h2>
+
+<section class="comic-strip" id="comic-10-open-0" aria-label="Nora wants data — not a USB dump">
+      <p class="comic-kicker">Episode 10 · Partner</p>
+      <h2 class="comic-title">Nora wants data — not a USB dump</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face nora" role="img" aria-label="Nora"></div>
-                <div><span class="comic-name">Nora</span><span class="comic-role">Partner</span></div>
-              </div>
-              <blockquote class="comic-bubble">Can you email us the ledger every Friday? Our analysts are drowning in attachments.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face nora" role="img" aria-label="Nora"></div>
+        <div><span class="comic-name">Nora</span><span class="comic-role">Partner — needs a safe window</span></div>
+      </div>
+      <blockquote class="comic-bubble">Can you email the ledger every Friday?</blockquote>
+    </figure>
         <figure class="comic-panel">
-              <div class="comic-who">
-                <div class="comic-face elena" role="img" aria-label="Elena"></div>
-                <div><span class="comic-name">Elena</span><span class="comic-role">Architect</span></div>
-              </div>
-              <blockquote class="comic-bubble">Secure share + secure view — live window, minimum columns. You pay your warehouse. We don’t ship the vault. Friday dump trucks are how PII grows legs.</blockquote>
-            </figure>
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">We’ll share a <strong>secure window</strong> — live, few columns, you pay your own compute. Friday dump trucks grow legs and walk into the wrong inbox.</blockquote>
+    </figure>
       </div>
       
     </section>
-
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>Nora needs a window — not a file on a truck.</p>
@@ -210,6 +210,31 @@ SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Set provider session</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-1" aria-label="Secure view first">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Secure view first</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face sam" role="img" aria-label="Sam"></div>
+        <div><span class="comic-name">Sam</span><span class="comic-role">Compliance — protects data</span></div>
+      </div>
+      <blockquote class="comic-bubble">What’s on the share?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Only columns Nora needs. Secure view = she can’t peek at the SQL recipe either. No CLIENTS vault.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="code-block">
         <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
@@ -220,6 +245,31 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Create the secure view (column minimum)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-2" aria-label="Create share">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Create share</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is a share a copy?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">No — it’s a permission to read live objects. Nora’s account queries; data stays in Meridian until she pulls results.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Exposes only txn fields Nora needs — no <code>BRONZE_LANDING.CLIENTS</code>, no SSN, no email.</p>
@@ -237,6 +287,31 @@ FROM BRONZE_LANDING.TXN_EVENTS;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Create the share object</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-3" aria-label="Who pays?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Who pays?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Do we pay when Nora queries?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Nora’s warehouse pays her scans. That’s why share beats us running reports for her on WH_BANK_XS “as a favor.”</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Empty share container — grants in the next step attach Meridian objects to it.</p>
