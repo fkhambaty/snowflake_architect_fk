@@ -109,11 +109,27 @@ WHERE OPERATOR_STATISTICS:pruning:partitions_total IS NOT NULL
 ORDER BY PARTITIONS_SCANNED DESC NULLS LAST;
 
 -- ---------------------------------------------------------------------------
--- Scenario 5 — Last resort: temporary warehouse size bump, then restore
+-- Scenario 5 — Automate size: dedicated board WH (not ALTER on-call)
+-- KEEP WH_BANK_BOARD_S for Lab 13 FinOps / chargeback.
 -- ---------------------------------------------------------------------------
-SHOW WAREHOUSES LIKE 'WH_BANK_XS';
+USE ROLE ACCOUNTADMIN;
 
-ALTER WAREHOUSE WH_BANK_XS SET WAREHOUSE_SIZE = 'SMALL';
+CREATE WAREHOUSE IF NOT EXISTS WH_BANK_BOARD_S
+  WAREHOUSE_SIZE = 'SMALL'
+  AUTO_SUSPEND = 60
+  AUTO_RESUME = TRUE
+  INITIALLY_SUSPENDED = TRUE
+  COMMENT = 'Meridian board / heavy analyst jobs — auto wake+sleep';
+
+GRANT USAGE ON WAREHOUSE WH_BANK_BOARD_S TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT OPERATE ON WAREHOUSE WH_BANK_BOARD_S TO ROLE ROLE_BANK_LAB_ADMIN;
+-- Skip next line if Lab 01 roles were never created:
+GRANT USAGE ON WAREHOUSE WH_BANK_BOARD_S TO ROLE FR_ANALYST;
+
+USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_BOARD_S;
+USE DATABASE MERIDIAN_BANK;
+USE SCHEMA SILVER_CURATED;
 
 SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(e.AMOUNT) AS VOLUME
 FROM BRONZE_LANDING.CLIENTS c
@@ -122,12 +138,13 @@ WHERE e.EVENT_DATE >= DATEADD('day', -30, CURRENT_DATE())
 GROUP BY c.COUNTRY
 ORDER BY VOLUME DESC;
 
-ALTER WAREHOUSE WH_BANK_XS SET WAREHOUSE_SIZE = 'XSMALL';
-SHOW WAREHOUSES LIKE 'WH_BANK_XS';
+USE WAREHOUSE WH_BANK_XS;
+SHOW WAREHOUSES LIKE 'WH_BANK%';
 
 -- ---------------------------------------------------------------------------
--- Cleanup — Lab 07-only objects. KEEP BIG_EVENTS for Lab 08.
+-- Cleanup — Lab 07-only objects.
+-- KEEP: BIG_EVENTS (Lab 08), WH_BANK_BOARD_S (Lab 13)
 -- ---------------------------------------------------------------------------
 DROP TABLE IF EXISTS PERF_WIDE;
 
-SELECT 'Lab 07 OK — BIG_EVENTS kept for Lab 08; PERF_WIDE dropped; WH back to XSMALL' AS status;
+SELECT 'Lab 07 OK — BIG_EVENTS + WH_BANK_BOARD_S kept; PERF_WIDE dropped' AS status;

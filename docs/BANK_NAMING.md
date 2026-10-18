@@ -15,7 +15,8 @@ Say in interviews: *“Our bronze is BRONZE_LANDING, silver is SILVER_CURATED, g
 | Purpose | Name |
 |---------|------|
 | Database | `MERIDIAN_BANK` |
-| Warehouse | `WH_BANK_XS` |
+| Warehouse (daily) | `WH_BANK_XS` |
+| Warehouse (board / heavy) | `WH_BANK_BOARD_S` — Lab 07; auto-resume/suspend |
 | Lab / architect role | `ROLE_BANK_LAB_ADMIN` |
 | Risk / policies | `RISK_CTRL` |
 | File stage | `FILE_IN` |

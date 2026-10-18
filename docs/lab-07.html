@@ -50,8 +50,8 @@
     <div class="callout ok">
       <strong>Solution you will run (in order)</strong>
       Load <code>SILVER_CURATED.BIG_EVENTS</code> → fix SQL (projection → sargable filter → filter-before-join)
-      → read partition/bytes metrics → last resort: <code>SMALL</code> for one query → restore <code>XSMALL</code>
-      → drop Lab-07-only fat table; <strong>keep</strong> <code>BIG_EVENTS</code> for Lab 08 clustering.
+      → read partition/bytes metrics → last: dedicated <code>WH_BANK_BOARD_S</code> (auto wake/sleep — not Slack ALTER)
+      → drop Lab-07-only fat table; <strong>keep</strong> <code>BIG_EVENTS</code> + board WH for later labs.
     </div>
 
     <div class="ba-grid">
@@ -97,9 +97,9 @@
         </div>
         <div class="see-card">
           <div class="see-label">Scale</div>
-          <strong>Up vs out</strong>
-          <p>Up = bigger engine for one query. Out = more clusters for concurrency.</p>
-          <div class="see-example">This lab ends with temporary size up<br>not multi-cluster</div>
+          <strong>Up vs out vs separate WH</strong>
+          <p>Up = bigger engine. Out = more clusters (concurrency). Prod = route heavy work to its own WH.</p>
+          <div class="see-example"><code>WH_BANK_BOARD_S</code> auto-resumes<br>Elena is not on-call for ALTER SIZE</div>
         </div>
       </div>
     </section>
@@ -141,21 +141,44 @@
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node fct">
           <span class="flow-tag">5 · Last</span>
-          <strong>Temp WH size</strong>
-          <span class="flow-sub">SMALL → then XSMALL</span>
+          <strong>Board warehouse</strong>
+          <span class="flow-sub"><code>WH_BANK_BOARD_S</code> · auto on/off</span>
         </div>
       </div>
       <p>
         <strong>Keep for Lab 08:</strong> <code>SILVER_CURATED.BIG_EVENTS</code> (unclustered history — Lab 08 adds <code>CLUSTER BY</code>).
+        <strong>Keep for Lab 13:</strong> <code>WH_BANK_BOARD_S</code> (FinOps / chargeback story).
         <strong>Drop before you leave:</strong> <code>PERF_WIDE</code> only.
       </p>
+    </section>
+
+    <section class="teach">
+      <h2>Do users ping Elena every time to resize? No.</h2>
+      <p>
+        Snowflake does <strong>not</strong> auto-change a warehouse’s <em>size</em> (XS→S) when a heavy query arrives.
+        Manual <code>ALTER WAREHOUSE … SET WAREHOUSE_SIZE</code> is a lab demo / emergency — not a helpdesk workflow.
+      </p>
+      <div class="see-grid two">
+        <div class="see-card">
+          <div class="see-label">Production pattern</div>
+          <strong>Dedicated heavier WH</strong>
+          <p>Board BI / FR_ANALYST uses <code>WH_BANK_BOARD_S</code>. Daily work stays on <code>WH_BANK_XS</code>.</p>
+          <div class="see-example">AUTO_RESUME = TRUE<br>AUTO_SUSPEND = 60<br>→ starts on query, sleeps idle</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Also know</div>
+          <strong>Other levers</strong>
+          <p>Tasks set <code>WAREHOUSE = …</code> for scheduled jobs. Multi-cluster = concurrency. Query Acceleration = burst (edition).</p>
+          <div class="see-example">Alex never messages<br>“please bump to SMALL”</div>
+        </div>
+      </div>
     </section>
 
     <div class="story">
       <div class="story-label">Friday AM · war room</div>
       <p>
-        Elena: “I’ll load enough events that partitions exist, break Alex’s patterns on purpose, fix them, show Marcus the metrics —
-        and only if we’re still compute-bound for the board window, bump <code>WH_BANK_XS</code> for one run and put it back.”
+        Elena: “I’ll fix the SQL first. If the board rollup still needs more horsepower, Alex’s Looker connection points at
+        <code>WH_BANK_BOARD_S</code> — it wakes when he runs, sleeps when he’s done. I am not resizing <code>WH_BANK_XS</code> by Slack.”
       </p>
     </div>
 
@@ -355,27 +378,41 @@ ORDER BY PARTITIONS_SCANNED DESC NULLS LAST;</code></pre>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">7</div><div><h3>Scenario 5 — Last resort: temporary warehouse size</h3></div></div>
+      <div class="step-head"><div class="step-num">7</div><div><h3>Scenario 5 — Automate size: dedicated board warehouse</h3></div></div>
       <div class="explain">
-        <h4>When Elena does this</h4>
+        <h4>Problem this solves</h4>
         <p>
-          SQL is already slim and filtered, but the meeting window still needs more compute (or you saw spill).
-          Bump <code>WH_BANK_XS</code> to <code>SMALL</code> for one proof query, then restore <code>XSMALL</code> so FinOps doesn’t inherit a permanent upsize.
+          After SQL is fixed, the board rollup may still want a bigger engine.
+          You will <em>not</em> sit on Slack resizing <code>WH_BANK_XS</code>. Create a SMALL warehouse with
+          <code>AUTO_RESUME</code> / <code>AUTO_SUSPEND</code> — Alex’s tool (or role default) uses it; Snowflake starts/stops it.
         </p>
         <h4>What you should see</h4>
-        <p><code>SHOW WAREHOUSES</code> size column flips SMALL → back to X-Small / XSMALL.</p>
+        <p><code>WH_BANK_BOARD_S</code> appears (may show Started while you query, then Suspended after ~60s idle). Daily work returns to <code>WH_BANK_XS</code>.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · show size</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SHOW WAREHOUSES LIKE 'WH_BANK_XS';</code></pre>
+        <div class="code-head"><span>SQL · create board WH (ACCOUNTADMIN)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+
+CREATE WAREHOUSE IF NOT EXISTS WH_BANK_BOARD_S
+  WAREHOUSE_SIZE = 'SMALL'
+  AUTO_SUSPEND = 60
+  AUTO_RESUME = TRUE
+  INITIALLY_SUSPENDED = TRUE
+  COMMENT = 'Meridian board / heavy analyst jobs — auto wake+sleep';
+
+GRANT USAGE ON WAREHOUSE WH_BANK_BOARD_S TO ROLE ROLE_BANK_LAB_ADMIN;
+GRANT OPERATE ON WAREHOUSE WH_BANK_BOARD_S TO ROLE ROLE_BANK_LAB_ADMIN;
+-- After Lab 01 exists:
+GRANT USAGE ON WAREHOUSE WH_BANK_BOARD_S TO ROLE FR_ANALYST;</code></pre>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · bump to SMALL</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>ALTER WAREHOUSE WH_BANK_XS SET WAREHOUSE_SIZE = 'SMALL';</code></pre>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>SQL · board query on SMALL</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(e.AMOUNT) AS VOLUME
+        <div class="code-head"><span>SQL · Alex runs board query on BOARD_S</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_BOARD_S;
+USE DATABASE MERIDIAN_BANK;
+USE SCHEMA SILVER_CURATED;
+
+SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(e.AMOUNT) AS VOLUME
 FROM BRONZE_LANDING.CLIENTS c
 JOIN BIG_EVENTS e ON e.CLIENT_ID = c.CLIENT_ID
 WHERE e.EVENT_DATE >= DATEADD('day', -30, CURRENT_DATE())
@@ -383,11 +420,21 @@ GROUP BY c.COUNTRY
 ORDER BY VOLUME DESC;</code></pre>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · restore XSMALL</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>ALTER WAREHOUSE WH_BANK_XS SET WAREHOUSE_SIZE = 'XSMALL';
-SHOW WAREHOUSES LIKE 'WH_BANK_XS';</code></pre>
+        <div class="code-head"><span>SQL · back to daily XS + prove both exist</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE WAREHOUSE WH_BANK_XS;
+SHOW WAREHOUSES LIKE 'WH_BANK%';</code></pre>
       </div>
-      <div class="badge-ok">✓ Warehouse back to XS — temporary bump only</div>
+      <div class="callout tip">
+        <strong>Automation = routing, not Elena’s calendar</strong>
+        Point the board dashboard / FR_ANALYST default warehouse at <code>WH_BANK_BOARD_S</code>.
+        Credits burn only while it runs; after idle it suspends itself. Keep <code>WH_BANK_XS</code> for light ad hoc.
+      </div>
+      <div class="callout warn">
+        <strong>Not the prod pattern</strong>
+        <code>ALTER WAREHOUSE WH_BANK_XS SET WAREHOUSE_SIZE = 'SMALL'</code> then flip back — useful once in a war room,
+        terrible as “ping the architect before every board refresh.”
+      </div>
+      <div class="badge-ok">✓ Two warehouses — XS daily, BOARD_S heavy — BOARD_S kept for Lab 13</div>
     </article>
 
     <article class="step">
@@ -403,7 +450,7 @@ SHOW WAREHOUSES LIKE 'WH_BANK_XS';</code></pre>
         <div class="code-head"><span>SQL · cleanup</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>DROP TABLE IF EXISTS PERF_WIDE;
 
-SELECT 'Lab 07 OK — BIG_EVENTS kept for Lab 08; PERF_WIDE dropped; WH back to XSMALL' AS status;</code></pre>
+SELECT 'Lab 07 OK — BIG_EVENTS + WH_BANK_BOARD_S kept; PERF_WIDE dropped' AS status;</code></pre>
       </div>
       <div class="badge-ok">✓ Status row · matches <code>sql/07_query_profile.sql</code></div>
     </article>
@@ -411,17 +458,19 @@ SELECT 'Lab 07 OK — BIG_EVENTS kept for Lab 08; PERF_WIDE dropped; WH back to 
     <div class="callout warn">
       <strong>Interview trap</strong>
       Scaling the warehouse does not fix a full-year join or <code>SELECT *</code>.
-      Multi-cluster (scale <em>out</em>) is for many concurrent dashboards — not today’s single board query.
+      Multi-cluster (scale <em>out</em>) is for many concurrent users — not “make one query bigger.”
+      Auto size-up of the <em>same</em> warehouse is not how Snowflake works — route heavy jobs to a sized WH with auto-suspend.
       Lab 08: clustering improves pruning on <code>EVENT_DATE</code> for the table you just kept.
     </div>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “I loaded SILVER_CURATED.BIG_EVENTS so partitions exist, then triaged Alex’s board path:
-      slim projection, sargable date filters, filter-before-join, proved bytes and partitions from QUERY_HISTORY and Query Profile,
-      and only then bumped WH_BANK_XS to SMALL for the meeting window and put it back to XSMALL.
+      slim projection, sargable date filters, filter-before-join, proved bytes and partitions from history and Query Profile.
+      For ongoing compute, I didn’t babysit ALTER SIZE — I gave the board workload WH_BANK_BOARD_S with AUTO_RESUME/AUTO_SUSPEND
+      so it wakes when Alex runs and sleeps when idle; daily work stays on WH_BANK_XS.
       PERF_WIDE is gone; BIG_EVENTS stays for clustering next.
-      <em>Outcome:</em> Marcus gets a data-driven answer — SQL and scan first, warehouse last.”
+      <em>Outcome:</em> Marcus gets SQL-first diagnosis and an automated size story — not an on-call resize rota.”
     </div>
 
     <div class="pager">
@@ -429,7 +478,7 @@ SELECT 'Lab 07 OK — BIG_EVENTS kept for Lab 08; PERF_WIDE dropped; WH back to 
       <a class="btn primary" href="lab-08.html">Lab 08 →</a>
     </div>
   </div>
-  <footer class="footer">sql/07_query_profile.sql · keep BIG_EVENTS · drop PERF_WIDE</footer>
+  <footer class="footer">sql/07_query_profile.sql · keep BIG_EVENTS + WH_BANK_BOARD_S · drop PERF_WIDE</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

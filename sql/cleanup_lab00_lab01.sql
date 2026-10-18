@@ -23,8 +23,9 @@ DROP ROLE IF EXISTS ROLE_ARCH_SMOKE_TMP;   -- old name, if present
 DROP DATABASE IF EXISTS MERIDIAN_BANK;
 DROP DATABASE IF EXISTS ARCH_INTERVIEW;   -- old SnowShop DB, if present
 
--- 3) Warehouse
+-- 3) Warehouses
 DROP WAREHOUSE IF EXISTS WH_BANK_XS;
+DROP WAREHOUSE IF EXISTS WH_BANK_BOARD_S; -- Lab 07 board / heavy analyst WH
 DROP WAREHOUSE IF EXISTS WH_ARCH_XS;      -- old name, if present
 
 -- 4) Lab architect role last
