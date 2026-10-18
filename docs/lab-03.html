@@ -267,8 +267,12 @@ AS (country_code STRING) RETURNS BOOLEAN ->
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Hang both rules on CLIENTS_GOV</h3></div></div>
       <div class="explain">
-        <h4>Attach ≠ create</h4>
-        <p>Until you <code>ALTER TABLE</code>, policies are unused paperwork. These two lines stick them on EMAIL and COUNTRY.</p>
+        <h4>Attach ≠ create (common gotcha)</h4>
+        <p>
+          <code>CREATE MASKING POLICY</code> only invents the rule. Emails stay plain until you
+          <code>ALTER TABLE … SET MASKING POLICY</code>.
+          If you later <code>CREATE OR REPLACE TABLE CLIENTS_GOV</code>, the stickers fall off — attach again.
+        </p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · attach policies</span><button type="button" class="copy-btn">Copy</button></div>
@@ -279,6 +283,16 @@ AS (country_code STRING) RETURNS BOOLEAN ->
 ALTER TABLE CURATED.CLIENTS_GOV
   ADD ROW ACCESS POLICY RISK_CTRL.RAP_CLIENT_COUNTRY ON (COUNTRY);</code></pre>
       </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · prove the sticker is on EMAIL</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+SELECT POLICY_NAME, POLICY_KIND, REF_COLUMN_NAME
+FROM TABLE(INFORMATION_SCHEMA.POLICY_REFERENCES(
+  REF_ENTITY_NAME => 'MERIDIAN_BANK.CURATED.CLIENTS_GOV',
+  REF_ENTITY_DOMAIN => 'TABLE'
+));</code></pre>
+      </div>
+      <div class="badge-ok">✓ You must see MP_EMAIL_MASK on column EMAIL (and RAP on COUNTRY)</div>
     </article>
 
     <article class="step">
