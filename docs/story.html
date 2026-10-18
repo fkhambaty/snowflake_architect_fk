@@ -41,7 +41,7 @@
         <li><strong>Elena Vasquez</strong> — Snowflake Architect (you)</li>
         <li><strong>Marcus Hale</strong> — COO (wants speed, safety, sane cost)</li>
         <li><strong>Alex Rivera</strong> — Business Analyst (dashboards; must not see SSN)</li>
-        <li><strong>Jordan Okonkwo</strong> — Data Engineer (pipelines, dbt, landing data)</li>
+        <li><strong>Jordan Okonkwo</strong> — Data Engineer (pipelines, dbt, BRONZE_LANDING data)</li>
         <li><strong>Sam Okada</strong> — Risk &amp; Compliance (audits; can see sensitive fields)</li>
         <li><strong>Nora Patel</strong> — Partner credit union (needs a secure data window)</li>
         <li><strong>Dev</strong> — QA twin of production (clones, experiments)</li>
@@ -60,7 +60,7 @@
       <table class="gloss">
         <tr><th>Prefix</th><th>Means</th><th>Bank example</th></tr>
         <tr><td><code>FR_</code></td><td><strong>F</strong>unctional <strong>R</strong>ole = job badge</td><td><code>FR_ANALYST</code> = Alex’s job</td></tr>
-        <tr><td><code>AR_</code></td><td><strong>A</strong>ccess <strong>R</strong>ole = key-ring</td><td><code>AR_CURATED_READ</code> = clean data keys</td></tr>
+        <tr><td><code>AR_</code></td><td><strong>A</strong>ccess <strong>R</strong>ole = key-ring</td><td><code>AR_SILVER_CURATED_READ</code> = clean data keys</td></tr>
       </table>
       <p>Elena hangs doors on <code>AR_</code>, clips rings onto <code>FR_</code>, gives humans only <code>FR_</code>.</p>
     </div>
@@ -71,7 +71,7 @@
       <div class="step-head"><div class="step-num">00</div><div><h3>Monday AM — No bank without a building</h3></div></div>
       <div class="story">
         <p><strong>Problem:</strong> Meridian has no dedicated Snowflake home. Teams dump files everywhere.</p>
-        <p><strong>Solution:</strong> Elena creates database <code>MERIDIAN_BANK</code>, warehouse <code>WH_BANK_XS</code>, schemas (LANDING, CURATED, …), loads 5 sample clients.</p>
+        <p><strong>Solution:</strong> Elena creates database <code>MERIDIAN_BANK</code>, warehouse <code>WH_BANK_XS</code>, schemas (BRONZE_LANDING, SILVER_CURATED, …), loads 5 sample clients.</p>
         <p><a class="btn primary" href="lab-00.html">Open Lab 00</a></p>
       </div>
     </article>
@@ -80,7 +80,7 @@
       <div class="step-head"><div class="step-num">01</div><div><h3>Monday PM — Analysts must not see SSN</h3></div></div>
       <div class="story">
         <p><strong>Problem:</strong> Alex needs client names. Sam needs SSN. Regulators will destroy Meridian if Alex sees SSN.</p>
-        <p><strong>Solution:</strong> FR_/AR_ role model + safe view <code>V_CLIENT_DIRECTORY</code>. Alex blocked from landing vault.</p>
+        <p><strong>Solution:</strong> FR_/AR_ role model + safe view <code>V_CLIENT_DIRECTORY</code>. Alex blocked from BRONZE_LANDING vault.</p>
         <p><a class="btn primary" href="lab-01.html">Open Lab 01</a></p>
       </div>
     </article>
@@ -106,8 +106,8 @@
     <article class="step" id="ch04">
       <div class="step-head"><div class="step-num">04</div><div><h3>Wednesday PM — Marcus gets lost in the data</h3></div></div>
       <div class="story">
-        <p><strong>Problem:</strong> Nobody knows bronze vs gold; reports point at landing tables.</p>
-        <p><strong>Solution:</strong> Medallion: LANDING → CURATED → FINANCE_MART (+ Data Vault talk).</p>
+        <p><strong>Problem:</strong> Nobody knows bronze vs gold; reports point at BRONZE_LANDING tables.</p>
+        <p><strong>Solution:</strong> Medallion: BRONZE_LANDING → SILVER_CURATED → GOLD_MART (+ Data Vault talk).</p>
         <p><a class="btn primary" href="lab-04.html">Open Lab 04</a></p>
       </div>
     </article>

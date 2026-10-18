@@ -34,35 +34,41 @@
 
   <div class="wrap">
     <p class="eyebrow">Lab 04 · Wednesday PM · You are Elena · Marcus is lost</p>
-    <h1>Name the shelves: LANDING → CURATED → FINANCE_MART</h1>
+    <h1>Name the shelves: BRONZE_LANDING → SILVER_CURATED → GOLD_MART</h1>
     <p class="lede">
       Read <strong>Teach first</strong> before SQL.
-      Marcus asked why Alex’s report pointed at the loading dock. You’ll map medallion bronze/silver/gold to Meridian’s real schema names and build one silver table + one gold summary from <code>LANDING.TXN_EVENTS</code> (Lab 02 data).
+      Interview tip: when they say bronze / silver / gold, you answer with these schema names.
+      Build one silver table + one gold summary from <code>BRONZE_LANDING.TXN_EVENTS</code> (Lab 02 data).
     </p>
+
+    <div class="callout tip">
+      <strong>Say this in interviews</strong>
+      “Bronze is <code>BRONZE_LANDING</code>, silver is <code>SILVER_CURATED</code>, gold is <code>GOLD_MART</code> — same medallion idea, bank naming.”
+    </div>
 
     <div class="callout bad">
       <strong>Business problem</strong>
-      Teams argue about “bronze vs gold.” Alex built a board metric on <code>LANDING.TXN_EVENTS</code> — wrong layer, no guardrails, Marcus can’t trust the number.
+      Teams argue about “bronze vs gold.” Alex built a board metric on <code>BRONZE_LANDING.TXN_EVENTS</code> — wrong layer, no guardrails, Marcus can’t trust the number.
     </div>
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Silver in <code>CURATED.SILVER_TXNS</code>, gold summary in <code>FINANCE_MART.GOLD_CLIENT_SUMMARY</code> — clear path from dock to report wall.
+      Silver in <code>SILVER_CURATED.SILVER_TXNS</code>, gold summary in <code>GOLD_MART.GOLD_CLIENT_SUMMARY</code> — clear path from dock to report wall.
     </div>
 
     <div class="ba-grid">
       <figure class="ba-panel before">
-        <img src="assets/lab04-before.jpg" alt="BEFORE: Marcus lost — Alex pointed BI at LANDING" width="1600" height="900" loading="eager" />
+        <img src="assets/lab04-before.jpg" alt="BEFORE: Marcus lost — Alex pointed BI at BRONZE_LANDING" width="1600" height="900" loading="eager" />
         <figcaption>
           <strong>Before</strong>
           Marcus lost in unlabeled tables — board metric on the dock.
         </figcaption>
       </figure>
       <figure class="ba-panel after">
-        <img src="assets/lab04-after.jpg" alt="AFTER: LANDING to CURATED to FINANCE_MART floors" width="1600" height="900" loading="eager" />
+        <img src="assets/lab04-after.jpg" alt="AFTER: BRONZE_LANDING to SILVER_CURATED to GOLD_MART floors" width="1600" height="900" loading="eager" />
         <figcaption>
           <strong>After</strong>
-          Named floors — LANDING → CURATED → FINANCE_MART.
+          Named floors — BRONZE_LANDING → SILVER_CURATED → GOLD_MART.
         </figcaption>
       </figure>
     </div>
@@ -73,19 +79,19 @@
       <div class="see-grid three">
         <div class="see-card">
           <div class="see-label">Bronze</div>
-          <strong><code>LANDING</code></strong>
+          <strong><code>BRONZE_LANDING</code></strong>
           <p>Source-shaped — Jordan’s dock.</p>
           <div class="see-example"><code>TXN_EVENTS</code><br>debug only</div>
         </div>
         <div class="see-card">
           <div class="see-label">Silver</div>
-          <strong><code>CURATED.SILVER_TXNS</code></strong>
+          <strong><code>SILVER_CURATED.SILVER_TXNS</code></strong>
           <p>Rules applied — no negative amounts.</p>
           <div class="see-example">UPPER(status)<br>engineers trust this</div>
         </div>
         <div class="see-card">
           <div class="see-label">Gold</div>
-          <strong><code>FINANCE_MART.GOLD_CLIENT_SUMMARY</code></strong>
+          <strong><code>GOLD_MART.GOLD_CLIENT_SUMMARY</code></strong>
           <p>Aggregates for the board deck.</p>
           <div class="see-example">counts · LTV by client<br>CTAS in this lab</div>
         </div>
@@ -93,10 +99,10 @@
     </section>
 
     <figure class="viz-panel">
-      <img src="assets/lab04-medallion.jpg" alt="Medallion three floors at Meridian: LANDING to CURATED to FINANCE_MART so Marcus stops getting lost" width="1600" height="900" loading="lazy" />
+      <img src="assets/lab04-medallion.jpg" alt="Medallion three floors at Meridian: BRONZE_LANDING to SILVER_CURATED to GOLD_MART so Marcus stops getting lost" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Three floors</strong>
-        LANDING → CURATED → FINANCE_MART so Marcus stops getting lost.
+        BRONZE_LANDING → SILVER_CURATED → GOLD_MART so Marcus stops getting lost.
       </figcaption>
     </figure>
 
@@ -105,24 +111,24 @@
       <div class="flow-pipeline" aria-label="Medallion flow at Meridian">
         <div class="flow-node source">
           <span class="flow-tag">Bronze · dock</span>
-          <strong>LANDING.TXN_EVENTS</strong>
+          <strong>bronze_landing.txn_events</strong>
           <span class="flow-sub">Jordan loads · status as-is</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node stg">
           <span class="flow-tag">Silver · shelves</span>
-          <strong>CURATED.SILVER_TXNS</strong>
+          <strong>SILVER_CURATED.SILVER_TXNS</strong>
           <span class="flow-sub">UPPER(status) · amount ≥ 0</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node fct">
           <span class="flow-tag">Gold · report wall</span>
-          <strong>FINANCE_MART.GOLD_CLIENT_SUMMARY</strong>
+          <strong>GOLD_MART.GOLD_CLIENT_SUMMARY</strong>
           <span class="flow-sub">counts &amp; lifetime value by client</span>
         </div>
       </div>
       <p>
-        <strong>Interview line:</strong> “Analysts consume gold in FINANCE_MART; they don’t point BI at LANDING unless they’re debugging with engineer approval.”
+        <strong>Interview line:</strong> “Analysts consume gold in GOLD_MART; they don’t point BI at BRONZE_LANDING unless they’re debugging with engineer approval.”
       </p>
     </section>
 
@@ -136,7 +142,7 @@
         </p>
         <p>
           <strong>When Elena mentions it in an interview:</strong> “We’d use Vault-style hubs/satellites inside silver if we had many sources and late-arriving keys;
-          for this bank lab, CURATED silver tables plus FINANCE_MART gold keep lineage clear without a fourth naming scheme.”
+          for this bank lab, SILVER_CURATED silver tables plus GOLD_MART gold keep lineage clear without a fourth naming scheme.”
         </p>
         <p>No Vault DDL in this lab — you’re proving you can name layers and point Alex at the right shelf.</p>
       </div>
@@ -144,7 +150,7 @@
 
     <div class="callout warn">
       <strong>Prerequisite</strong>
-      Run Lab 02 so <code>LANDING.TXN_EVENTS</code> exists (Day 1 + Day 2 rows are fine). Empty dock = empty gold.
+      Run Lab 02 so <code>bronze_landing.txn_events</code> exists (Day 1 + Day 2 rows are fine). Empty dock = empty gold.
     </div>
 
     <article class="step">
@@ -165,14 +171,14 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Ensure the report-wall schema exists</h3></div></div>
       <div class="explain">
-        <h4>Why FINANCE_MART?</h4>
-        <p>Gold lives on Alex’s floor — separate from engineering’s CURATED shelves so RBAC and naming stay crisp.</p>
+        <h4>Why GOLD_MART?</h4>
+        <p>Gold lives on Alex’s floor — separate from engineering’s SILVER_CURATED shelves so RBAC and naming stay crisp.</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · gold floor</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE SCHEMA IF NOT EXISTS FINANCE_MART;</code></pre>
+<pre><code>CREATE SCHEMA IF NOT EXISTS GOLD_MART;</code></pre>
       </div>
-      <div class="badge-ok">✓ FINANCE_MART appears under MERIDIAN_BANK</div>
+      <div class="badge-ok">✓ GOLD_MART appears under MERIDIAN_BANK</div>
     </article>
 
     <article class="step">
@@ -186,26 +192,26 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
         <p>Matches <code>sql/04_medallion.sql</code> silver definition.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · CURATED.SILVER_TXNS</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE OR REPLACE TABLE CURATED.SILVER_TXNS AS
+        <div class="code-head"><span>SQL · SILVER_CURATED.SILVER_TXNS</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE SILVER_CURATED.SILVER_TXNS AS
 SELECT TXN_ID, CLIENT_ID, UPPER(STATUS) AS STATUS, AMOUNT, UPDATED_AT
-FROM LANDING.TXN_EVENTS
+FROM bronze_landing.txn_events
 WHERE AMOUNT >= 0;</code></pre>
       </div>
-      <div class="badge-ok">✓ Table under CURATED — row count ≤ LANDING (reversals with negative amount drop if any)</div>
+      <div class="badge-ok">✓ Table under SILVER_CURATED — row count ≤ BRONZE_LANDING (reversals with negative amount drop if any)</div>
     </article>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Build gold — client-level board metrics</h3></div></div>
       <div class="explain">
         <h4>Why aggregate here?</h4>
-        <p>Alex wants lifetime value and txn counts — that’s a business question, not a raw feed. Gold reads silver only, never LANDING directly.</p>
+        <p>Alex wants lifetime value and txn counts — that’s a business question, not a raw feed. Gold reads silver only, never BRONZE_LANDING directly.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · FINANCE_MART.GOLD_CLIENT_SUMMARY</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE OR REPLACE TABLE FINANCE_MART.GOLD_CLIENT_SUMMARY AS
+        <div class="code-head"><span>SQL · GOLD_MART.GOLD_CLIENT_SUMMARY</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE GOLD_MART.GOLD_CLIENT_SUMMARY AS
 SELECT CLIENT_ID, COUNT(*) AS TXN_COUNT, SUM(AMOUNT) AS LIFETIME_VALUE, MAX(UPDATED_AT) AS LAST_UPDATE
-FROM CURATED.SILVER_TXNS
+FROM SILVER_CURATED.SILVER_TXNS
 GROUP BY CLIENT_ID;</code></pre>
       </div>
       <div class="badge-ok">✓ One row per client_id that appears in silver</div>
@@ -215,21 +221,21 @@ GROUP BY CLIENT_ID;</code></pre>
       <div class="step-head"><div class="step-num">5</div><div><h3>Prove layer row counts</h3></div></div>
       <div class="explain">
         <h4>What you should see</h4>
-        <p>Three layers, three counts — landing ≥ silver ≥ gold row cardinality (gold is grouped by client).</p>
+        <p>Three layers, three counts — BRONZE_LANDING ≥ silver ≥ gold row cardinality (gold is grouped by client).</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · layer counts</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT 'landing' AS layer, COUNT(*) AS n FROM LANDING.TXN_EVENTS
-UNION ALL SELECT 'silver', COUNT(*) FROM CURATED.SILVER_TXNS
-UNION ALL SELECT 'gold', COUNT(*) FROM FINANCE_MART.GOLD_CLIENT_SUMMARY;</code></pre>
+<pre><code>SELECT 'BRONZE_LANDING' AS layer, COUNT(*) AS n FROM bronze_landing.txn_events
+UNION ALL SELECT 'silver', COUNT(*) FROM SILVER_CURATED.SILVER_TXNS
+UNION ALL SELECT 'gold', COUNT(*) FROM GOLD_MART.GOLD_CLIENT_SUMMARY;</code></pre>
       </div>
-      <div class="badge-ok">✓ Three rows — Alex should query FINANCE_MART, not LANDING</div>
+      <div class="badge-ok">✓ Three rows — Alex should query GOLD_MART, not BRONZE_LANDING</div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Marcus needed a vocabulary. Bronze is LANDING where Jordan loads TXN_EVENTS; silver is CURATED.SILVER_TXNS with status normalized and bad amounts filtered;
-      gold is FINANCE_MART.GOLD_CLIENT_SUMMARY for client-level metrics. Data Vault is the answer if he asks about hub-and-satellite modeling at scale — today we kept three obvious layers.
+      “Marcus needed a vocabulary. Bronze is BRONZE_LANDING where Jordan loads TXN_EVENTS; silver is SILVER_CURATED.SILVER_TXNS with status normalized and bad amounts filtered;
+      gold is GOLD_MART.GOLD_CLIENT_SUMMARY for client-level metrics. Data Vault is the answer if he asks about hub-and-satellite modeling at scale — today we kept three obvious layers.
       <em>Outcome:</em> one agreed lineage story; engineers land raw, analysts consume gold.”
     </div>
 

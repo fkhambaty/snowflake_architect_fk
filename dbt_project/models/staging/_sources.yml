@@ -1,9 +1,9 @@
 version: 2
 
 sources:
-  - name: landing
+  - name: bronze_landing
     database: MERIDIAN_BANK
-    schema: LANDING
+    schema: BRONZE_LANDING
     tables:
       - name: txn_events
         description: "Meridian Bank txn events for incremental merge demo"

@@ -50,7 +50,7 @@
     <div class="callout ok">
       <strong>Solution you will build</strong>
       Database <code>MERIDIAN_BANK</code>, warehouse <code>WH_BANK_XS</code>, architect role
-      <code>ROLE_BANK_LAB_ADMIN</code>, schemas for landing through utils, and five sample <code>LANDING.CLIENTS</code> rows with PII for tomorrow’s security lab.
+      <code>ROLE_BANK_LAB_ADMIN</code>, schemas for BRONZE_LANDING through utils, and five sample <code>BRONZE_LANDING.CLIENTS</code> rows with PII for tomorrow’s security lab.
     </div>
 
     <div class="ba-grid">
@@ -84,7 +84,7 @@
           <div class="see-label">Folder</div>
           <strong>Schema = a room</strong>
           <p>Groups related tables — like floors in the building.</p>
-          <div class="see-example"><code>LANDING</code> = loading dock<br><code>CURATED</code> = clean shelves</div>
+          <div class="see-example"><code>BRONZE_LANDING</code> = loading dock<br><code>SILVER_CURATED</code> = clean shelves</div>
         </div>
       </div>
       <div class="see-grid two" style="margin-top:0.85rem">
@@ -104,10 +104,10 @@
     </section>
 
     <figure class="viz-panel">
-      <img src="assets/lab00-workshop.jpg" alt="Meridian Bank building: Elena opens MERIDIAN_BANK with schemas LANDING through UTILS and warehouse WH_BANK_XS while Marcus watches" width="1600" height="900" loading="lazy" />
+      <img src="assets/lab00-workshop.jpg" alt="Meridian Bank building: Elena opens MERIDIAN_BANK with schemas BRONZE_LANDING through UTILS and warehouse WH_BANK_XS while Marcus watches" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · The bank building</strong>
-        Elena opens MERIDIAN_BANK; rooms LANDING→UTILS; engine WH_BANK_XS; Marcus watches.
+        Elena opens MERIDIAN_BANK; rooms BRONZE_LANDING→UTILS; engine WH_BANK_XS; Marcus watches.
       </figcaption>
     </figure>
 
@@ -144,19 +144,19 @@
       <div class="see-grid three">
         <div class="see-card">
           <div class="see-label">Dock</div>
-          <strong><code>LANDING</code></strong>
+          <strong><code>BRONZE_LANDING</code></strong>
           <p>Raw client/txn files land here — not “RAW”.</p>
-          <div class="see-example"><code>LANDING.CLIENTS</code></div>
+          <div class="see-example"><code>BRONZE_LANDING.CLIENTS</code></div>
         </div>
         <div class="see-card">
           <div class="see-label">Shelves</div>
-          <strong><code>CURATED</code></strong>
+          <strong><code>SILVER_CURATED</code></strong>
           <p>Cleaned data — broader read than the dock.</p>
           <div class="see-example">views · facts · Lab 01 window</div>
         </div>
         <div class="see-card">
           <div class="see-label">Later labs</div>
-          <strong><code>RISK_CTRL</code> · <code>FINANCE_MART</code> · <code>FILE_IN</code></strong>
+          <strong><code>RISK_CTRL</code> · <code>GOLD_MART</code> · <code>FILE_IN</code></strong>
           <p>Policies, gold reports, file truck bay.</p>
           <div class="see-example">masking · board metrics · COPY</div>
         </div>
@@ -308,7 +308,7 @@ DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;</code></pre>
       <div class="step-head"><div class="step-num">9</div><div><h3>Label the rooms (schemas)</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p>Empty folders inside <code>MERIDIAN_BANK</code>. Tables you create later land in one schema at a time via <code>USE SCHEMA</code> or fully qualified names like <code>LANDING.CLIENTS</code>.</p>
+        <p>Empty folders inside <code>MERIDIAN_BANK</code>. Tables you create later land in one schema at a time via <code>USE SCHEMA</code> or fully qualified names like <code>BRONZE_LANDING.CLIENTS</code>.</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · session context</span><button type="button" class="copy-btn">Copy</button></div>
@@ -317,10 +317,10 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · create schemas</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE SCHEMA IF NOT EXISTS LANDING;
-CREATE SCHEMA IF NOT EXISTS CURATED;
+<pre><code>CREATE SCHEMA IF NOT EXISTS BRONZE_LANDING;
+CREATE SCHEMA IF NOT EXISTS SILVER_CURATED;
 CREATE SCHEMA IF NOT EXISTS RISK_CTRL;
-CREATE SCHEMA IF NOT EXISTS FINANCE_MART;
+CREATE SCHEMA IF NOT EXISTS GOLD_MART;
 CREATE SCHEMA IF NOT EXISTS FILE_IN;
 CREATE SCHEMA IF NOT EXISTS UTILS;</code></pre>
       </div>
@@ -329,7 +329,7 @@ CREATE SCHEMA IF NOT EXISTS UTILS;</code></pre>
 <pre><code>SELECT 'Lab 00 Meridian Bank bootstrap OK' AS status;
 SHOW SCHEMAS IN DATABASE MERIDIAN_BANK;</code></pre>
       </div>
-      <div class="badge-ok">✓ Status row + LANDING, CURATED, RISK_CTRL, FINANCE_MART, FILE_IN, UTILS in the list</div>
+      <div class="badge-ok">✓ Status row + BRONZE_LANDING, SILVER_CURATED, RISK_CTRL, GOLD_MART, FILE_IN, UTILS in the list</div>
     </article>
 
     <article class="step">
@@ -337,7 +337,7 @@ SHOW SCHEMAS IN DATABASE MERIDIAN_BANK;</code></pre>
       <div class="explain">
         <h4>Why clients with SSN last-4?</h4>
         <p>
-          Lab 01’s whole drama needs realistic PII in <code>LANDING.CLIENTS</code> so Elena can prove Alex cannot SELECT it.
+          Lab 01’s whole drama needs realistic PII in <code>BRONZE_LANDING.CLIENTS</code> so Elena can prove Alex cannot SELECT it.
           Matches <code>sql/00_sample_data.sql</code>.
         </p>
       </div>
@@ -346,7 +346,7 @@ SHOW SCHEMAS IN DATABASE MERIDIAN_BANK;</code></pre>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
-USE SCHEMA LANDING;
+USE SCHEMA BRONZE_LANDING;
 
 CREATE OR REPLACE TABLE CLIENTS (
   CLIENT_ID     NUMBER,
@@ -377,8 +377,8 @@ CREATE OR REPLACE TABLE CLIENTS (
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian had no Snowflake home. As ACCOUNTADMIN I poured the foundation: warehouse WH_BANK_XS with auto-suspend,
-      database MERIDIAN_BANK owned by ROLE_BANK_LAB_ADMIN, and labeled schemas — LANDING for raw, CURATED for clean,
-      RISK_CTRL for policies, FINANCE_MART for reports. I loaded five sample clients with PII so we can prove security tomorrow.
+      database MERIDIAN_BANK owned by ROLE_BANK_LAB_ADMIN, and labeled schemas — BRONZE_LANDING for raw, SILVER_CURATED for clean,
+      RISK_CTRL for policies, GOLD_MART for reports. I loaded five sample clients with PII so we can prove security tomorrow.
       <em>Outcome:</em> one owned playground, near-zero idle cost, ready for RBAC.”
     </div>
 

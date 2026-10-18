@@ -44,7 +44,7 @@
 
     <div class="callout ok">
       <strong>Solution you will practice</strong>
-      Twelve mock questions below with “Say this” answers tied to Labs 00–13. Use FR_/AR_ vocabulary, object names (MERIDIAN_BANK, LANDING, CURATED, RISK_CTRL), and cast names.
+      Twelve mock questions below with “Say this” answers tied to Labs 00–13. Use FR_/AR_ vocabulary, object names (MERIDIAN_BANK, BRONZE_LANDING, SILVER_CURATED, RISK_CTRL), and cast names.
     </div>
 
     <div class="ba-grid">
@@ -77,7 +77,7 @@
         <div class="see-card">
           <div class="see-label">Names</div>
           <strong>MERIDIAN_BANK cast</strong>
-          <p>FR_/AR_, LANDING, CURATED, RISK_CTRL, WH_BANK_XS.</p>
+          <p>FR_/AR_, BRONZE_LANDING, SILVER_CURATED, RISK_CTRL, WH_BANK_XS.</p>
           <div class="see-example">Nora = share · Dev = clone<br>region = replication</div>
         </div>
       </div>
@@ -102,12 +102,12 @@
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
-        <p>Lab 01 is about <em>structural</em> access: Alex gets a curated view without PII columns, not a second copy of clients. Functional roles (FR_) hold job badges; access roles (AR_) are key-rings granted to those badges.</p>
+        <p>Lab 01 is about <em>structural</em> access: Alex gets a SILVER_CURATED view without PII columns, not a second copy of clients. Functional roles (FR_) hold job badges; access roles (AR_) are key-rings granted to those badges.</p>
         <p>Snowsight keeps secondary roles active, so any proof as FR_ANALYST must include <code>USE SECONDARY ROLES NONE</code> or the vault still opens via lab admin.</p>
       </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
-        <p>At Meridian I use FR_ANALYST with AR_CURATED_READ only — Alex queries CURATED.V_CLIENT_DIRECTORY, not LANDING.CLIENTS. I prove the vault fails with USE SECONDARY ROLES NONE so lab-admin power is not still attached. Sam keeps FR_COMPLIANCE with AR_PII_READ for audits.</p>
+        <p>At Meridian I use FR_ANALYST with AR_SILVER_CURATED_READ only — Alex queries SILVER_CURATED.V_CLIENT_DIRECTORY, not BRONZE_LANDING.CLIENTS. I prove the vault fails with USE SECONDARY ROLES NONE so lab-admin power is not still attached. Sam keeps FR_COMPLIANCE with AR_PII_READ for audits.</p>
       </details>
     </article>
 
@@ -122,7 +122,7 @@
       </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
-        <p>One table CURATED.CLIENTS_GOV; MP_EMAIL_MASK in RISK_CTRL checks CURRENT_ROLE(). I run identical SELECT as FR_ANALYST vs FR_COMPLIANCE — masked vs plain email, row policy limits countries for Alex.</p>
+        <p>One table SILVER_CURATED.CLIENTS_GOV; MP_EMAIL_MASK in RISK_CTRL checks CURRENT_ROLE(). I run identical SELECT as FR_ANALYST vs FR_COMPLIANCE — masked vs plain email, row policy limits countries for Alex.</p>
       </details>
     </article>
 
@@ -132,17 +132,17 @@
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
-        <p>Jordan owns the landing table; dbt owns the curated ledger. Incremental merge with <code>unique_key</code> upserts changed txns instead of rebuilding history — the watermark on <code>updated_at</code> limits each run’s input.</p>
+        <p>Jordan owns the BRONZE_LANDING table; dbt owns the SILVER_CURATED ledger. Incremental merge with <code>unique_key</code> upserts changed txns instead of rebuilding history — the watermark on <code>updated_at</code> limits each run’s input.</p>
         <p>Day 2 proof (new rows + status change on 1001) is the interview evidence that MERGE happened, not a full-table rewrite.</p>
       </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
-        <p>Jordan lands LANDING.TXN_EVENTS; dbt incremental merge on fct_orders_incremental with unique_key order_id and updated_at watermark on WH_BANK_XS. Day 2 MERGE proves we didn’t rebuild history.</p>
+        <p>Jordan lands bronze_landing.txn_events; dbt incremental merge on fct_orders_incremental with unique_key order_id and updated_at watermark on WH_BANK_XS. Day 2 MERGE proves we didn’t rebuild history.</p>
       </details>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">4</div><div><h3>Streams vs dbt incremental for landing CDC</h3>
+      <div class="step-head"><div class="step-num">4</div><div><h3>Streams vs dbt incremental for BRONZE_LANDING CDC</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-05.html">Lab 05</a></p></div></div>
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
@@ -152,7 +152,7 @@
       </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
-        <p>Streams + tasks for ops-owned near-real-time into CURATED.TXN_SILVER_CDC; dbt incremental when analytics owns the DAG in git. Meridian uses both: task for speed, dbt for tested marts.</p>
+        <p>Streams + tasks for ops-owned near-real-time into SILVER_CURATED.TXN_SILVER_CDC; dbt incremental when analytics owns the DAG in git. Meridian uses both: task for speed, dbt for tested marts.</p>
       </details>
     </article>
 
@@ -207,12 +207,12 @@
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
-        <p>Share lets Nora query from her account with her warehouse — no CSV email, no copy of LANDING. A secure view hides columns and blocks unsafe joins so PII never enters the share object list.</p>
+        <p>Share lets Nora query from her account with her warehouse — no CSV email, no copy of BRONZE_LANDING. A secure view hides columns and blocks unsafe joins so PII never enters the share object list.</p>
         <p>Minimum columns is compliance design — same pattern as Alex’s view in Lab 01, but cross-account.</p>
       </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
-        <p>SECURE VIEW CURATED.V_SHARE_TXNS — minimum columns — inside SHARE_MERIDIAN_TXNS. Nora uses her warehouse; no LANDING CLIENTS or SSN.</p>
+        <p>SECURE VIEW SILVER_CURATED.V_SHARE_TXNS — minimum columns — inside SHARE_MERIDIAN_TXNS. Nora uses her warehouse; no BRONZE_LANDING CLIENTS or SSN.</p>
       </details>
     </article>
 
@@ -283,7 +283,7 @@
       <tr><td>FR_/AR_ RBAC + V_CLIENT_DIRECTORY</td><td><a href="lab-01.html">01</a></td></tr>
       <tr><td>dbt incremental merge</td><td><a href="lab-02.html">02</a>, <a href="lab-12.html">12</a></td></tr>
       <tr><td>Masking + row access</td><td><a href="lab-03.html">03</a></td></tr>
-      <tr><td>Medallion + FINANCE_MART</td><td><a href="lab-04.html">04</a></td></tr>
+      <tr><td>Medallion + GOLD_MART</td><td><a href="lab-04.html">04</a></td></tr>
       <tr><td>Streams, tasks, COPY / Snowpipe story</td><td><a href="lab-05.html">05</a>, <a href="lab-06.html">06</a></td></tr>
       <tr><td>Query Profile</td><td><a href="lab-07.html">07</a></td></tr>
       <tr><td>Clustering</td><td><a href="lab-08.html">08</a></td></tr>
@@ -295,8 +295,8 @@
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “I spent one week as architect for Meridian Bank: built MERIDIAN_BANK with LANDING and CURATED, separated FR_ job badges from AR_ key-rings so Alex never saw SSN,
-      incremental dbt on txn facts, policies in RISK_CTRL, medallion paths to FINANCE_MART, automated landing with streams and COPY,
+      “I spent one week as architect for Meridian Bank: built MERIDIAN_BANK with BRONZE_LANDING and SILVER_CURATED, separated FR_ job badges from AR_ key-rings so Alex never saw SSN,
+      incremental dbt on txn facts, policies in RISK_CTRL, medallion paths to GOLD_MART, automated BRONZE_LANDING with streams and COPY,
       tuned WH_BANK_XS with Profile and clustering, recovered mistakes with Time Travel and clones for Dev, shared secure views with Nora, and explained DR and FinOps to Marcus.
       <em>Outcome:</em> I can answer scenario questions with names, objects, and proof — not generic Snowflake slides.”
     </div>

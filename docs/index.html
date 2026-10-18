@@ -44,7 +44,7 @@
         </p>
         <ul class="cast">
           <li><strong>Alex Rivera</strong> — Analyst (dashboards; no SSN)</li>
-          <li><strong>Jordan Okonkwo</strong> — Data Engineer (landing + dbt)</li>
+          <li><strong>Jordan Okonkwo</strong> — Data Engineer (BRONZE_LANDING + dbt)</li>
           <li><strong>Sam Okada</strong> — Risk &amp; Compliance (audit access)</li>
         </ul>
         <p>Database you will build: <code>MERIDIAN_BANK</code>. Full cast &amp; week: <a href="story.html">Story</a>.</p>
@@ -55,7 +55,7 @@
         <table class="gloss">
           <tr><th>Prefix</th><th>Full name</th><th>Meaning</th></tr>
           <tr><td><code>FR_</code></td><td>Functional Role</td><td>Job badge (Alex = <code>FR_ANALYST</code>)</td></tr>
-          <tr><td><code>AR_</code></td><td>Access Role</td><td>Key-ring of permissions (<code>AR_CURATED_READ</code>)</td></tr>
+          <tr><td><code>AR_</code></td><td>Access Role</td><td>Key-ring of permissions (<code>AR_SILVER_CURATED_READ</code>)</td></tr>
         </table>
       </div>
 
@@ -79,7 +79,7 @@
         <a class="card" href="lab-01.html"><span class="num">01</span><h3>Stop analysts seeing SSN</h3><p>Problem: vault open to everyone. → FR_/AR_ + safe view.</p></a>
         <a class="card" href="lab-02.html"><span class="num">02</span><h3>Don’t rebuild the ledger nightly</h3><p>dbt incremental merge.</p></a>
         <a class="card" href="lab-03.html"><span class="num">03</span><h3>Mask email; filter countries</h3><p>Policies for Alex vs Sam.</p></a>
-        <a class="card" href="lab-04.html"><span class="num">04</span><h3>Landing → curated → mart</h3><p>Medallion for the bank.</p></a>
+        <a class="card" href="lab-04.html"><span class="num">04</span><h3>BRONZE_LANDING → SILVER_CURATED → mart</h3><p>Medallion for the bank.</p></a>
         <a class="card" href="lab-05.html"><span class="num">05</span><h3>Automate the handoff</h3><p>Streams/tasks vs dbt.</p></a>
         <a class="card" href="lab-06.html"><span class="num">06</span><h3>Files land overnight</h3><p>Stage + COPY / Snowpipe.</p></a>
         <a class="card" href="lab-07.html"><span class="num">07</span><h3>Board query is dying</h3><p>Query Profile.</p></a>

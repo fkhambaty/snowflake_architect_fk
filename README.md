@@ -19,8 +19,8 @@ Each lab has a **visual story panel** (same cast faces — see `docs/CAST_VISUAL
 | Database | `MERIDIAN_BANK` |
 | Warehouse | `WH_BANK_XS` |
 | Architect role | `ROLE_BANK_LAB_ADMIN` |
-| Landing schema | `LANDING` (not RAW) |
-| Key tables | `LANDING.CLIENTS`, `LANDING.TXN_EVENTS` |
+| BRONZE_LANDING schema | `BRONZE_LANDING` (not RAW) |
+| Key tables | `BRONZE_LANDING.CLIENTS`, `bronze_landing.txn_events` |
 
 Full map: [`docs/BANK_NAMING.md`](docs/BANK_NAMING.md)
 
@@ -32,7 +32,7 @@ Full map: [`docs/BANK_NAMING.md`](docs/BANK_NAMING.md)
 | 01 | Analysts can see SSN | FR_/AR_ RBAC + safe directory view |
 | 02 | Full ledger rebuild nightly | dbt incremental merge on txn events |
 | 03 | Email/country leakage | Masking + row access policies |
-| 04 | Messy layers for Finance | Landing → curated → mart |
+| 04 | Messy layers for Finance | BRONZE_LANDING → SILVER_CURATED → mart |
 | 05 | Manual handoffs | Streams/tasks vs dynamic tables |
 | 06 | Overnight files | Stage + COPY (Snowpipe story) |
 | 07 | Board query dying | Query Profile + warehouse choices |

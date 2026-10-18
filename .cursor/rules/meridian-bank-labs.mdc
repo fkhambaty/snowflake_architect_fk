@@ -14,8 +14,10 @@ This repo is interview prep: **Meridian Bank**, student plays **Elena Vasquez**.
 | Database | `MERIDIAN_BANK` |
 | Warehouse | `WH_BANK_XS` |
 | Architect role | `ROLE_BANK_LAB_ADMIN` |
-| Landing schema | `LANDING` (not `RAW`) |
-| Access roles | `AR_LANDING_READ`, `AR_CURATED_READ`, `AR_PII_READ` |
+| Bronze schema | `BRONZE_LANDING` (not `LANDING` / `RAW`) |
+| Silver schema | `SILVER_CURATED` (not `CURATED`) |
+| Gold schema | `GOLD_MART` (not `FINANCE_MART`) |
+| Access roles | `AR_BRONZE_LANDING_READ`, `AR_SILVER_CURATED_READ`, `AR_PII_READ` |
 
 See `docs/BANK_NAMING.md`. Cleanup: `sql/cleanup_lab00_lab01.sql`.
 

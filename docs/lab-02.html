@@ -48,7 +48,7 @@
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Land Day-1 rows in <code>LANDING.TXN_EVENTS</code>, clean them in a dbt <em>view</em> <code>stg_orders</code>,
+      Land Day-1 rows in <code>bronze_landing.txn_events</code>, clean them in a dbt <em>view</em> <code>stg_orders</code>,
       then keep a durable fact table <code>fct_orders_incremental</code> up to date with <em>incremental merge</em>
       (only new/changed rows, keyed by txn id, filtered by an <code>updated_at</code> watermark).
     </div>
@@ -80,19 +80,19 @@
       <div class="flow-pipeline" aria-label="Animated data flow from source to fact">
         <div class="flow-node source">
           <span class="flow-tag">1 · Source (Snowflake table)</span>
-          <strong>LANDING.TXN_EVENTS</strong>
+          <strong>bronze_landing.txn_events</strong>
           <span class="flow-sub">Jordan’s dock · raw truth · main table</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node stg">
           <span class="flow-tag">2 · Staging (dbt view)</span>
-          <strong>CURATED.STG_ORDERS</strong>
+          <strong>SILVER_CURATED.STG_ORDERS</strong>
           <span class="flow-sub">rename columns · no storage of its own</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node fct">
           <span class="flow-tag">3 · Fact (dbt incremental table)</span>
-          <strong>CURATED.FCT_ORDERS_INCREMENTAL</strong>
+          <strong>SILVER_CURATED.FCT_ORDERS_INCREMENTAL</strong>
           <span class="flow-sub">Alex’s ledger · grows / updates via MERGE</span>
         </div>
       </div>
@@ -100,7 +100,7 @@
       <div class="see-grid three">
         <div class="see-card">
           <div class="see-label">1 · Source</div>
-          <strong><code>LANDING.TXN_EVENTS</code></strong>
+          <strong><code>bronze_landing.txn_events</code></strong>
           <p>You create in SQL — Jordan’s dock log.</p>
           <div class="see-example">inserts land here first</div>
         </div>
@@ -118,7 +118,7 @@
         </div>
       </div>
       <figure class="viz-panel" style="margin-top:1rem">
-        <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on LANDING.TXN_EVENTS" width="1600" height="900" loading="lazy" />
+        <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on bronze_landing.txn_events" width="1600" height="900" loading="lazy" />
         <figcaption>
           <strong>Picture · Only change the ledger</strong>
           Full refresh = rebuild everything. Incremental = touch only what changed since last run.
@@ -126,7 +126,7 @@
       </figure>
       <p>
         <strong>Folders</strong> <code>models/staging/</code> and <code>models/marts/</code> are only how files sit on disk.
-        In Snowflake both models land in schema <code>CURATED</code> (see <code>dbt_project.yml</code>).
+        In Snowflake both models land in schema <code>SILVER_CURATED</code> (see <code>dbt_project.yml</code>).
         You will <em>not</em> see schemas named staging/marts.
       </p>
     </section>
@@ -224,12 +224,12 @@
       <div class="explain">
         <h4>A) <code>stg_orders.sql</code> — the translator</h4>
         <p>
-          <code>{{ source('landing', 'txn_events') }}</code> means: “read the table declared in <code>_sources.yml</code>
-          as Meridian’s landing dock.” dbt does <em>not</em> create TXN_EVENTS — you did, in SQL.
+          <code>{{ source('BRONZE_LANDING', 'txn_events') }}</code> means: “read the table declared in <code>_sources.yml</code>
+          as Meridian’s BRONZE_LANDING dock.” dbt does <em>not</em> create TXN_EVENTS — you did, in SQL.
         </p>
         <p>
           Renames (<code>txn_id → order_id</code>) keep bank language at the dock and slightly more “analytics” names
-          in curated models. Still the same five rows.
+          in SILVER_CURATED models. Still the same five rows.
         </p>
       </div>
       <div class="code-block">
@@ -242,7 +242,7 @@ select
     status,
     amount as order_total,
     updated_at
-from {{ source('landing', 'txn_events') }}</code></pre>
+from {{ source('BRONZE_LANDING', 'txn_events') }}</code></pre>
       </div>
 
       <div class="explain">
@@ -291,7 +291,7 @@ from {{ ref('stg_orders') }}
 
     <div class="story">
       <div class="story-label">Tuesday in the data team room</div>
-      <p>Jordan: “I land events in LANDING.” Elena: “Staging renames; the fact merges on txn id using updated_at as the bookmark. Prove it with Day 2.”</p>
+      <p>Jordan: “I land events in BRONZE_LANDING.” Elena: “Staging renames; the fact merges on txn id using updated_at as the bookmark. Prove it with Day 2.”</p>
     </div>
 
     <!-- ========== RUN STEPS ========== -->
@@ -299,7 +299,7 @@ from {{ ref('stg_orders') }}
       <div class="step-head"><div class="step-num">1</div><div><h3>Wire dbt to Meridian Bank</h3></div></div>
       <div class="explain">
         <h4>profiles.yml = dbt’s login card</h4>
-        <p>dbt runs as <code>ROLE_BANK_LAB_ADMIN</code>. Models land in <code>CURATED</code>. Copy from <code>dbt_project/profiles.yml.example</code> → <code>profiles.yml</code> (keep passwords out of git).</p>
+        <p>dbt runs as <code>ROLE_BANK_LAB_ADMIN</code>. Models land in <code>SILVER_CURATED</code>. Copy from <code>dbt_project/profiles.yml.example</code> → <code>profiles.yml</code> (keep passwords out of git).</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>YAML · profiles.yml</span><button type="button" class="copy-btn">Copy</button></div>
@@ -314,7 +314,7 @@ from {{ ref('stg_orders') }}
       role: ROLE_BANK_LAB_ADMIN
       database: MERIDIAN_BANK
       warehouse: WH_BANK_XS
-      schema: CURATED
+      schema: SILVER_CURATED
       threads: 4</code></pre>
       </div>
       <div class="code-block">
@@ -336,7 +336,7 @@ dbt debug</code></pre>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
-USE SCHEMA LANDING;
+USE SCHEMA BRONZE_LANDING;
 
 CREATE OR REPLACE TABLE TXN_EVENTS (
   TXN_ID       NUMBER,
@@ -355,7 +355,7 @@ INSERT INTO TXN_EVENTS VALUES
 
 SELECT 'day1' AS batch, COUNT(*) AS n FROM TXN_EVENTS;</code></pre>
       </div>
-      <div class="badge-ok">✓ n = 5 in LANDING.TXN_EVENTS</div>
+      <div class="badge-ok">✓ n = 5 in bronze_landing.txn_events</div>
     </article>
 
     <article class="step">
@@ -373,8 +373,8 @@ dbt test --select fct_orders_incremental</code></pre>
         <div class="code-head"><span>SQL · verify in Snowsight</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE DATABASE MERIDIAN_BANK;
-SELECT COUNT(*) AS rows_after_first_run FROM CURATED.FCT_ORDERS_INCREMENTAL;
--- Look in CURATED: STG_ORDERS (view) + FCT_ORDERS_INCREMENTAL (table)</code></pre>
+SELECT COUNT(*) AS rows_after_first_run FROM SILVER_CURATED.FCT_ORDERS_INCREMENTAL;
+-- Look in SILVER_CURATED: STG_ORDERS (view) + FCT_ORDERS_INCREMENTAL (table)</code></pre>
       </div>
       <div class="badge-ok">✓ 5 rows; order_id 1001 status POSTED · watermark ≈ 2026-10-01 14:00</div>
     </article>
@@ -390,7 +390,7 @@ SELECT COUNT(*) AS rows_after_first_run FROM CURATED.FCT_ORDERS_INCREMENTAL;
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
-USE SCHEMA LANDING;
+USE SCHEMA BRONZE_LANDING;
 
 INSERT INTO TXN_EVENTS VALUES
   (1006, 1, 'POSTED', 55.00, '2026-10-02 09:00:00'),
@@ -409,7 +409,7 @@ SELECT TXN_ID, STATUS, UPDATED_AT FROM TXN_EVENTS ORDER BY TXN_ID;</code></pre>
       <div class="code-block">
         <div class="code-head"><span>SQL · prove merge</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT ORDER_ID, STATUS, UPDATED_AT
-FROM CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
+FROM SILVER_CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
       </div>
       <ul class="checklist">
         <li>7 rows total (no duplicates on 1001)</li>
@@ -420,7 +420,7 @@ FROM CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s problem was a nightly full refresh on growing txn history. The main table is LANDING.TXN_EVENTS.
+      “Meridian’s problem was a nightly full refresh on growing txn history. The main table is bronze_landing.txn_events.
       stg_orders is a view that renames columns; fct_orders_incremental is an incremental table that MERGEs on order_id
       and only reads rows newer than the updated_at watermark — a bookmark on the last processed timestamp.
       Day 2 inserts and a status change on 1001 merged without rebuilding the whole ledger.

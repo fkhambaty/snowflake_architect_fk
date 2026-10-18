@@ -11,8 +11,8 @@ clean-targets: ["target", "dbt_packages"]
 models:
   snowflake_architect_fk:
     staging:
-      +schema: CURATED
+      +schema: SILVER_CURATED
       +materialized: view
     marts:
-      +schema: CURATED
+      +schema: SILVER_CURATED
       +materialized: table

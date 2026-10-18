@@ -47,7 +47,7 @@
 
     <div class="callout ok">
       <strong>Solution you will design</strong>
-      Declare <code>landing.txn_events</code> in sources, enforce a contract on <code>fct_orders_incremental</code>, and describe Slim CI with <code>state:modified+</code> and <code>--defer</code> against a saved production manifest.
+      Declare <code>bronze_landing.txn_events</code> in sources, enforce a contract on <code>fct_orders_incremental</code>, and describe Slim CI with <code>state:modified+</code> and <code>--defer</code> against a saved production manifest.
     </div>
 
     <div class="ba-grid">
@@ -81,7 +81,7 @@
           <div class="see-label">Source</div>
           <strong>YAML dock address</strong>
           <p>Declares Jordan’s table — lineage in git.</p>
-          <div class="see-example">{{ source('landing', 'txn_events') }}<br>not hard-coded LANDING.*</div>
+          <div class="see-example">{{ source('bronze_landing', 'txn_events') }}<br>not hard-coded BRONZE_LANDING.*</div>
         </div>
         <div class="see-card">
           <div class="see-label">Contract</div>
@@ -147,10 +147,10 @@
     </section>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Sources file — header and landing database</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Sources file — header and BRONZE_LANDING database</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p><code>version: 2</code> tells dbt this is modern YAML schema. The <code>sources:</code> list begins the landing dock definition.</p>
+        <p><code>version: 2</code> tells dbt this is modern YAML schema. The <code>sources:</code> list begins the BRONZE_LANDING dock definition.</p>
         <h4>Why Elena does it</h4>
         <p>Without a source entry, dbt can still query via raw SQL — but lineage breaks and renames hide from the graph.</p>
       </div>
@@ -159,11 +159,11 @@
 <pre><code>version: 2
 
 sources:
-  - name: landing
+  - name: bronze_landing
     database: MERIDIAN_BANK
-    schema: LANDING</code></pre>
+    schema: BRONZE_LANDING</code></pre>
       </div>
-      <div class="badge-ok">✓ <code>name: landing</code> is the logical name in <code>source('landing', …)</code> — not the schema name by itself</div>
+      <div class="badge-ok">✓ <code>name: bronze_landing</code> is the logical name in <code>source('bronze_landing', …)</code> — not the schema name by itself</div>
     </article>
 
     <article class="step">
@@ -178,7 +178,7 @@ sources:
       - name: txn_events
         description: "Meridian Bank txn events for incremental merge demo"</code></pre>
       </div>
-      <div class="badge-ok">✓ In Snowsight you still created <code>LANDING.TXN_EVENTS</code> in Lab 02 — dbt does not create it</div>
+      <div class="badge-ok">✓ In Snowsight you still created <code>bronze_landing.txn_events</code> in Lab 02 — dbt does not create it</div>
     </article>
 
     <article class="step">
@@ -282,7 +282,7 @@ dbt deps</code></pre>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s mart broke because nobody enforced the published schema. I declared landing.txn_events as a dbt source, enforced a contract on fct_orders_incremental, and described Slim CI so PRs only build state:modified+ with defer to prod manifest.
+      “Meridian’s mart broke because nobody enforced the published schema. I declared bronze_landing.txn_events as a dbt source, enforced a contract on fct_orders_incremental, and described Slim CI so PRs only build state:modified+ with defer to prod manifest.
       <em>Outcome:</em> Alex’s dashboards get stable columns; Jordan’s team ships faster without full-graph builds every time.”
     </div>
 

@@ -37,27 +37,27 @@
     <h1>Stop analysts from seeing SSN</h1>
     <p class="lede">
       Read every <strong>Teach first</strong> box before you run SQL.
-      Lab 00 must exist (<code>MERIDIAN_BANK</code> + <code>LANDING.CLIENTS</code>).
+      Lab 00 must exist (<code>MERIDIAN_BANK</code> + <code>BRONZE_LANDING.CLIENTS</code>).
       Today you learn the grant chain humans actually wear in interviews: FR_ job badges, AR_ key-rings, vault vs window.
     </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
       Alex (Analyst) needs client names for a board deck.
-      Jordan (Engineer) needs the landing vault for pipelines.
+      Jordan (Engineer) needs the BRONZE_LANDING vault for pipelines.
       Sam (Compliance) needs SSN last-4 for an audit.
       Marcus: “If Alex ever selects SSN, Meridian fails the exam with the regulator.”
     </div>
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Job badges <code>FR_*</code> + key-rings <code>AR_*</code> + safe view <code>CURATED.V_CLIENT_DIRECTORY</code>
-      (no email/phone/SSN). Prove Alex is blocked from <code>LANDING.CLIENTS</code> with <code>USE SECONDARY ROLES NONE</code>.
+      Job badges <code>FR_*</code> + key-rings <code>AR_*</code> + safe view <code>SILVER_CURATED.V_CLIENT_DIRECTORY</code>
+      (no email/phone/SSN). Prove Alex is blocked from <code>BRONZE_LANDING.CLIENTS</code> with <code>USE SECONDARY ROLES NONE</code>.
     </div>
 
     <div class="ba-grid">
       <figure class="ba-panel before">
-        <img src="assets/lab01-before.jpg" alt="BEFORE: Alex can SELECT SSN from LANDING.CLIENTS" width="1600" height="900" loading="eager" />
+        <img src="assets/lab01-before.jpg" alt="BEFORE: Alex can SELECT SSN from BRONZE_LANDING.CLIENTS" width="1600" height="900" loading="eager" />
         <figcaption>
           <strong>Before</strong>
           Alex sees SSN — vault and window look the same.
@@ -86,7 +86,7 @@
           <div class="see-label">Key-ring</div>
           <strong><code>AR_*</code> — what you can open</strong>
           <p>Privileges clip onto FR badges — staff don’t wear AR directly.</p>
-          <div class="see-example">Alex: <code>AR_CURATED_READ</code> only<br>Jordan: <code>AR_LANDING_READ</code></div>
+          <div class="see-example">Alex: <code>AR_SILVER_CURATED_READ</code> only<br>Jordan: <code>AR_BRONZE_LANDING_READ</code></div>
         </div>
       </div>
       <div class="see-grid two" style="margin-top:0.85rem">
@@ -106,7 +106,7 @@
     </section>
 
     <figure class="viz-panel">
-      <img src="assets/lab01-rbac-map.jpg" alt="Meridian Bank: Alex, Jordan, and Sam with FR_ badges, AR_ keyrings, vault LANDING.CLIENTS and glass window V_CLIENT_DIRECTORY" width="1600" height="900" loading="lazy" />
+      <img src="assets/lab01-rbac-map.jpg" alt="Meridian Bank: Alex, Jordan, and Sam with FR_ badges, AR_ keyrings, vault BRONZE_LANDING.CLIENTS and glass window V_CLIENT_DIRECTORY" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture 1 · Burn this in</strong>
         Humans wear only <em>job badges</em> (FR_). Badges clip onto <em>key-rings</em> (AR_).
@@ -136,8 +136,8 @@
         </div>
       </div>
       <p>
-        Elena never gives Alex <code>AR_LANDING_READ</code> directly. Alex wears <code>FR_ANALYST</code>, which inherits
-        <code>AR_CURATED_READ</code> only — so the vault table stays locked while the window view opens.
+        Elena never gives Alex <code>AR_BRONZE_LANDING_READ</code> directly. Alex wears <code>FR_ANALYST</code>, which inherits
+        <code>AR_SILVER_CURATED_READ</code> only — so the vault table stays locked while the window view opens.
       </p>
     </section>
 
@@ -146,13 +146,13 @@
       <div class="see-grid two">
         <div class="see-card">
           <div class="see-label">Vault</div>
-          <strong><code>LANDING.CLIENTS</code></strong>
+          <strong><code>BRONZE_LANDING.CLIENTS</code></strong>
           <p>Bronze dock — PII columns live here.</p>
           <div class="see-example">Jordan · Sam ✓<br>Alex ✗</div>
         </div>
         <div class="see-card">
           <div class="see-label">Window</div>
-          <strong><code>CURATED.V_CLIENT_DIRECTORY</code></strong>
+          <strong><code>SILVER_CURATED.V_CLIENT_DIRECTORY</code></strong>
           <p>Safe projection for board decks.</p>
           <div class="see-example">Alex SELECT → names only<br>SSN column not in view</div>
         </div>
@@ -160,7 +160,7 @@
     </section>
 
     <figure class="viz-panel">
-      <svg class="viz-svg" viewBox="0 0 780 280" role="img" aria-label="Job badge FR_ANALYST clips onto key-ring AR_CURATED_READ which opens the window view but not the vault">
+      <svg class="viz-svg" viewBox="0 0 780 280" role="img" aria-label="Job badge FR_ANALYST clips onto key-ring AR_SILVER_CURATED_READ which opens the window view but not the vault">
         <defs>
           <linearGradient id="gSky" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#176f9e"/>
@@ -183,7 +183,7 @@
         <circle cx="370" cy="120" r="13" fill="none" stroke="#8f6a18" stroke-width="3"/>
         <path d="M382 108 q16 -4 22 12" stroke="#8f6a18" stroke-width="3.5" fill="none" stroke-linecap="round"/>
         <path d="M384 128 q14 6 20 -4" stroke="#5a6b7d" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <text x="370" y="192" text-anchor="middle" fill="#1a2433" font-family="DM Sans,Segoe UI,sans-serif" font-size="13" font-weight="600">AR_CURATED_READ</text>
+        <text x="370" y="192" text-anchor="middle" fill="#1a2433" font-family="DM Sans,Segoe UI,sans-serif" font-size="13" font-weight="600">AR_SILVER_CURATED_READ</text>
         <text x="370" y="212" text-anchor="middle" fill="#5a6b7d" font-family="DM Sans,Segoe UI,sans-serif" font-size="12">key-ring · what you can open</text>
         <path d="M430 120 H500" stroke="#176f9e" stroke-width="3" fill="none"/>
         <polygon points="500,113 520,120 500,127" fill="#176f9e"/>
@@ -196,7 +196,7 @@
         <rect x="686" y="36" width="72" height="168" rx="12" fill="#fff5f5" stroke="#c23d4a" stroke-width="3"/>
         <circle cx="722" cy="88" r="20" fill="#fde8ea" stroke="#c23d4a" stroke-width="2"/>
         <text x="722" y="148" text-anchor="middle" fill="#c23d4a" font-family="DM Sans,Segoe UI,sans-serif" font-size="13" font-weight="700">VAULT</text>
-        <text x="722" y="170" text-anchor="middle" fill="#0d5a82" font-family="IBM Plex Mono,monospace" font-size="10">LANDING</text>
+        <text x="722" y="170" text-anchor="middle" fill="#0d5a82" font-family="IBM Plex Mono,monospace" font-size="10">BRONZE_LANDING</text>
         <text x="722" y="188" text-anchor="middle" fill="#5a6b7d" font-family="DM Sans,Segoe UI,sans-serif" font-size="11">CLIENTS ✗</text>
       </svg>
       <figcaption>
@@ -244,7 +244,7 @@ SELECT 'Privilege repair OK' AS status;</code></pre>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
-SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM LANDING.CLIENTS;</code></pre>
+SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM BRONZE_LANDING.CLIENTS;</code></pre>
       </div>
       <div class="badge-ok">✓ n = 5 and pii_rows = 5</div>
     </article>
@@ -257,8 +257,8 @@ SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM LANDING.CLIENTS;</code><
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · access roles (key-rings)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE ROLE IF NOT EXISTS AR_LANDING_READ;
-CREATE ROLE IF NOT EXISTS AR_CURATED_READ;
+<pre><code>CREATE ROLE IF NOT EXISTS AR_BRONZE_LANDING_READ;
+CREATE ROLE IF NOT EXISTS AR_SILVER_CURATED_READ;
 CREATE ROLE IF NOT EXISTS AR_PII_READ;</code></pre>
       </div>
       <div class="code-block">
@@ -293,16 +293,16 @@ GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · database USAGE on AR_</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_LANDING_READ;
-GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_CURATED_READ;
+<pre><code>GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_BRONZE_LANDING_READ;
+GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_SILVER_CURATED_READ;
 GRANT USAGE ON DATABASE MERIDIAN_BANK TO ROLE AR_PII_READ;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · schema USAGE on AR_</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT USAGE ON SCHEMA LANDING TO ROLE AR_LANDING_READ;
-GRANT USAGE ON SCHEMA CURATED TO ROLE AR_CURATED_READ;
+<pre><code>GRANT USAGE ON SCHEMA BRONZE_LANDING TO ROLE AR_BRONZE_LANDING_READ;
+GRANT USAGE ON SCHEMA SILVER_CURATED TO ROLE AR_SILVER_CURATED_READ;
 GRANT USAGE ON SCHEMA RISK_CTRL TO ROLE AR_PII_READ;
-GRANT USAGE ON SCHEMA LANDING TO ROLE AR_PII_READ;</code></pre>
+GRANT USAGE ON SCHEMA BRONZE_LANDING TO ROLE AR_PII_READ;</code></pre>
       </div>
       <div class="badge-ok">✓ Key-rings can “enter” the right floors</div>
     </article>
@@ -314,21 +314,21 @@ GRANT USAGE ON SCHEMA LANDING TO ROLE AR_PII_READ;</code></pre>
         <p><code>ALL TABLES</code> covers what exists today. <code>FUTURE TABLES</code> covers what Jordan creates tomorrow without a grant fire drill.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · landing SELECT</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA LANDING TO ROLE AR_LANDING_READ;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA LANDING TO ROLE AR_LANDING_READ;</code></pre>
+        <div class="code-head"><span>SQL · BRONZE_LANDING SELECT</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA BRONZE_LANDING TO ROLE AR_BRONZE_LANDING_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA BRONZE_LANDING TO ROLE AR_BRONZE_LANDING_READ;</code></pre>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · curated SELECT</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA CURATED TO ROLE AR_CURATED_READ;</code></pre>
+        <div class="code-head"><span>SQL · SILVER_CURATED SELECT</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA SILVER_CURATED TO ROLE AR_SILVER_CURATED_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA SILVER_CURATED TO ROLE AR_SILVER_CURATED_READ;</code></pre>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · PII landing SELECT</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA LANDING TO ROLE AR_PII_READ;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA LANDING TO ROLE AR_PII_READ;</code></pre>
+        <div class="code-head"><span>SQL · PII BRONZE_LANDING SELECT</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA BRONZE_LANDING TO ROLE AR_PII_READ;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA BRONZE_LANDING TO ROLE AR_PII_READ;</code></pre>
       </div>
-      <div class="badge-ok">✓ AR_LANDING_READ and AR_PII_READ can read LANDING tables; AR_CURATED_READ reads CURATED</div>
+      <div class="badge-ok">✓ AR_BRONZE_LANDING_READ and AR_PII_READ can read BRONZE_LANDING tables; AR_SILVER_CURATED_READ reads SILVER_CURATED</div>
     </article>
 
     <article class="step">
@@ -336,24 +336,24 @@ GRANT SELECT ON FUTURE TABLES IN SCHEMA LANDING TO ROLE AR_PII_READ;</code></pre
       <div class="explain">
         <h4>Who gets which ring?</h4>
         <ul class="checklist">
-          <li>Alex → <code>AR_CURATED_READ</code> only (window, not vault)</li>
-          <li>Jordan → landing + curated (pipelines + clean shelves)</li>
-          <li>Sam → PII + curated (audit + governed shelf)</li>
+          <li>Alex → <code>AR_SILVER_CURATED_READ</code> only (window, not vault)</li>
+          <li>Jordan → BRONZE_LANDING + SILVER_CURATED (pipelines + clean shelves)</li>
+          <li>Sam → PII + SILVER_CURATED (audit + governed shelf)</li>
         </ul>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · Alex</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT ROLE AR_CURATED_READ TO ROLE FR_ANALYST;</code></pre>
+<pre><code>GRANT ROLE AR_SILVER_CURATED_READ TO ROLE FR_ANALYST;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · Jordan</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT ROLE AR_LANDING_READ TO ROLE FR_DATA_ENGINEER;
-GRANT ROLE AR_CURATED_READ TO ROLE FR_DATA_ENGINEER;</code></pre>
+<pre><code>GRANT ROLE AR_BRONZE_LANDING_READ TO ROLE FR_DATA_ENGINEER;
+GRANT ROLE AR_SILVER_CURATED_READ TO ROLE FR_DATA_ENGINEER;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · Sam</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>GRANT ROLE AR_PII_READ TO ROLE FR_COMPLIANCE;
-GRANT ROLE AR_CURATED_READ TO ROLE FR_COMPLIANCE;</code></pre>
+GRANT ROLE AR_SILVER_CURATED_READ TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
       <div class="badge-ok">✓ Inheritance visible under each FR_ role in Admin</div>
     </article>
@@ -382,19 +382,19 @@ GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · create view</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE SCHEMA CURATED;
+<pre><code>USE SCHEMA SILVER_CURATED;
 
 CREATE OR REPLACE VIEW V_CLIENT_DIRECTORY AS
 SELECT CLIENT_ID, FULL_NAME, COUNTRY, CREATED_AT
-FROM LANDING.CLIENTS;</code></pre>
+FROM BRONZE_LANDING.CLIENTS;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · grant view to key-ring</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>GRANT SELECT ON VIEW V_CLIENT_DIRECTORY TO ROLE AR_CURATED_READ;
+<pre><code>GRANT SELECT ON VIEW V_CLIENT_DIRECTORY TO ROLE AR_SILVER_CURATED_READ;
 
 SELECT 'Lab 01 Meridian Bank RBAC ready' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ Status row — view visible under CURATED in Snowsight</div>
+      <div class="badge-ok">✓ Status row — view visible under SILVER_CURATED in Snowsight</div>
     </article>
 
     <article class="step">
@@ -436,12 +436,12 @@ SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();</code></pre>
       <div class="badge-ok">✓ FR_ANALYST primary · secondary shows NONE or empty</div>
       <div class="code-block">
         <div class="code-head"><span>SQL · window OK</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT * FROM CURATED.V_CLIENT_DIRECTORY;</code></pre>
+<pre><code>SELECT * FROM SILVER_CURATED.V_CLIENT_DIRECTORY;</code></pre>
       </div>
       <div class="badge-ok">✓ Names and countries only — no EMAIL or SSN_LAST4 columns</div>
       <div class="code-block">
         <div class="code-head"><span>SQL · vault blocked (celebrate the error)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT * FROM LANDING.CLIENTS;</code></pre>
+<pre><code>SELECT * FROM BRONZE_LANDING.CLIENTS;</code></pre>
       </div>
       <div class="badge-fail">✗ Insufficient privileges — regulator would smile</div>
     </article>
@@ -453,17 +453,17 @@ SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();</code></pre>
         <p><code>USE ROLE</code> then <code>USE SECONDARY ROLES NONE</code> before each proof — policies and table access both respect the primary badge.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Jordan reads landing email</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · Jordan reads BRONZE_LANDING email</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_DATA_ENGINEER;
 USE SECONDARY ROLES NONE;
-SELECT CLIENT_ID, EMAIL FROM LANDING.CLIENTS LIMIT 5;</code></pre>
+SELECT CLIENT_ID, EMAIL FROM BRONZE_LANDING.CLIENTS LIMIT 5;</code></pre>
       </div>
-      <div class="badge-ok">✓ Five rows with EMAIL — engineer has landing key-ring</div>
+      <div class="badge-ok">✓ Five rows with EMAIL — engineer has BRONZE_LANDING key-ring</div>
       <div class="code-block">
         <div class="code-head"><span>SQL · Sam reads SSN last-4</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE FR_COMPLIANCE;
 USE SECONDARY ROLES NONE;
-SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
+SELECT CLIENT_ID, SSN_LAST4 FROM BRONZE_LANDING.CLIENTS;</code></pre>
       </div>
       <div class="badge-ok">✓ SSN_LAST4 visible for all five clients</div>
       <p class="hint">When you go back to building objects: <code>USE ROLE ROLE_BANK_LAB_ADMIN;</code></p>
@@ -475,7 +475,7 @@ SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
         <h4>What “smoke” means</h4>
         <p>
           Copy <code>sql/smoke_role_proofs.sql</code> and run <strong>one statement at a time</strong>.
-          The analyst → <code>LANDING.CLIENTS</code> step <em>must</em> error. If it returns rows, secondary roles are still on.
+          The analyst → <code>BRONZE_LANDING.CLIENTS</code> step <em>must</em> error. If it returns rows, secondary roles are still on.
         </p>
       </div>
       <div class="badge-ok">✓ Smoke green → continue to Lab 02</div>
@@ -484,9 +484,9 @@ SELECT CLIENT_ID, SSN_LAST4 FROM LANDING.CLIENTS;</code></pre>
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s problem was open access to client PII. I separated functional roles (jobs) from access roles (key-rings):
-      FR_ANALYST, FR_DATA_ENGINEER, FR_COMPLIANCE and AR_CURATED_READ, AR_LANDING_READ, AR_PII_READ.
+      FR_ANALYST, FR_DATA_ENGINEER, FR_COMPLIANCE and AR_SILVER_CURATED_READ, AR_BRONZE_LANDING_READ, AR_PII_READ.
       I hung USAGE and SELECT on the key-rings, clipped the right rings onto each job badge, and built V_CLIENT_DIRECTORY so analysts never need the vault table.
-      I proved it with USE SECONDARY ROLES NONE: as FR_ANALYST, landing SELECT fails.
+      I proved it with USE SECONDARY ROLES NONE: as FR_ANALYST, BRONZE_LANDING SELECT fails.
       <em>Outcome:</em> Alex can ship the board deck; Sam can audit; the regulator’s nightmare path is closed.”
     </div>
 

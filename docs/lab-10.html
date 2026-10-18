@@ -38,7 +38,7 @@
     <p class="lede">
       Read <strong>Teach first</strong> before provider SQL.
       Partner Nora needs read-only txn metrics in <em>her</em> Snowflake account.
-      Elena publishes a <strong>secure view</strong> and a <strong>share</strong> — minimum columns, no LANDING vault, Nora pays her own compute.
+      Elena publishes a <strong>secure view</strong> and a <strong>share</strong> — minimum columns, no BRONZE_LANDING vault, Nora pays her own compute.
     </p>
 
     <div class="callout bad">
@@ -48,7 +48,7 @@
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      <code>CURATED.V_SHARE_TXNS</code> (secure, column-trimmed) + share object <code>SHARE_MERIDIAN_TXNS</code>
+      <code>SILVER_CURATED.V_SHARE_TXNS</code> (secure, column-trimmed) + share object <code>SHARE_MERIDIAN_TXNS</code>
       with grants on database, schema, and view. Production adds Nora’s account locator to the share.
     </div>
 
@@ -91,7 +91,7 @@
           <div class="see-label">Lens</div>
           <strong><code>V_SHARE_TXNS</code> secure view</strong>
           <p>Trim columns — hide join logic from consumer.</p>
-          <div class="see-example">TXN_ID · STATUS · AMOUNT<br>no LANDING vault</div>
+          <div class="see-example">TXN_ID · STATUS · AMOUNT<br>no BRONZE_LANDING vault</div>
         </div>
         <div class="see-card">
           <div class="see-label">Window</div>
@@ -103,7 +103,7 @@
       <div class="flow-pipeline" aria-label="Provider to consumer share">
         <div class="flow-node source">
           <span class="flow-tag">Provider · Meridian</span>
-          <strong>LANDING.TXN_EVENTS</strong>
+          <strong>bronze_landing.txn_events</strong>
           <span class="flow-sub">Never in the share</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
@@ -131,7 +131,7 @@
       <img src="assets/lab10-share.jpg" alt="Sealed window for Nora: secure share of live transactions, not a raw dump" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Sealed window for Nora</strong>
-        Live read-only view through a share — not a USB dump of LANDING.
+        Live read-only view through a share — not a USB dump of BRONZE_LANDING.
       </figcaption>
     </figure>
 
@@ -173,10 +173,10 @@ DROP ROLE IF EXISTS ROLE_BANK_SMOKE_TMP;</code></pre>
       <div class="code-block">
         <div class="code-head"><span>SQL · ensure schemas exist</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE DATABASE MERIDIAN_BANK;
-CREATE SCHEMA IF NOT EXISTS LANDING;
-CREATE SCHEMA IF NOT EXISTS CURATED;
+CREATE SCHEMA IF NOT EXISTS BRONZE_LANDING;
+CREATE SCHEMA IF NOT EXISTS SILVER_CURATED;
 CREATE SCHEMA IF NOT EXISTS RISK_CTRL;
-CREATE SCHEMA IF NOT EXISTS FINANCE_MART;
+CREATE SCHEMA IF NOT EXISTS GOLD_MART;
 CREATE SCHEMA IF NOT EXISTS FILE_IN;
 CREATE SCHEMA IF NOT EXISTS UTILS;
 
@@ -199,17 +199,17 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
       <div class="step-head"><div class="step-num">2</div><div><h3>Create the secure view (column minimum)</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p>Exposes only txn fields Nora needs — no <code>LANDING.CLIENTS</code>, no SSN, no email.</p>
+        <p>Exposes only txn fields Nora needs — no <code>BRONZE_LANDING.CLIENTS</code>, no SSN, no email.</p>
         <h4>Why SECURE</h4>
         <p>Consumers cannot inspect view SQL to reverse-engineer hidden joins or columns.</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · V_SHARE_TXNS</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE OR REPLACE SECURE VIEW CURATED.V_SHARE_TXNS AS
+<pre><code>CREATE OR REPLACE SECURE VIEW SILVER_CURATED.V_SHARE_TXNS AS
 SELECT TXN_ID, CLIENT_ID, STATUS, AMOUNT
-FROM LANDING.TXN_EVENTS;</code></pre>
+FROM bronze_landing.txn_events;</code></pre>
       </div>
-      <div class="badge-ok">✓ View under CURATED — four columns only</div>
+      <div class="badge-ok">✓ View under SILVER_CURATED — four columns only</div>
     </article>
 
     <article class="step">
@@ -234,8 +234,8 @@ CREATE SHARE SHARE_MERIDIAN_TXNS;</code></pre>
       <div class="code-block">
         <div class="code-head"><span>SQL · share grants</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>GRANT USAGE ON DATABASE MERIDIAN_BANK TO SHARE SHARE_MERIDIAN_TXNS;
-GRANT USAGE ON SCHEMA CURATED TO SHARE SHARE_MERIDIAN_TXNS;
-GRANT SELECT ON VIEW CURATED.V_SHARE_TXNS TO SHARE SHARE_MERIDIAN_TXNS;</code></pre>
+GRANT USAGE ON SCHEMA SILVER_CURATED TO SHARE SHARE_MERIDIAN_TXNS;
+GRANT SELECT ON VIEW SILVER_CURATED.V_SHARE_TXNS TO SHARE SHARE_MERIDIAN_TXNS;</code></pre>
       </div>
       <div class="badge-ok">✓ Share lists granted objects in Snowsight (provider account)</div>
     </article>
@@ -256,7 +256,7 @@ SELECT 'Lab 10 share ready for Nora (add consumer account next)' AS status;</cod
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Nora needed partner metrics without USB-era leaks. I built CURATED.V_SHARE_TXNS as a secure view with least columns — no PII vault — and published it through SHARE_MERIDIAN_TXNS with database, schema, and view grants.
+      “Nora needed partner metrics without USB-era leaks. I built SILVER_CURATED.V_SHARE_TXNS as a secure view with least columns — no PII vault — and published it through SHARE_MERIDIAN_TXNS with database, schema, and view grants.
       Share beats weekly CSV because data stays live and Nora pays her own warehouse; clone is for internal QA, not cross-org delivery.
       <em>Outcome:</em> Nora queries governed txns in her account; Meridian keeps control on the provider side.”
     </div>

@@ -33,7 +33,7 @@ Privilege proof “succeeds when it should fail” → `USE SECONDARY ROLES NONE
 
 | After | Script | Critical expect |
 |-------|--------|-----------------|
-| Lab 01 | `sql/smoke_role_proofs.sql` | `FR_ANALYST` + `NONE` → landing SELECT **errors** |
+| Lab 01 | `sql/smoke_role_proofs.sql` | `FR_ANALYST` + `NONE` → BRONZE_LANDING SELECT **errors** |
 | Lab 03 | `sql/smoke_lab03_policies.sql` | Alex masked/US-only; Sam plain/more countries |
 
 ## Author invariant check

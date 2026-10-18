@@ -10,7 +10,7 @@ Open **`docs/index.html`** and work top to bottom. Each lab: read blue boxes →
 | 4–5 | 02 | dbt incremental merge |
 | 5–6 | 04 | Medallion (+ Data Vault talk) |
 | 6–7.5 | 05 | Streams/tasks vs DT vs dbt |
-| 7.5–8.5 | 06 | Landing / COPY / Snowpipe story |
+| 7.5–8.5 | 06 | BRONZE_LANDING / COPY / Snowpipe story |
 | 8.5–10 | 07–08 | Query Profile + clustering |
 | 10–11 | 09 | Time Travel / clone / UNDROP |
 | 11–12 | 10–11 | Sharing + DR architecture |

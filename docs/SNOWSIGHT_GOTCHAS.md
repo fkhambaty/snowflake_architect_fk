@@ -4,7 +4,7 @@ These are already baked into Labs 01+03 and `sql/smoke_role_proofs.sql`. If a �
 
 ## 1. Secondary roles (most common)
 
-**Symptom:** Role dropdown shows `FR_ANALYST`, but `SELECT * FROM LANDING.CLIENTS` returns rows (including SSN).
+**Symptom:** Role dropdown shows `FR_ANALYST`, but `SELECT * FROM BRONZE_LANDING.CLIENTS` returns rows (including SSN).
 
 **Cause:** Your user also has `ROLE_BANK_LAB_ADMIN` / `ACCOUNTADMIN`. Snowsight keeps them as **secondary** roles, so privileges are the union of all of them.
 
@@ -40,4 +40,4 @@ Metering/query history views can lag ~1–3 hours. Empty results ≠ broken SQL.
 ## Smoke test
 
 After Lab 01: run `sql/smoke_role_proofs.sql` statement-by-statement.  
-Expected: curated view OK; landing as analyst FAIL; engineer/compliance landing OK.
+Expected: SILVER_CURATED view OK; BRONZE_LANDING as analyst FAIL; engineer/compliance BRONZE_LANDING OK.

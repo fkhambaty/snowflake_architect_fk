@@ -6,4 +6,4 @@ select
     status,
     amount as order_total,
     updated_at
-from {{ source('landing', 'txn_events') }}
+from {{ source('bronze_landing', 'txn_events') }}

@@ -37,7 +37,7 @@
     <h1>Files arrive overnight — automate the dock</h1>
     <p class="lede">
       Read every <strong>Teach first</strong> section before you run SQL.
-      You will build the same pattern Jordan needs for partner CSV drops: stage → file format → <code>COPY INTO</code> → <code>LANDING</code>.
+      You will build the same pattern Jordan needs for partner CSV drops: stage → file format → <code>COPY INTO</code> → <code>BRONZE_LANDING</code>.
       Snowpipe is the <em>story</em> of automated COPY — this lab does not walk fake AWS wiring.
     </p>
 
@@ -49,7 +49,7 @@
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Internal stage in schema <code>FILE_IN</code>, a CSV file format, manual <code>COPY INTO LANDING.TXN_LANDING</code>.
+      Internal stage in schema <code>FILE_IN</code>, a CSV file format, manual <code>COPY INTO BRONZE_LANDING.TXN_LANDING</code>.
       In production Elena would attach <strong>Snowpipe</strong> — same COPY semantics, triggered when files land on the stage.
     </div>
 
@@ -62,10 +62,10 @@
         </figcaption>
       </figure>
       <figure class="ba-panel after">
-        <img src="assets/lab06-after.jpg" alt="AFTER: Stage, file format, COPY INTO LANDING" width="1600" height="900" loading="eager" />
+        <img src="assets/lab06-after.jpg" alt="AFTER: Stage, file format, COPY INTO BRONZE_LANDING" width="1600" height="900" loading="eager" />
         <figcaption>
           <strong>After</strong>
-          Stage + file format + COPY — pallets to <code>LANDING</code>.
+          Stage + file format + COPY — pallets to <code>BRONZE_LANDING</code>.
         </figcaption>
       </figure>
     </div>
@@ -91,7 +91,7 @@
         <div class="see-card">
           <div class="see-label">Load</div>
           <strong>COPY INTO table</strong>
-          <p>Forklift bay → <code>LANDING.TXN_LANDING</code>.</p>
+          <p>Forklift bay → <code>BRONZE_LANDING.TXN_LANDING</code>.</p>
           <div class="see-example">ON_ERROR = ABORT_STATEMENT<br>bad row stops load</div>
         </div>
         <div class="see-card">
@@ -104,16 +104,16 @@
     </section>
 
     <figure class="viz-panel">
-      <img src="assets/lab06-landing.jpg" alt="Night truck bay: FILE_IN stage and COPY into LANDING; Snowpipe as automated COPY" width="1600" height="900" loading="lazy" />
+      <img src="assets/lab06-BRONZE_LANDING.jpg" alt="Night truck bay: FILE_IN stage and COPY into BRONZE_LANDING; Snowpipe as automated COPY" width="1600" height="900" loading="lazy" />
       <figcaption>
         <strong>Picture · Night truck bay</strong>
-        FILE_IN stage + COPY into LANDING; Snowpipe = automated COPY when the truck arrives.
+        FILE_IN stage + COPY into BRONZE_LANDING; Snowpipe = automated COPY when the truck arrives.
       </figcaption>
     </figure>
 
     <section class="teach">
       <h2>The whole flow in one picture</h2>
-      <p>Four objects. Files never jump straight into LANDING — they pause on the stage first.</p>
+      <p>Four objects. Files never jump straight into BRONZE_LANDING — they pause on the stage first.</p>
       <div class="flow-pipeline" aria-label="File load pipeline">
         <div class="flow-node source">
           <span class="flow-tag">1 · File</span>
@@ -135,7 +135,7 @@
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node fct">
           <span class="flow-tag">4 · Table</span>
-          <strong>LANDING.TXN_LANDING</strong>
+          <strong>BRONZE_LANDING.TXN_LANDING</strong>
           <span class="flow-sub">Queryable rows for downstream jobs</span>
         </div>
       </div>
@@ -161,7 +161,7 @@
         <h4>What this does</h4>
         <p>Elena’s lab badge, cheap warehouse, bank database. <code>FILE_IN</code> is the schema where inbound file objects live (stage + format).</p>
         <h4>Why Elena does it</h4>
-        <p>Keeps file plumbing separate from <code>LANDING</code> tables Jordan already owns.</p>
+        <p>Keeps file plumbing separate from <code>BRONZE_LANDING</code> tables Jordan already owns.</p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
@@ -205,21 +205,21 @@ USE SCHEMA FILE_IN;</code></pre>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">4</div><div><h3>Create the landing table</h3></div></div>
+      <div class="step-head"><div class="step-num">4</div><div><h3>Create the BRONZE_LANDING table</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
         <p>Target table with typed columns — COPY will map file fields into these slots.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · LANDING.TXN_LANDING</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>CREATE OR REPLACE TABLE LANDING.TXN_LANDING (
+        <div class="code-head"><span>SQL · BRONZE_LANDING.TXN_LANDING</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE BRONZE_LANDING.TXN_LANDING (
   TXN_ID NUMBER,
   CLIENT_ID NUMBER,
   STATUS STRING,
   AMOUNT NUMBER(12,2)
 );</code></pre>
       </div>
-      <div class="badge-ok">✓ Empty table <code>LANDING.TXN_LANDING</code> — 0 rows until COPY</div>
+      <div class="badge-ok">✓ Empty table <code>BRONZE_LANDING.TXN_LANDING</code> — 0 rows until COPY</div>
     </article>
 
     <article class="step">
@@ -244,7 +244,7 @@ USE SCHEMA FILE_IN;</code></pre>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">6</div><div><h3>COPY from stage into LANDING</h3></div></div>
+      <div class="step-head"><div class="step-num">6</div><div><h3>COPY from stage into BRONZE_LANDING</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
         <p>
@@ -256,7 +256,7 @@ USE SCHEMA FILE_IN;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · load into table</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>COPY INTO LANDING.TXN_LANDING
+<pre><code>COPY INTO BRONZE_LANDING.TXN_LANDING
 FROM @STG_TXN_INTERNAL
 FILE_FORMAT = (FORMAT_NAME = 'FILE_IN.FF_CSV_SIMPLE')
 PATTERN = '.*txn_day1.csv.gz'
@@ -273,18 +273,18 @@ ON_ERROR = 'ABORT_STATEMENT';</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · proof</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT * FROM LANDING.TXN_LANDING ORDER BY TXN_ID;
-SELECT 'Lab 06 landing COPY OK' AS status;</code></pre>
+<pre><code>SELECT * FROM BRONZE_LANDING.TXN_LANDING ORDER BY TXN_ID;
+SELECT 'Lab 06 BRONZE_LANDING COPY OK' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ n = 3 · status row confirms lab script parity with <code>sql/06_landing_copy.sql</code></div>
+      <div class="badge-ok">✓ n = 3 · status row confirms lab script parity with <code>sql/06_BRONZE_LANDING_copy.sql</code></div>
     </article>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
       “Meridian’s overnight files needed a truck bay and a loader. I used schema FILE_IN for the internal stage and CSV file format,
-      parked txn_day1.csv.gz on @STG_TXN_INTERNAL, and COPY INTO LANDING.TXN_LANDING with abort-on-error.
+      parked txn_day1.csv.gz on @STG_TXN_INTERNAL, and COPY INTO BRONZE_LANDING.TXN_LANDING with abort-on-error.
       Snowpipe is the same COPY path triggered when files land — not different semantics.
-      <em>Outcome:</em> Jordan has a repeatable landing pattern; Sam gets auditable loads; no manual spreadsheet imports.”
+      <em>Outcome:</em> Jordan has a repeatable BRONZE_LANDING pattern; Sam gets auditable loads; no manual spreadsheet imports.”
     </div>
 
     <div class="pager">
@@ -292,7 +292,7 @@ SELECT 'Lab 06 landing COPY OK' AS status;</code></pre>
       <a class="btn primary" href="lab-07.html">Lab 07 →</a>
     </div>
   </div>
-  <footer class="footer">sql/06_landing_copy.sql · teach-first lab</footer>
+  <footer class="footer">sql/06_BRONZE_LANDING_copy.sql · teach-first lab</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

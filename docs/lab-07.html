@@ -169,7 +169,7 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · filter only</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT * FROM LANDING.CLIENTS
+<pre><code>SELECT * FROM BRONZE_LANDING.CLIENTS
 WHERE COUNTRY = 'US';</code></pre>
       </div>
       <div class="badge-ok">✓ Only US rows — note runtime in Query History</div>
@@ -186,8 +186,8 @@ WHERE COUNTRY = 'US';</code></pre>
       <div class="code-block">
         <div class="code-head"><span>SQL · Alex board query</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(t.AMOUNT) AS VOLUME
-FROM LANDING.CLIENTS c
-JOIN LANDING.TXN_EVENTS t ON t.CLIENT_ID = c.CLIENT_ID
+FROM BRONZE_LANDING.CLIENTS c
+JOIN bronze_landing.txn_events t ON t.CLIENT_ID = c.CLIENT_ID
 GROUP BY c.COUNTRY
 ORDER BY VOLUME DESC;</code></pre>
       </div>

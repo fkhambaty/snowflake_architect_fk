@@ -9,5 +9,5 @@ snowflake_architect_fk:
       role: ROLE_BANK_LAB_ADMIN
       database: MERIDIAN_BANK
       warehouse: WH_BANK_XS
-      schema: CURATED
+      schema: SILVER_CURATED
       threads: 4
