@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: fct_orders_incremental
-    description: "Incremental order fact using Snowflake merge strategy"
+    description: "Incremental order fact (Lab 02) — lands in SILVER_CURATED via model schema override"
     columns:
       - name: order_id
         tests:
@@ -11,3 +11,11 @@ models:
       - name: updated_at
         tests:
           - not_null
+
+  - name: gold_client_summary
+    description: "Medallion gold — client LTV / counts for Alex (GOLD_MART)"
+    columns:
+      - name: client_id
+        tests: [unique, not_null]
+      - name: lifetime_value
+        tests: [not_null]

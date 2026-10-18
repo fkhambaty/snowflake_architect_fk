@@ -10,9 +10,14 @@ clean-targets: ["target", "dbt_packages"]
 
 models:
   snowflake_architect_fk:
+    # Folders ≠ Snowflake schemas. Medallion floors live in Snowflake schemas below.
     staging:
       +schema: SILVER_CURATED
       +materialized: view
-    marts:
+    silver:
       +schema: SILVER_CURATED
+      +materialized: table
+    marts:
+      # Gold board marts → GOLD_MART. Lab 02 fact overrides schema in its model config.
+      +schema: GOLD_MART
       +materialized: table

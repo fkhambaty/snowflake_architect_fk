@@ -25,7 +25,7 @@ foreach ($f in $scanFiles) {
 foreach ($f in $htmlLabs) {
   $text = Get-Content -Raw -LiteralPath $f.FullName
   # Labs 00–13 must ship interviewer dig-deeper drills (not Lab 14 mock hub)
-  if ($f.Name -match '^lab-(0\d|1[0-3])\.html$' -and $text -notmatch 'id="interview-drill"') {
+  if ($f.Name -match '^lab-(0\d|1[0-3]|15)\.html$' -and $text -notmatch 'id="interview-drill"') {
     $fail.Add("$($f.Name): missing required #interview-drill section")
   }
   foreach ($bad in @("ARCH_INTERVIEW", "WH_ARCH_XS", "ROLE_ARCH_LAB_ADMIN", "AR_RAW_READ", "SnowShop", "AR_LANDING_READ", "AR_CURATED_READ", "FINANCE_MART")) {

@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: silver_txns
+    description: "Medallion silver — cleaned TXN_EVENTS (UPPER status, amount >= 0)"
+    columns:
+      - name: txn_id
+        tests: [unique, not_null]
+      - name: amount
+        tests: [not_null]

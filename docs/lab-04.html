@@ -28,6 +28,7 @@
         <a href="lab-12.html">12</a>
         <a href="lab-13.html">13</a>
         <a href="lab-14.html">14</a>
+        <a href="lab-15.html">15</a>
       </nav>
     </div>
   </header>
@@ -53,7 +54,14 @@
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Silver in <code>SILVER_CURATED.SILVER_TXNS</code>, gold summary in <code>GOLD_MART.GOLD_CLIENT_SUMMARY</code> — clear path from dock to report wall.
+      <strong>Part A:</strong> CTAS proves the floors in Snowflake (<code>SILVER_TXNS</code> → <code>GOLD_CLIENT_SUMMARY</code>).
+      <strong>Part B:</strong> Jordan’s dbt project builds the <em>same</em> medallion into those schemas — git owns the transforms for the interview.
+    </div>
+
+    <div class="callout tip">
+      <strong>Why CTAS first, then dbt? (conscious choice)</strong>
+      Medallion is a <em>layering pattern</em>, not a dbt feature. Interviewers separate “floors” from “tooling.”
+      Part A names the shelves; Part B is how Meridian actually ships silver/gold in prod (dbt). Skipping Part B would leave you blank when they ask how dbt maps to bronze/silver/gold.
     </div>
 
     <div class="ba-grid">
@@ -232,39 +240,101 @@ UNION ALL SELECT 'gold', COUNT(*) FROM GOLD_MART.GOLD_CLIENT_SUMMARY;</code></pr
       <div class="badge-ok">✓ Three rows — Alex should query GOLD_MART, not BRONZE_LANDING</div>
     </article>
 
-        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+    <section class="teach">
+      <h2>Part B — Same floors, dbt owns the transforms</h2>
+      <p>
+        CTAS proved the shelves. Production Meridian: Jordan commits SQL in git; <code>dbt run</code> builds silver → gold.
+        <strong>Folders</strong> <code>models/staging|silver|marts</code> are disk layout.
+        <strong>Schemas</strong> <code>SILVER_CURATED</code> / <code>GOLD_MART</code> are Snowflake floors (see <code>dbt_project.yml</code>).
+      </p>
+      <div class="flow-pipeline" aria-label="dbt medallion mapping">
+        <div class="flow-node source">
+          <span class="flow-tag">source</span>
+          <strong>bronze_landing.txn_events</strong>
+          <span class="flow-sub">BRONZE_LANDING · not a dbt model</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">models/silver</span>
+          <strong>silver_txns</strong>
+          <span class="flow-sub">→ SILVER_CURATED.SILVER_TXNS</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">models/marts</span>
+          <strong>gold_client_summary</strong>
+          <span class="flow-sub">→ GOLD_MART.GOLD_CLIENT_SUMMARY</span>
+        </div>
+      </div>
+    </section>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">6</div><div><h3>dbt — build silver + gold (replace Part A tables)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>
+          Runs the new models in <code>dbt_project/models/silver/silver_txns.sql</code> and
+          <code>models/marts/gold_client_summary.sql</code>. Same rules as the CTAS — now versioned.
+          Lab 02’s <code>fct_orders_incremental</code> still lands in <code>SILVER_CURATED</code> via a model-level schema override.
+        </p>
+        <h4>What you should see</h4>
+        <p>dbt OK for both models; Snowsight shows tables under SILVER_CURATED and GOLD_MART.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Terminal · from repo dbt_project/</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>cd dbt_project
+dbt run --select silver_txns gold_client_summary</code></pre>
+      </div>
+      <div class="badge-ok">✓ dbt success · SILVER_TXNS + GOLD_CLIENT_SUMMARY rebuilt from git</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">7</div><div><h3>Prove dbt wrote the medallion floors</h3></div></div>
+      <div class="explain">
+        <h4>What you should see</h4>
+        <p>Same three-layer count story as Step 5 — Alex still consumes GOLD_MART only.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · layer counts after dbt</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT 'BRONZE_LANDING' AS layer, COUNT(*) AS n FROM BRONZE_LANDING.TXN_EVENTS
+UNION ALL SELECT 'silver_dbt', COUNT(*) FROM SILVER_CURATED.SILVER_TXNS
+UNION ALL SELECT 'gold_dbt', COUNT(*) FROM GOLD_MART.GOLD_CLIENT_SUMMARY;</code></pre>
+      </div>
+    </article>
+
+    <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
       <h2>Interviewer presses further — say these out loud</h2>
       <p>
         Basics got you into the room. Cover each answer <em>before</em> you open it.
         If you blank here, an Architect + dbt interviewer will know.
       </p>
       <details class="drill">
-        <summary><strong>Q1.</strong> What belongs in BRONZE_LANDING that must never be Alex’s default path?</summary>
-        <p class="drill-say"><strong>Say:</strong> As-landed PII and raw events — CLIENTS vault, unvalidated TXN_EVENTS. Alex reads SILVER_CURATED windows and GOLD_MART tiles. Bronze is Jordan’s dock; promoting raw to Finance is a regulator story.</p>
+        <summary><strong>Q1.</strong> Why teach CTAS medallion before dbt if prod uses dbt?</summary>
+        <p class="drill-say"><strong>Say:</strong> Medallion is the floor plan; dbt is how we furnish it. If I only show folders, people think staging/marts are Snowflake schemas. I name BRONZE_LANDING / SILVER_CURATED / GOLD_MART first, then map dbt models onto those schemas.</p>
       </details>
       <details class="drill">
-        <summary><strong>Q2.</strong> When would you skip Gold and let Finance query Silver?</summary>
-        <p class="drill-say"><strong>Say:</strong> Early product, few consumers, metrics still changing — Gold is ceremony. Once Marcus’s KPIs stabilize, GOLD_MART freezes grain and stops Looker from re-implementing risk logic on Silver. Don’t invent Gold to “complete medallion.”</p>
+        <summary><strong>Q2.</strong> Do dbt folders staging/marts become Snowflake schemas?</summary>
+        <p class="drill-say"><strong>Say:</strong> No — folders are repo layout. Our generate_schema_name + dbt_project.yml send silver models to SILVER_CURATED and gold marts to GOLD_MART. Lab 02’s incremental fact overrides to SILVER_CURATED because it’s a silver grain, not a board mart.</p>
       </details>
       <details class="drill">
-        <summary><strong>Q3.</strong> Data Vault vs medallion — answer without dogma?</summary>
-        <p class="drill-say"><strong>Say:</strong> Medallion is landing → curated → mart for Meridian’s speed. Vault shines when many sources need stable hubs/links and audit historization. Vault inside Silver if source churn is brutal — don’t rename schemas to HUB_ for vocabulary points.</p>
+        <summary><strong>Q3.</strong> What belongs in BRONZE_LANDING that must never be Alex’s default path?</summary>
+        <p class="drill-say"><strong>Say:</strong> As-landed PII and raw events — CLIENTS vault, unvalidated TXN_EVENTS. Alex reads SILVER_CURATED windows and GOLD_MART tiles. Bronze is Jordan’s dock; dbt sources it, it doesn’t remodel PII into Looker.</p>
       </details>
       <details class="drill">
-        <summary><strong>Q4.</strong> Failure mode of “everyone has USAGE on MERIDIAN_BANK”?</summary>
-        <p class="drill-say"><strong>Say:</strong> Database USAGE isn’t table SELECT — but over-granting schema USAGE plus future grants leaks new Bronze tables. Pair medallion with AR_BRONZE_LANDING_READ vs AR_SILVER_CURATED_READ; colors without AR boundaries are cosplay.</p>
+        <summary><strong>Q4.</strong> When would you skip Gold and let Finance query Silver?</summary>
+        <p class="drill-say"><strong>Say:</strong> Early product, few consumers, metrics still changing — Gold is ceremony. Once Marcus’s KPIs stabilize, GOLD_MART freezes grain. Don’t invent Gold to “complete medallion.”</p>
       </details>
       <details class="drill">
-        <summary><strong>Q5.</strong> Multi-account: replicate all three layers or only Gold?</summary>
-        <p class="drill-say"><strong>Say:</strong> DR follows the recovery story (Lab 11) — often Silver+Gold or whole MERIDIAN_BANK. Replicating Bronze alone doesn’t save Alex; sharing Gold alone doesn’t help Jordan rebuild. Pick objects by RPO/RTO, not by color names.</p>
+        <summary><strong>Q5.</strong> Who orchestrates dbt run for silver→gold nightly — dbt, Tasks, or Airflow?</summary>
+        <p class="drill-say"><strong>Say:</strong> dbt defines the graph; something must trigger it. Snowflake Tasks fit Snowflake-native CDC; Airflow fits multi-system DAGs (files land → dbt → notify). Lab 15 covers that fork — I don’t pretend dbt schedule alone is the enterprise bus.</p>
       </details>
     </section>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Marcus needed a vocabulary. Bronze is BRONZE_LANDING where Jordan loads TXN_EVENTS; silver is SILVER_CURATED.SILVER_TXNS with status normalized and bad amounts filtered;
-      gold is GOLD_MART.GOLD_CLIENT_SUMMARY for client-level metrics. Data Vault is the answer if he asks about hub-and-satellite modeling at scale — today we kept three obvious layers.
-      <em>Outcome:</em> one agreed lineage story; engineers land raw, analysts consume gold.”
+      “Marcus needed a vocabulary. Bronze is BRONZE_LANDING; silver is SILVER_CURATED.SILVER_TXNS; gold is GOLD_MART.GOLD_CLIENT_SUMMARY.
+      I proved the floors with CTAS, then Jordan’s dbt models silver_txns and gold_client_summary write the same path from git — folders are not schemas.
+      <em>Outcome:</em> agreed lineage; engineers land raw; dbt builds silver/gold; analysts consume gold.”
     </div>
 
     <div class="pager">
@@ -272,7 +342,7 @@ UNION ALL SELECT 'gold', COUNT(*) FROM GOLD_MART.GOLD_CLIENT_SUMMARY;</code></pr
       <a class="btn primary" href="lab-05.html">Lab 05 →</a>
     </div>
   </div>
-  <footer class="footer">Source SQL: sql/04_medallion.sql · Run Lab 02 txn data first</footer>
+  <footer class="footer">sql/04_medallion.sql · dbt_project models/silver + marts/gold_client_summary · Lab 02 data first</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 15 — Orchestrate dbt (Airflow vs Tasks)</title>
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Snowflake <span>Architect</span> Prep</a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="story.html">Story</a>
+        <a href="lab-00.html">00</a>
+        <a href="lab-01.html">01</a>
+        <a href="lab-02.html">02</a>
+        <a href="lab-03.html">03</a>
+        <a href="lab-04.html">04</a>
+        <a href="lab-05.html">05</a>
+        <a href="lab-06.html">06</a>
+        <a href="lab-07.html">07</a>
+        <a href="lab-08.html">08</a>
+        <a href="lab-09.html">09</a>
+        <a href="lab-10.html">10</a>
+        <a href="lab-11.html">11</a>
+        <a href="lab-12.html">12</a>
+        <a href="lab-13.html">13</a>
+        <a href="lab-14.html">14</a>
+        <a class="active" href="lab-15.html">15</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="eyebrow">Lab 15 · Interview stack · You are Elena · Jordan + platform</p>
+    <h1>Who wakes dbt at 2 a.m. — Airflow, Tasks, or hope?</h1>
+    <p class="lede">
+      Your interview stack is <strong>Snowflake + dbt + a bit of Airflow</strong>.
+      Labs 02/04/12 built the transforms. This lab is the orchestration fork — what triggers the DAG, what stays inside Snowflake, and what you say when they press.
+    </p>
+
+    <div class="callout bad">
+      <strong>Business problem</strong>
+      Silver/gold models exist in git. Marcus asks: “Who runs them after the overnight files land?”
+      Jordan shrugs “cron on my laptop.” Finance gets stale GOLD_MART. Nobody owns failures.
+    </div>
+
+    <div class="callout ok">
+      <strong>Solution you will own in the interview</strong>
+      Pick the orchestrator by <em>system boundary</em>: Snowflake Tasks for Snowflake-native CDC;
+      Airflow (or similar) when the DAG crosses files → dbt → Slack/ticket;
+      dbt Cloud schedule when the company standardizes on it — say the tradeoff, don’t pretend one tool always wins.
+    </div>
+
+    <div class="ba-grid">
+      <figure class="ba-panel before">
+        <img src="assets/lab05-before.jpg" alt="BEFORE: Manual handoff — no reliable overnight orchestration" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>Before</strong>
+          Laptop cron / Slack “did dbt run?” — no owner.
+        </figcaption>
+      </figure>
+      <figure class="ba-panel after">
+        <img src="assets/lab05-after.jpg" alt="AFTER: Clear orchestrator for dbt and Snowflake jobs" width="1600" height="900" loading="eager" />
+        <figcaption>
+          <strong>After</strong>
+          Named trigger — Airflow DAG or Task — with alerts.
+        </figcaption>
+      </figure>
+    </div>
+
+    <section class="teach">
+      <h2>See it — three different jobs</h2>
+      <div class="see-grid three">
+        <div class="see-card">
+          <div class="see-label">Inside Snowflake</div>
+          <strong>Tasks (+ streams)</strong>
+          <p>CDC / SQL workers on WH_BANK_XS. Lab 05.</p>
+          <div class="see-example">WHEN STREAM_HAS_DATA<br>→ INSERT silver</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Transform graph</div>
+          <strong>dbt</strong>
+          <p>Models, tests, contracts — Labs 02, 04B, 12.</p>
+          <div class="see-example">dbt run -s silver_txns+<br>needs a trigger</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Cross-system DAG</div>
+          <strong>Airflow</strong>
+          <p>Sensors, order, retries, pages humans.</p>
+          <div class="see-example">file landed → dbt → notify</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="teach">
+      <h2>Elena’s decision tree (say this)</h2>
+      <div class="flow-pipeline" aria-label="Orchestration decision">
+        <div class="flow-node source">
+          <span class="flow-tag">Only Snowflake SQL?</span>
+          <strong>Task / DT</strong>
+          <span class="flow-sub">Lab 05 path</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">dbt graph only?</span>
+          <strong>dbt Cloud / CI</strong>
+          <span class="flow-sub">schedule + Slim CI</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node fct">
+          <span class="flow-tag">Files + dbt + tickets?</span>
+          <strong>Airflow</strong>
+          <span class="flow-sub">DAG owns the night</span>
+        </div>
+      </div>
+      <p>
+        Meridian overnight: partner file → Lab 06 load → <code>dbt run --select silver_txns gold_client_summary</code> → Slack Marcus.
+        That’s an Airflow-shaped DAG even if a small bank starts with dbt Cloud cron.
+      </p>
+    </section>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">1</div><div><h3>Read the Meridian night DAG (no cluster required)</h3></div></div>
+      <div class="explain">
+        <h4>What this is</h4>
+        <p>
+          You may not have Airflow installed on this laptop. Interviewers care that you can <em>draw</em> the DAG and name operators.
+          Below is the shape Jordan + Elena agree for overnight gold.
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Python · conceptual DAG (study, don’t require Airflow UI)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code># meridian_nightly_medallion.py  — interview whiteboard, not a deploy lab
+# from airflow import DAG
+# from airflow.operators.bash import BashOperator
+# from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
+
+# order:
+# 1) wait_for_partner_file   (sensor / Lab 06 stage)
+# 2) copy_into_bronze        (SnowflakeOperator or Bash snowsql)
+# 3) dbt_run_silver_gold     (BashOperator: dbt run --select silver_txns gold_client_summary)
+# 4) dbt_test_gold           (BashOperator: dbt test --select gold_client_summary)
+# 5) notify_marcus           (Email/Slack on success; page on failure)
+
+# Retries on dbt_run; SLA miss → alert. WH_BANK_XS for dbt; BOARD_S not needed overnight.</code></pre>
+      </div>
+      <div class="badge-ok">✓ You can narrate five steps without opening Airflow</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Prove the dbt piece locally (same as Lab 04B)</h3></div></div>
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Airflow’s middle operators are just this command with retries. Run it so your mouth and hands agree.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Terminal · dbt medallion slice</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>cd dbt_project
+dbt run --select silver_txns gold_client_summary
+dbt test --select gold_client_summary</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Contrast — when Elena keeps it in Snowflake Tasks</h3></div></div>
+      <div class="explain">
+        <h4>Remember Lab 05</h4>
+        <p>
+          Stream → task INSERT into silver CDC is <em>already</em> orchestrated inside Snowflake.
+          Don’t wrap that in Airflow unless you need cross-system sensors or human-in-the-loop.
+          Double orchestration = double failure modes.
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · reminder — task owns CDC consume</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Conceptual — do not stack Airflow on top unless needed:
+-- TASK_TXN_CDC WHEN STREAM_HAS_DATA → INSERT SILVER CDC
+-- Airflow would only schedule dbt gold *after* CDC lag is acceptable.</code></pre>
+      </div>
+    </article>
+
+    <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+      <h2>Interviewer presses further — say these out loud</h2>
+      <p>Cover before you open. This lab is short on clicks and long on judgment — that’s intentional.</p>
+      <details class="drill">
+        <summary><strong>Q1.</strong> Why not put every dbt model behind a Snowflake Task?</summary>
+        <p class="drill-say"><strong>Say:</strong> Tasks run SQL in Snowflake; dbt is a client that compiles a graph, runs tests, and needs git/CI context. Tasks are perfect for stream consume. For medallion dbt I’d trigger dbt from Airflow or dbt Cloud, not rewrite the project as one giant task body.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q2.</strong> Airflow vs dbt Cloud schedule — when do you pick each?</summary>
+        <p class="drill-say"><strong>Say:</strong> dbt Cloud when the company standard is dbt-native jobs and the DAG is mostly dbt. Airflow when files, APIs, tickets, and dbt must share one retry/SLA story. Meridian overnight file → bronze → dbt gold is Airflow-shaped.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q3.</strong> Where do retries and backfills live?</summary>
+        <p class="drill-say"><strong>Say:</strong> Orchestrator retries the operator; dbt incremental/backfill semantics live in the model (watermark, --full-refresh). Don’t confuse Airflow retry of a failed dbt run with fixing a bad unique_key.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q4.</strong> How do you avoid Airflow and a Task both writing SILVER_TXNS?</summary>
+        <p class="drill-say"><strong>Say:</strong> One writer per table. CDC task owns TXN_SILVER_CDC; dbt owns SILVER_TXNS / GOLD_CLIENT_SUMMARY. Document the contract on the whiteboard — two writers is how Marcus gets two truths.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q5.</strong> You don’t have Airflow in the trial account — are you lying in the interview?</summary>
+        <p class="drill-say"><strong>Say:</strong> No — I prove dbt and Snowflake hands-on; I design the Airflow DAG on the whiteboard with sensors, order, retries, and alerts. Trial limits don’t excuse a missing orchestration story.</p>
+      </details>
+    </section>
+
+    <div class="soundbite">
+      <strong>Elena’s wrap-up (say this out loud)</strong><br />
+      “Transforms live in dbt; Snowflake holds the floors; something must wake the graph.
+      CDC stays on Tasks; overnight file → bronze → dbt silver/gold → notify is an Airflow DAG with retries and an owner.
+      I don’t run production dbt from a laptop cron, and I don’t wrap every Task in Airflow.
+      <em>Outcome:</em> Marcus knows who pages when gold is late.”
+    </div>
+
+    <div class="pager">
+      <a class="btn ghost" href="lab-13.html">← Lab 13</a>
+      <a class="btn primary" href="lab-14.html">Lab 14 interview →</a>
+    </div>
+  </div>
+  <footer class="footer">Orchestration judgment lab · pairs with Labs 04B, 05, 06, 12</footer>
+  <script src="assets/course.js"></script>
+</body>
+</html>

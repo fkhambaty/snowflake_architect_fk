@@ -28,6 +28,7 @@
         <a href="lab-12.html">12</a>
         <a href="lab-13.html">13</a>
         <a href="lab-14.html">14</a>
+        <a href="lab-15.html">15</a>
       </nav>
     </div>
   </header>
@@ -125,9 +126,8 @@
         </figcaption>
       </figure>
       <p>
-        <strong>Folders</strong> <code>models/staging/</code> and <code>models/marts/</code> are only how files sit on disk.
-        In Snowflake both models land in schema <code>SILVER_CURATED</code> (see <code>dbt_project.yml</code>).
-        You will <em>not</em> see schemas named staging/marts.
+        <strong>Folders</strong> <code>models/staging/</code> / <code>silver/</code> / <code>marts/</code> are only how files sit on disk — not Snowflake schema names.
+        This lab’s models land in <code>SILVER_CURATED</code>. Lab 04 Part B maps gold marts to <code>GOLD_MART</code> via <code>dbt_project.yml</code>.
       </p>
     </section>
 

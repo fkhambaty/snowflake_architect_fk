@@ -107,7 +107,7 @@
       <div class="step-head"><div class="step-num">04</div><div><h3>Wednesday PM — Marcus gets lost in the data</h3></div></div>
       <div class="story">
         <p><strong>Problem:</strong> Nobody knows bronze vs gold; reports point at BRONZE_LANDING tables.</p>
-        <p><strong>Solution:</strong> Medallion: BRONZE_LANDING → SILVER_CURATED → GOLD_MART (+ Data Vault talk).</p>
+        <p><strong>Solution:</strong> Name floors (CTAS), then dbt builds silver_txns → gold_client_summary into those schemas.</p>
         <p><a class="btn primary" href="lab-04.html">Open Lab 04</a></p>
       </div>
     </article>
@@ -193,11 +193,20 @@
       </div>
     </article>
 
+    <article class="step" id="ch15">
+      <div class="step-head"><div class="step-num">15</div><div><h3>Before the interview — Who wakes dbt?</h3></div></div>
+      <div class="story">
+        <p><strong>Problem:</strong> Transforms exist; overnight gold is still “Jordan’s cron.”</p>
+        <p><strong>Solution:</strong> Airflow-shaped DAG vs Snowflake Tasks vs dbt Cloud — pick by system boundary.</p>
+        <p><a class="btn primary" href="lab-15.html">Open Lab 15</a></p>
+      </div>
+    </article>
+
     <article class="step" id="ch14">
       <div class="step-head"><div class="step-num">14</div><div><h3>Interview Monday — Elena tells the week</h3></div></div>
       <div class="story">
         <p><strong>Problem:</strong> Interviewer asks scenario questions with no laptop.</p>
-        <p><strong>Solution:</strong> Retell Meridian Bank — problem, decision, proof, outcome.</p>
+        <p><strong>Solution:</strong> Retell Meridian Bank — problem, decision, proof, outcome (after Lab 15).</p>
         <p><a class="btn primary" href="lab-14.html">Open Lab 14</a></p>
       </div>
     </article>
