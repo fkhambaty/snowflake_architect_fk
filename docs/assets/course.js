@@ -58,12 +58,225 @@
     }
   }
 
+  function cleanIdent(raw) {
+    return String(raw || "")
+      .replace(/"/g, "")
+      .replace(/\s+/g, "")
+      .trim();
+  }
+
+  /** Match a SQL keyword only at statement start (not inside GRANT CREATE ROLE, etc.). */
+  function atStmt(sql, body) {
+    return new RegExp("(?:^|;)\\s*" + body, "i").test(sql);
+  }
+
+  function firstAtStmt(sql, bodyWithGroup) {
+    var m = sql.match(new RegExp("(?:^|;)\\s*" + bodyWithGroup, "i"));
+    return m ? cleanIdent(m[1]) : "";
+  }
+
+  function describeSql(sql) {
+    var s = String(sql || "")
+      .replace(/--.*$/gm, "")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .trim();
+    if (!s) return "";
+
+    if (
+      /^\s*version:\s*\d+/m.test(s) ||
+      /^\s*(sources|models|tables|columns):\s*$/m.test(s) ||
+      /^\s{0,4}-\s+name:\s+\S+/m.test(s)
+    ) {
+      return "dbt YAML — declare source/model config in the repo (not run in Snowsight).";
+    }
+    if (/^\s*\w+:\s*$/m.test(s) && /target:|outputs:|type:\s*snowflake/i.test(s)) {
+      return "dbt profiles.yml — connection target for local/CI runs (keep secrets out of git).";
+    }
+    if (/\{\{\s*config\s*\(/i.test(s)) {
+      return "dbt model SQL — config + SELECT that dbt builds into Snowflake on dbt run.";
+    }
+    if (/^\s*dbt\s+/m.test(s) || /^\s*cd\s+\S+/m.test(s)) {
+      return "Terminal command for the dbt project — run locally or in CI, not in Snowsight.";
+    }
+    // Comment-only teaching blocks (replication / org admin demos)
+    var uncommented = s.replace(/--.*$/gm, "").replace(/\s+/g, " ").trim();
+    if (!uncommented && /--/.test(String(sql || ""))) {
+      return "Reference-only notes for this step — read them; run only if your account allows it.";
+    }
+
+    var contextOnly = s.replace(/\s+/g, " ").match(
+      /^(USE\s+(ROLE|WAREHOUSE|DATABASE|SCHEMA)\s+[A-Z0-9_."$]+\s*;\s*)+$/i
+    );
+    if (contextOnly) {
+      return "Point this worksheet at the lab role, warehouse, database, and schema.";
+    }
+
+    if (atStmt(s, "USE\\s+SECONDARY\\s+ROLES\\s+NONE")) {
+      return "Clear secondary roles so this privilege proof uses only the primary role.";
+    }
+
+    var stream = firstAtStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?STREAM\\s+([A-Z0-9_.\"]+)");
+    if (stream) {
+      return "Create stream " + stream + " — the change notebook on the source table.";
+    }
+
+    var task = firstAtStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?TASK\\s+([A-Z0-9_.\"]+)");
+    if (task) {
+      return "Define task " + task + " — the worker that reads the stream into the target.";
+    }
+
+    if (atStmt(s, "ALTER\\s+TASK[\\s\\S]*?\\bRESUME\\b")) {
+      return "Resume the task so it may run when the stream has unread rows.";
+    }
+    if (atStmt(s, "ALTER\\s+TASK[\\s\\S]*?\\bSUSPEND\\b")) {
+      return "Suspend the task so the warehouse stops waking for this lab.";
+    }
+    if (atStmt(s, "EXECUTE\\s+TASK\\b")) {
+      return "Run the task once now and process whatever is waiting in the stream.";
+    }
+
+    var dt = firstAtStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?DYNAMIC\\s+TABLE\\s+([A-Z0-9_.\"]+)");
+    if (dt) {
+      return "Create dynamic table " + dt + " — Snowflake refreshes it within TARGET_LAG.";
+    }
+
+    if (atStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?MASKING\\s+POLICY\\b")) {
+      return "Create the masking policy that disguises sensitive values by role.";
+    }
+    if (atStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?ROW\\s+ACCESS\\s+POLICY\\b")) {
+      return "Create the row access policy that filters which rows each role can see.";
+    }
+    if (atStmt(s, "ALTER\\s+TABLE[\\s\\S]*?SET\\s+MASKING\\s+POLICY\\b") || /SET\s+MASKING\s+POLICY/i.test(s)) {
+      return "Attach the masking policy to the column so SELECT actually disguises values.";
+    }
+    if (/ADD\s+ROW\s+ACCESS\s+POLICY|SET\s+ROW\s+ACCESS\s+POLICY/i.test(s)) {
+      return "Attach the row access policy so row filters apply on SELECT.";
+    }
+
+    var view = firstAtStmt(
+      s,
+      "CREATE\\s+(?:OR\\s+REPLACE\\s+)?(?:SECURE\\s+)?VIEW\\s+([A-Z0-9_.\"]+)"
+    );
+    if (view) {
+      return "Create view " + view + " — a safe projection of the underlying table.";
+    }
+
+    if (atStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?(?:IF\\s+NOT\\s+EXISTS\\s+)?RESOURCE\\s+MONITOR\\b")) {
+      return "Create a resource monitor to cap warehouse credits for the lab.";
+    }
+    if (atStmt(s, "ALTER\\s+(?:WAREHOUSE|ACCOUNT)\\b") && /RESOURCE\s+MONITOR/i.test(s)) {
+      return "Attach the resource monitor credit guardrail to the warehouse/account.";
+    }
+
+    var tbl = firstAtStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?TABLE\\s+([A-Z0-9_.\"]+)");
+    if (tbl) {
+      return "Create table " + tbl + " for this step.";
+    }
+
+    if (atStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?FILE\\s+FORMAT\\b")) {
+      return "Define how Snowflake should parse the inbound files.";
+    }
+    if (atStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?STAGE\\b")) {
+      return "Create the stage — the file landing dock before COPY INTO.";
+    }
+    if (atStmt(s, "COPY\\s+INTO\\b")) {
+      return "Load rows from the stage into the table.";
+    }
+
+    if (atStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?SHARE\\b")) {
+      return "Create the outbound share for partner read access.";
+    }
+    if (atStmt(s, "ALTER\\s+SHARE\\b")) {
+      return "Add objects or consumer accounts to the share.";
+    }
+    if (/\bCLONE\b/i.test(s) && atStmt(s, "CREATE\\b")) {
+      return "Clone into a fast same-account fork (QA/sandbox), not geo-DR.";
+    }
+    if (atStmt(s, "UNDROP\\b")) {
+      return "Bring back a dropped object from Time Travel retention.";
+    }
+    if (/\bAT\s*\(|\bBEFORE\s*\(/i.test(s)) {
+      return "Query an earlier table version with Time Travel.";
+    }
+
+    // Privileges before CREATE ROLE/SCHEMA — avoids "GRANT CREATE ROLE" false hits.
+    if (atStmt(s, "GRANT\\b")) {
+      return "Grant the privileges/roles so the next steps (and proofs) can succeed.";
+    }
+
+    if (atStmt(s, "CREATE\\s+(?:OR\\s+REPLACE\\s+)?(?:DATABASE|SCHEMA|ROLE|WAREHOUSE)\\b")) {
+      return "Create the Meridian lab object(s) this step needs (database, schema, role, or warehouse).";
+    }
+
+    if (atStmt(s, "DELETE\\b") && atStmt(s, "INSERT\\b")) {
+      return "Reset the demo row(s), then insert a clean proof row.";
+    }
+    if (atStmt(s, "DELETE\\s+FROM\\b")) {
+      return "Delete demo row(s) so the next proof starts clean.";
+    }
+    if (atStmt(s, "INSERT\\s+INTO\\b")) {
+      return "Insert the demo row(s) this step needs.";
+    }
+    if (atStmt(s, "MERGE\\s+INTO\\b")) {
+      return "MERGE changed rows into the target using the key / watermark logic.";
+    }
+    if (atStmt(s, "UPDATE\\b")) {
+      return "Update existing row(s) for this demo.";
+    }
+    if (atStmt(s, "DROP\\b")) {
+      return "Drop the demo object so you can prove recovery or rebuild cleanly.";
+    }
+    if (atStmt(s, "SET\\b")) {
+      return "Set a session variable used by the next statements.";
+    }
+    if (atStmt(s, "ALTER\\s+WAREHOUSE\\b") || atStmt(s, "ALTER\\s+ACCOUNT\\b") || atStmt(s, "ALTER\\s+TABLE\\b")) {
+      return "Alter the object for this step (warehouse, account, or table setting).";
+    }
+
+    if (/CURRENT_ROLE|CURRENT_SECONDARY_ROLES/i.test(s)) {
+      return "Show which primary and secondary roles are active in this session.";
+    }
+    if (/\bPOLICY_REFERENCES\b/i.test(s) || atStmt(s, "SHOW\\b") || atStmt(s, "DESCRIBE\\b") || atStmt(s, "DESC\\b")) {
+      return "Inspect metadata — confirm the object, policy, or grant is in place.";
+    }
+    if (atStmt(s, "SELECT\\b")) {
+      return "Check query — confirm what you should see after this step.";
+    }
+    if (atStmt(s, "CALL\\b")) {
+      return "Call the procedure for this step.";
+    }
+
+    return "";
+  }
+
+  function hintFromHead(block) {
+    var span = block.querySelector(".code-head span");
+    if (!span) return "";
+    var label = (span.textContent || "")
+      .replace(/^SQL\s*[·•\-:]+\s*/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!label || /^ready to copy$/i.test(label)) return "";
+    return "What this does: " + label + ".";
+  }
+
   function ensureActionHint(block) {
+    var pre = block.querySelector("pre");
+    var sql = pre ? (pre.innerText || pre.textContent || "") : "";
+    var text =
+      (block.getAttribute("data-why") || "").trim() ||
+      describeSql(sql) ||
+      hintFromHead(block) ||
+      "Run this SQL for the current step.";
+
     var prev = block.previousElementSibling;
-    if (prev && prev.classList && prev.classList.contains("action-hint")) return;
+    if (prev && prev.classList && prev.classList.contains("action-hint")) {
+      prev.textContent = text;
+      return;
+    }
     var hint = document.createElement("div");
     hint.className = "action-hint";
-    hint.textContent = "Your turn — Copy SQL, paste into Snowsight, Run";
+    hint.textContent = text;
     block.parentNode.insertBefore(hint, block);
   }
 
