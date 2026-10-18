@@ -99,8 +99,7 @@
       return "Terminal command for the dbt project — run locally or in CI, not in Snowsight.";
     }
     // Comment-only teaching blocks (replication / org admin demos)
-    var uncommented = s.replace(/--.*$/gm, "").replace(/\s+/g, " ").trim();
-    if (!uncommented && /--/.test(String(sql || ""))) {
+    if (!s.replace(/\s+/g, "")) {
       return "Reference-only notes for this step — read them; run only if your account allows it.";
     }
 
