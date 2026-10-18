@@ -232,6 +232,8 @@
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Lab context, then turn off result cache so “after” queries really re-execute — otherwise Snowsight looks magically fast.</p>
@@ -274,6 +276,8 @@ ALTER SESSION SET USE_CACHED_RESULT = FALSE;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -330,6 +334,8 @@ FROM BIG_EVENTS;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Copies events and pads wide text columns so <code>SELECT *</code> really burns bytes vs a slim projection.</p>
@@ -372,6 +378,8 @@ FROM BIG_EVENTS;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -422,6 +430,8 @@ WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>Problem</h4>
         <p><code>YEAR(EVENT_DATE)</code> / <code>MONTH(EVENT_DATE)</code> wraps the column — Snowflake can’t use min/max metadata as cleanly → more partitions opened.</p>
@@ -469,6 +479,8 @@ WHERE EVENT_DATE >= DATE_TRUNC('month', CURRENT_DATE())
       </div>
       <p class="comic-caption">Filter first, join second. Say it out loud.</p>
     </section>
+
+
 
 
 
@@ -526,6 +538,8 @@ ORDER BY VOLUME DESC;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -599,6 +613,8 @@ ORDER BY PARTITIONS_SCANNED DESC NULLS LAST;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -684,6 +700,8 @@ SHOW WAREHOUSES LIKE 'WH_BANK%';</code></pre>
       </div>
       
     </section>
+
+
 
 
 

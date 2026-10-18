@@ -196,6 +196,8 @@
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>version: 2</code> tells dbt this is modern YAML schema. The <code>sources:</code> list begins the BRONZE_LANDING dock definition.</p>
@@ -241,6 +243,8 @@ sources:
 
 
 
+
+
       <div class="explain">
         <h4>What each line does</h4>
         <p><code>tables:</code> lists physical tables at that dock. <code>name: txn_events</code> matches Snowflake object <code>TXN_EVENTS</code> (dbt lowercases in docs; Snowflake stores uppercase unless quoted).</p>
@@ -278,6 +282,8 @@ sources:
       </div>
       
     </section>
+
+
 
       <div class="explain">
         <h4>What this does</h4>
@@ -322,6 +328,8 @@ models:
       
     </section>
 
+
+
       <div class="explain">
         <h4>Read the column block</h4>
         <p><code>data_type: number</code> must match Snowflake. <code>tests: [unique, not_null]</code> keeps the txn key trustworthy — same as Lab 02’s merge key.</p>
@@ -361,6 +369,8 @@ models:
       </div>
       
     </section>
+
+
 
       <div class="explain">
         <h4>Why list every published column</h4>
@@ -404,6 +414,8 @@ models:
       
     </section>
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>dbt deps</code> pulls package dependencies (if any) before CI compiles the graph — same as local dev.</p>
@@ -439,6 +451,8 @@ dbt deps</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -478,6 +492,8 @@ dbt deps</code></pre>
       </div>
       
     </section>
+
+
 
       <div class="explain">
         <h4>What this does</h4>

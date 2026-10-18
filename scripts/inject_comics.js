@@ -64,38 +64,46 @@ L["00"] = {
     }
   ],
   steps: {
-    "1": S("Why a tiny warehouse?", [
+    "1": S("Why start as ACCOUNTADMIN?", [
+      ["alex", "Can I just be Elena from the first click?"],
+      ["elena", "Not yet. Someone has to pour the foundation. Mayor (<code>ACCOUNTADMIN</code>) creates the cheap engine and Elena’s badge — then we take the master key <em>off</em>."]
+    ], "Mayor builds once. Elena runs the labs."),
+    "2": S("Why a tiny warehouse?", [
       ["alex", "Why not a huge warehouse so everything is fast?"],
       ["elena", "Big engines cost more every second they’re on. We start tiny (<code>XSMALL</code>) and only go bigger when a real query proves we need it. Sleep after 60 seconds idle."]
     ], "AUTO_SUSPEND = the engine turns off when nobody is driving."),
-    "2": S("Why create a special role for Elena?", [
+    "3": S("Why create a special role for Elena?", [
       ["alex", "Can’t we just use ACCOUNTADMIN for everything? It’s easier."],
       ["elena", "ACCOUNTADMIN is the master key to the whole bank. You don’t wear it to make a table. Elena’s badge <code>ROLE_BANK_LAB_ADMIN</code> is for building labs — safer habit for interviews too."]
     ]),
-    "3": S("Why grant the warehouse to lab admin?", [
+    "4": S("Why grant CREATE ROLE / APPLY POLICY now?", [
+      ["jordan", "We’re not masking anything today…"],
+      ["elena", "Mayor stamps powers Elena will need in Labs 01–03 <em>before</em> you’re stuck mid-lab. Privilege repair = same idea if a stamp was missed."]
+    ]),
+    "5": S("Why grant the warehouse to lab admin?", [
       ["jordan", "I created the warehouse as mayor. Why grant it again?"],
-      ["elena", "Creating it doesn’t auto-share it. Grant = “Elena’s badge may use this engine.” Later she can pass that to Alex’s badge too."]
+      ["elena", "Creating it doesn’t auto-share it. Grant = “Elena’s badge may use this engine.” <code>WITH GRANT OPTION</code> means she can pass keys to Alex later."]
     ]),
-    "4": S("Why WITH GRANT OPTION?", [
-      ["alex", "What’s that extra WITH GRANT OPTION words?"],
-      ["elena", "It means Elena can <em>pass</em> the warehouse to other badges (Alex, Jordan). Without it she can drive but can’t hand keys to the team."]
-    ]),
-    "5": S("Why give Elena the database?", [
+    "6": S("Why give Elena the database?", [
       ["marcus", "Who owns MERIDIAN_BANK?"],
-      ["elena", "Lab admin owns it so she can create rooms and tables without asking the mayor every time. Mayor still owns account-wide safety switches."]
+      ["elena", "Lab admin owns the building so she can create rooms and tables without asking the mayor every time. Mayor still owns account-wide safety switches."]
     ]),
-    "6": S("Why attach the badge to me?", [
+    "7": S("Why attach the badge to me?", [
       ["alex", "I logged in. Why doesn’t the badge stick automatically?"],
       ["elena", "Badges are clipped onto users. This step clips <code>ROLE_BANK_LAB_ADMIN</code> onto <em>you</em> so you can wear it in Snowsight."]
     ]),
-    "7": S("Why smoke-test create/drop role?", [
+    "8": S("Why smoke-test create/drop role?", [
       ["jordan", "Seems pointless — create a temp role then drop it?"],
       ["elena", "It’s a fire drill: proves Elena is allowed to print new badges. If this fails, Lab 01 RBAC will fail too. Fix privileges now."]
     ]),
-    "8": S("Why so many rooms?", [
+    "9": S("Why so many rooms?", [
       ["alex", "BRONZE, SILVER, GOLD, RISK, FILE_IN… my head hurts."],
       ["elena", "Same building, different jobs. Dock vs clean shelves vs board reports vs rules vs file truck bay. You’ll use each room when the story needs it — not all today."]
-    ], "You don’t need to memorize every room yet — just that rooms have names with jobs.")
+    ], "Rooms have jobs. You don’t need every room memorized yet."),
+    "10": S("Why load scary CLIENTS already?", [
+      ["sam", "You’re putting SSN in on day zero?"],
+      ["elena", "On purpose — a tiny vault so Lab 01 has something to lock. Five fake clients. The danger must exist before we prove the window."]
+    ])
   }
 };
 
@@ -375,13 +383,21 @@ L["06"] = {
       ["alex", "Is this Amazon S3?"],
       ["elena", "Internal stage = parking inside Snowflake’s lot (fine for labs). Prod often uses external stages to your cloud bucket with storage integrations."]
     ]),
+    "4": S("Why a bronze table before the file?", [
+      ["alex", "Can’t we invent columns while loading?"],
+      ["elena", "Dock shelf first — named columns waiting. Then COPY pours file rows into that shape. Empty table ≠ empty story; it’s the landing pad."]
+    ]),
     "5": S("Fake a file for the lab", [
       ["jordan", "We don’t have a real partner drop…"],
-      ["elena", "We COPY FROM values into the stage to simulate a file. Same idea: bytes appear in the bay, then we load the dock."]
+      ["elena", "We put bytes on the stage to simulate a truck. Same idea: file appears in the bay, then we load the dock."]
     ]),
     "6": S("COPY INTO bronze", [
       ["marcus", "When is Alex allowed to use this data?"],
       ["elena", "After it’s in bronze and then cleaned toward silver/gold. COPY lands raw. It does not mean “board ready.”"]
+    ]),
+    "7": S("How do I know it worked?", [
+      ["alex", "COPY said success — I’m done?"],
+      ["elena", "SELECT a few rows from bronze. Interview close: stage → COPY → bronze. Snowpipe is the same path with an automatic door."]
     ])
   }
 };
@@ -489,7 +505,10 @@ L["09"] = {
     }
   ],
   steps: {
-    "1": S("Session", [["elena", "Badge, engine, silver room — let’s break a tiny demo table on purpose."]]),
+    "1": S("Why a tiny demo table?", [
+      ["alex", "Why not practice undo on prod CLIENTS?"],
+      ["elena", "Because undo practice should be boring and safe. Tiny table, same tools. Badge + warehouse + silver room — then we break it on purpose."]
+    ]),
     "2": S("Time Travel after DELETE", [
       ["alex", "I deleted the row — it’s gone forever?"],
       ["elena", "Not yet. Ask Snowflake for the table <em>as of a few minutes ago</em>. That’s Time Travel. The trash didn’t leave the building immediately."]
@@ -519,17 +538,29 @@ L["10"] = {
     }
   ],
   steps: {
-    "1": S("Secure view first", [
+    "0": S("Only if CREATE SHARE fails", [
+      ["jordan", "Permission denied on CREATE SHARE…"],
+      ["elena", "Mayor must allow Elena to create shares. Same privilege-repair habit — skip if Lab 00 already stamped it."]
+    ]),
+    "1": S("Provider session — why?", [
+      ["alex", "Who is the “provider”?"],
+      ["elena", "Us — Meridian. We wear Elena’s badge, pick the engine, stand in silver. Nora is the consumer later."]
+    ]),
+    "2": S("Secure view first", [
       ["sam", "What’s on the share?"],
       ["elena", "Only columns Nora needs. Secure view = she can’t peek at the SQL recipe either. No CLIENTS vault."]
     ]),
-    "2": S("Create share", [
-      ["alex", "Is a share a copy?"],
-      ["elena", "No — it’s a permission to read live objects. Nora’s account queries; data stays in Meridian until she pulls results."]
+    "3": S("Create share — is it a copy?", [
+      ["alex", "Is a share a copy of the table?"],
+      ["elena", "No — it’s a permission envelope. Nora’s account may read the objects we put inside. Data stays Meridian’s until she queries."]
     ]),
-    "3": S("Who pays?", [
-      ["marcus", "Do we pay when Nora queries?"],
-      ["elena", "Nora’s warehouse pays her scans. That’s why share beats us running reports for her on WH_BANK_XS “as a favor.”"]
+    "4": S("Why grant objects onto the share?", [
+      ["jordan", "I created SHARE_… but Nora sees nothing."],
+      ["elena", "Empty envelope. GRANT database/schema/view <em>to the share</em> puts the window inside. Create ≠ stocked."]
+    ]),
+    "5": S("Who pays when Nora queries?", [
+      ["marcus", "Do we pay when Nora runs SQL?"],
+      ["elena", "Nora’s warehouse pays her scans. That’s why share beats us running Friday CSVs on WH_BANK_XS “as a favor.”"]
     ])
   }
 };
@@ -547,13 +578,25 @@ L["11"] = {
     }
   ],
   steps: {
-    "1": S("RPO vs RTO baby words", [
-      ["marcus", "Board wants numbers."],
-      ["elena", "<strong>RPO</strong> = how much data we might lose (lag). <strong>RTO</strong> = how long until people work again (our runbook speed). Different clocks."]
+    "1": S("Session first — why?", [
+      ["alex", "Why badge + warehouse before talking DR?"],
+      ["elena", "Same habit every lab: know which costume and which engine you’re in. DR talk without a session is just vibes."]
     ]),
-    "2": S("What we can show on trial", [
-      ["jordan", "I can’t failover a personal trial…"],
-      ["elena", "Honest answer: show the commands and the plan; production drills the promotion. Don’t fake a completed DR program."]
+    "2": S("What does SHOW replication tell you?", [
+      ["marcus", "Board wants numbers."],
+      ["elena", "<strong>RPO</strong> = how much data we might lose (lag). This SHOW is “do we even have a secondary yet?” On trial: often empty — that’s honest."]
+    ]),
+    "3": S("Failover group = what?", [
+      ["jordan", "Is that the same as a share?"],
+      ["elena", "No. Failover group is the suitcase of objects that can flip to another account/region. Share is Nora’s window — dies if we die."]
+    ]),
+    "4": S("If org accounts is blocked…", [
+      ["dev", "Command fails on my trial."],
+      ["elena", "Say so in the interview. Explain the pattern; don’t invent a green checkmark. Trial ≠ production org."]
+    ]),
+    "5": S("Production pattern in one breath", [
+      ["marcus", "So what’s the plan?"],
+      ["elena", "Primary account lands data → replicate to secondary → practice promote (RTO) → know lag (RPO). Clone and share are different tools — don’t mix them into this sentence."]
     ])
   }
 };
@@ -623,13 +666,25 @@ L["13"] = {
       ["alex", "I thought Elena’s badge does everything…"],
       ["elena", "Bill and breakers are account powers. Daily table building is not. Wear the mayor briefly, then switch back."]
     ]),
-    "2": S("Meter lag", [
-      ["marcus", "I want this morning’s spike now."],
-      ["elena", "Meter views can lag 1–3 hours. Empty isn’t “SQL wrong.” Re-check later; use query history when it appears."]
+    "2": S("Credits by warehouse", [
+      ["marcus", "Who left the lights on?"],
+      ["elena", "Meter by warehouse — map WH_BANK_XS to a team. Lag 1–3 hours is normal; empty isn’t always “SQL wrong.”"]
     ]),
-    "3": S("Notify vs suspend", [
+    "3": S("Top queries = the suspects", [
+      ["alex", "Warehouse total is high — then what?"],
+      ["elena", "Query history: which SQL burned time. Chargeback fights end with a query id, not a feeling."]
+    ]),
+    "4": S("Notify vs suspend", [
       ["jordan", "Email at 75% is enough?"],
-      ["elena", "Email still lets a runaway finish. Marcus asked for a hard stop — suspend at 100%. Plan a reset owner so month-end isn’t a surprise outage."]
+      ["elena", "Email still lets a runaway finish. Marcus asked for a hard stop — suspend at 100%. Name who resets the monitor."]
+    ]),
+    "5": S("Why attach the monitor?", [
+      ["marcus", "I created RM_BANK_LAB…"],
+      ["elena", "Breaker on the wall ≠ wired to the engine. ALTER WAREHOUSE … SET RESOURCE_MONITOR links them."]
+    ]),
+    "6": S("Smoke — did the breaker stick?", [
+      ["alex", "How do I know it worked?"],
+      ["elena", "SHOW or describe the warehouse — monitor name should appear. Interview sentence: meters explain, monitors stop."]
     ])
   }
 };
@@ -644,10 +699,59 @@ L["14"] = {
         ["marcus", "(as interviewer) Keep Alex off SSN. What breaks if you skip secondary-role NONE?"],
         ["elena", "I say: job badge + key-ring + window view + hang the extra coat. Context → decision → proof → outcome. If I blank, I don’t get the job."]
       ],
-      caption: "Do Lab 15 first. Open each lab’s comics + Interviewer presses further. Speak."
+      caption: "Read the coach comic → answer aloud → open “Say this”. Structure: context → decision → verify → outcome."
     }
   ],
-  steps: {}
+  steps: {
+    "1": S("Out loud: keep Alex off SSN", [
+      ["marcus", "Alex must not see SSN. How?"],
+      ["elena", "Not a second secret copy. Give Alex a <em>window</em> view without PII columns + key-ring that can’t open the vault. Proof: FR_ANALYST + secondary roles NONE."]
+    ], "Lab 01 — structure first, then prove."),
+    "2": S("Out loud: same SQL, two answers", [
+      ["alex", "Why doesn’t Sam get a different table?"],
+      ["elena", "One shelf, two stickers: masking (column look) + RAP (which rows). Same SELECT; badge changes the answer. Coats off or the demo lies."]
+    ], "Lab 03 — policies, not duplicate CSVs."),
+    "3": S("Out loud: nightly full rebuild hurts", [
+      ["jordan", "Fact table is huge. Full refresh every night?"],
+      ["elena", "No — bookmark on <code>updated_at</code>, MERGE by order id. Day-2 proof: new rows + one status change without rewriting history."]
+    ], "Lab 02 — watermark = bookmark."),
+    "4": S("Out loud: streams vs dbt", [
+      ["marcus", "Pick one CDC tool."],
+      ["elena", "I won’t. Streams+tasks = Snowflake ops speed into silver. dbt incremental = git-tested marts. Two jobs; don’t force one religion."]
+    ], "Lab 05 — who owns latency vs who owns CI."),
+    "5": S("Out loud: board query too expensive", [
+      ["marcus", "Board SQL is slow and burns credits."],
+      ["elena", "Triage: slim columns → sargable filter → filter before join → prove bytes in Profile. Then maybe a board warehouse — not “make XS huge forever.”"]
+    ], "Lab 07 — method before muscle."),
+    "6": S("Out loud: remote spill", [
+      ["alex", "Profile says remote spill. Panic?"],
+      ["elena", "Spill = ran out of local RAM for sort/join. Narrow earlier, cluster filter columns, right-size once. Measure again — diagnosis ≠ cure."]
+    ], "Lab 08 — layout + SQL before endless upsizing."),
+    "7": S("Out loud: Dev wants prod-like QA", [
+      ["dev", "Can I have a full copy without double bill day one?"],
+      ["elena", "Zero-copy CLONE — twin pointer, same account. Refresh by re-clone. Not DR when a region dies."]
+    ], "Lab 09 — clone ≠ fire escape."),
+    "8": S("Out loud: Nora wants metrics", [
+      ["nora", "Email me the ledger Friday?"],
+      ["elena", "Secure share + thin view. You query; you pay your warehouse. No USB dump, no CLIENTS vault on the share."]
+    ], "Lab 10 — live window, not Friday CSV."),
+    "9": S("Out loud: share vs replicate", [
+      ["marcus", "Share covers disaster recovery, right?"],
+      ["elena", "No. Share = Nora’s read window (dies if we die). Replicate = secondary region + failover (RPO/RTO). Clone = Dev QA. Three sentences, three tools."]
+    ], "Lab 11 — never blur these."),
+    "10": S("Out loud: chargeback", [
+      ["marcus", "Finance wants spend by team."],
+      ["elena", "Meter views by warehouse mapped to teams; query history for disputes. Admit lag. Monitors stop the bleed; meters explain the bill."]
+    ], "Lab 13 — after-the-fact vs guardrails."),
+    "11": S("Out loud: dropped prod table", [
+      ["jordan", "I DROP’d a table. Slack is on fire."],
+      ["elena", "Inside retention: UNDROP. Bad UPDATE: Time Travel / AT. Region gone: replication. Typos ≠ geography."]
+    ], "Lab 09 — pick the undo that matches the wound."),
+    "12": S("Out loud: runaway spend", [
+      ["marcus", "Ad hoc warehouses melted the weekend."],
+      ["elena", "Resource monitor suspend + auto-suspend + Slim CI. Also cut bytes: incremental + clustering. Guardrails without engineering still leak money."]
+    ], "Labs 12+13 — brakes and smaller loads.")
+  }
 };
 
 // ——— Lab 15 ———

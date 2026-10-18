@@ -347,6 +347,8 @@ from {{ ref('stg_orders') }}
 
 
 
+
+
       <div class="explain">
         <h4>profiles.yml = dbt’s login card</h4>
         <p>dbt runs as <code>ROLE_BANK_LAB_ADMIN</code>. Models land in <code>SILVER_CURATED</code>. Copy from <code>dbt_project/profiles.yml.example</code> → <code>profiles.yml</code> (keep passwords out of git).</p>
@@ -399,6 +401,8 @@ dbt debug</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -460,6 +464,8 @@ SELECT 'day1' AS batch, COUNT(*) AS n FROM TXN_EVENTS;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What happens under the hood</h4>
         <p><code>is_incremental()</code> is false → watermark filter is omitted → all 5 staging rows load into a new table. Staging becomes a view.</p>
@@ -503,6 +509,8 @@ SELECT COUNT(*) AS rows_after_first_run FROM SILVER_CURATED.FCT_ORDERS_INCREMENT
       </div>
       
     </section>
+
+
 
 
 

@@ -263,6 +263,8 @@
 
 
 
+
+
       <div class="explain">
         <h4>When you need this</h4>
         <p>Only ACCOUNTADMIN can stamp Elena’s role with “may print new badges.” Skip if Lab 00 smoke test already passed.</p>
@@ -315,6 +317,8 @@ SELECT 'Privilege repair OK' AS status;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What this proves</h4>
         <p>Lab 00 data is present and PII column is populated — RBAC has something real to protect.</p>
@@ -353,6 +357,8 @@ SELECT COUNT(*) AS n, COUNT(SSN_LAST4) AS pii_rows FROM BRONZE_LANDING.CLIENTS;<
       </div>
       <p class="comic-caption">Order matters: print → hang keys → clip onto jobs. Don’t skip ahead.</p>
     </section>
+
+
 
 
 
@@ -402,6 +408,8 @@ CREATE ROLE IF NOT EXISTS FR_COMPLIANCE;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>Why FR_ need warehouse USAGE?</h4>
         <p>Proof queries run as Alex/Jordan/Sam — each FR_ must be allowed to start <code>WH_BANK_XS</code>.</p>
@@ -439,6 +447,8 @@ GRANT USAGE ON WAREHOUSE WH_BANK_XS TO ROLE FR_COMPLIANCE;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -489,6 +499,8 @@ GRANT USAGE ON SCHEMA BRONZE_LANDING TO ROLE AR_PII_READ;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>ALL vs FUTURE</h4>
         <p><code>ALL TABLES</code> covers what exists today. <code>FUTURE TABLES</code> covers what Jordan creates tomorrow without a grant fire drill.</p>
@@ -535,6 +547,8 @@ GRANT SELECT ON FUTURE TABLES IN SCHEMA BRONZE_LANDING TO ROLE AR_PII_READ;</cod
       </div>
       
     </section>
+
+
 
 
 
@@ -590,6 +604,8 @@ GRANT ROLE AR_SILVER_CURATED_READ TO ROLE FR_COMPLIANCE;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>Why grant FR_ to your login?</h4>
         <p>You play Alex, Jordan, and Sam in one Snowflake user — realistic for a lab, not production (one human = one FR_ there).</p>
@@ -628,6 +644,8 @@ GRANT ROLE FR_COMPLIANCE TO USER IDENTIFIER($uname);</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -676,6 +694,8 @@ SELECT 'Lab 01 Meridian Bank RBAC ready' AS status;</code></pre>
       </div>
       <p class="comic-caption">If you remember one thing from Lab 01: SECONDARY ROLES NONE.</p>
     </section>
+
+
 
 
 
@@ -760,6 +780,8 @@ SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>Same rule every time</h4>
         <p><code>USE ROLE</code> then <code>USE SECONDARY ROLES NONE</code> before each proof — policies and table access both respect the primary badge.</p>
@@ -805,6 +827,8 @@ SELECT CLIENT_ID, SSN_LAST4 FROM BRONZE_LANDING.CLIENTS;</code></pre>
       </div>
       
     </section>
+
+
 
 
 

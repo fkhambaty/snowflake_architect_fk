@@ -168,6 +168,29 @@
 
     <article class="step">
       <div class="step-head"><div class="step-num">0</div><div><h3>Privilege repair (if CREATE SHARE fails)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-0" aria-label="Only if CREATE SHARE fails">
+      <p class="comic-kicker">Step 0 · coach</p>
+      <h2 class="comic-title">Only if CREATE SHARE fails</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Permission denied on CREATE SHARE…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Mayor must allow Elena to create shares. Same privilege-repair habit — skip if Lab 00 already stamped it.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Only ACCOUNTADMIN can grant <code>CREATE SHARE</code> and related powers to <code>ROLE_BANK_LAB_ADMIN</code>. Skip if Lab 00 smoke test already passed.</p>
@@ -211,8 +234,45 @@ SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Set provider session</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-10-step-1" aria-label="Secure view first">
+      <section class="comic-strip comic-step" id="comic-10-step-1" aria-label="Provider session — why?">
       <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Provider session — why?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Who is the “provider”?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Us — Meridian. We wear Elena’s badge, pick the engine, stand in silver. Nora is the consumer later.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+
+
+
+
+      <div class="code-block">
+        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
+USE WAREHOUSE WH_BANK_XS;
+USE DATABASE MERIDIAN_BANK;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">2</div><div><h3>Create the secure view (column minimum)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-2" aria-label="Secure view first">
+      <p class="comic-kicker">Step 2 · coach</p>
       <h2 class="comic-title">Secure view first</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
@@ -235,39 +295,6 @@ SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
 
 
 
-      <div class="code-block">
-        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
-USE WAREHOUSE WH_BANK_XS;
-USE DATABASE MERIDIAN_BANK;</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head"><div class="step-num">2</div><div><h3>Create the secure view (column minimum)</h3></div></div>
-
-      <section class="comic-strip comic-step" id="comic-10-step-2" aria-label="Create share">
-      <p class="comic-kicker">Step 2 · coach</p>
-      <h2 class="comic-title">Create share</h2>
-      <div class="comic-row two">
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face alex" role="img" aria-label="Alex"></div>
-        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
-      </div>
-      <blockquote class="comic-bubble">Is a share a copy?</blockquote>
-    </figure>
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face elena" role="img" aria-label="Elena"></div>
-        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
-      </div>
-      <blockquote class="comic-bubble">No — it’s a permission to read live objects. Nora’s account queries; data stays in Meridian until she pulls results.</blockquote>
-    </figure>
-      </div>
-      
-    </section>
-
 
 
       <div class="explain">
@@ -288,27 +315,29 @@ FROM BRONZE_LANDING.TXN_EVENTS;</code></pre>
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Create the share object</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-10-step-3" aria-label="Who pays?">
+      <section class="comic-strip comic-step" id="comic-10-step-3" aria-label="Create share — is it a copy?">
       <p class="comic-kicker">Step 3 · coach</p>
-      <h2 class="comic-title">Who pays?</h2>
+      <h2 class="comic-title">Create share — is it a copy?</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
-        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
       </div>
-      <blockquote class="comic-bubble">Do we pay when Nora queries?</blockquote>
+      <blockquote class="comic-bubble">Is a share a copy of the table?</blockquote>
     </figure>
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">Nora’s warehouse pays her scans. That’s why share beats us running reports for her on WH_BANK_XS “as a favor.”</blockquote>
+      <blockquote class="comic-bubble">No — it’s a permission envelope. Nora’s account may read the objects we put inside. Data stays Meridian’s until she queries.</blockquote>
     </figure>
       </div>
       
     </section>
+
+
 
 
 
@@ -325,6 +354,29 @@ CREATE SHARE SHARE_MERIDIAN_TXNS;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Grant database + schema + view to the share</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-4" aria-label="Why grant objects onto the share?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Why grant objects onto the share?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I created SHARE_… but Nora sees nothing.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Empty envelope. GRANT database/schema/view <em>to the share</em> puts the window inside. Create ≠ stocked.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Consumers need USAGE on database and schema, then SELECT on the view. Without all three, Nora sees nothing.</p>
@@ -340,6 +392,29 @@ GRANT SELECT ON VIEW SILVER_CURATED.V_SHARE_TXNS TO SHARE SHARE_MERIDIAN_TXNS;</
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Verify + Nora’s next step</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-5" aria-label="Who pays when Nora queries?">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Who pays when Nora queries?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Do we pay when Nora runs SQL?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Nora’s warehouse pays her scans. That’s why share beats us running Friday CSVs on WH_BANK_XS “as a favor.”</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What you should see</h4>
         <p><code>SHOW SHARES</code> returns <code>SHARE_MERIDIAN_TXNS</code>. Production: <code>ALTER SHARE … ADD ACCOUNTS = NoraOrgAccount</code>; Nora creates a database from the share in her account.</p>

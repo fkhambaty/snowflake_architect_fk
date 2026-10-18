@@ -190,6 +190,8 @@
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Lab admin context; SILVER_CURATED schema holds the demo fact table.</p>
@@ -227,6 +229,8 @@ USE SCHEMA SILVER_CURATED;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -282,6 +286,8 @@ FROM TABLE(GENERATOR(ROWCOUNT => 400000));</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Asks Snowflake how well rows align on <code>EVENT_DATE</code> before we declare a clustering key.</p>
@@ -323,6 +329,8 @@ FROM TABLE(GENERATOR(ROWCOUNT => 400000));</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>ALTER TABLE … CLUSTER BY (EVENT_DATE)</code> tells Snowflake to maintain better date locality over time (automatic background work).</p>
@@ -358,6 +366,8 @@ FROM TABLE(GENERATOR(ROWCOUNT => 400000));</code></pre>
       </div>
       
     </section>
+
+
 
 
 

@@ -221,27 +221,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Set session (Elena’s lab badge)</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-11-step-1" aria-label="RPO vs RTO baby words">
+      <section class="comic-strip comic-step" id="comic-11-step-1" aria-label="Session first — why?">
       <p class="comic-kicker">Step 1 · coach</p>
-      <h2 class="comic-title">RPO vs RTO baby words</h2>
+      <h2 class="comic-title">Session first — why?</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
-        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
       </div>
-      <blockquote class="comic-bubble">Board wants numbers.</blockquote>
+      <blockquote class="comic-bubble">Why badge + warehouse before talking DR?</blockquote>
     </figure>
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble"><strong>RPO</strong> = how much data we might lose (lag). <strong>RTO</strong> = how long until people work again (our runbook speed). Different clocks.</blockquote>
+      <blockquote class="comic-bubble">Same habit every lab: know which costume and which engine you’re in. DR talk without a session is just vibes.</blockquote>
     </figure>
       </div>
       
     </section>
+
+
 
 
 
@@ -263,27 +265,29 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>SHOW replication databases</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-11-step-2" aria-label="What we can show on trial">
+      <section class="comic-strip comic-step" id="comic-11-step-2" aria-label="What does SHOW replication tell you?">
       <p class="comic-kicker">Step 2 · coach</p>
-      <h2 class="comic-title">What we can show on trial</h2>
+      <h2 class="comic-title">What does SHOW replication tell you?</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
-        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
       </div>
-      <blockquote class="comic-bubble">I can’t failover a personal trial…</blockquote>
+      <blockquote class="comic-bubble">Board wants numbers.</blockquote>
     </figure>
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">Honest answer: show the commands and the plan; production drills the promotion. Don’t fake a completed DR program.</blockquote>
+      <blockquote class="comic-bubble"><strong>RPO</strong> = how much data we might lose (lag). This SHOW is “do we even have a secondary yet?” On trial: often empty — that’s honest.</blockquote>
     </figure>
       </div>
       
     </section>
+
+
 
 
 
@@ -305,6 +309,29 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>SHOW failover groups</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-11-step-3" aria-label="Failover group = what?">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Failover group = what?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Is that the same as a share?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">No. Failover group is the suitcase of objects that can flip to another account/region. Share is Nora’s window — dies if we die.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Lists failover groups — the named bundle Marcus promotes during region loss. Again, empty on trial is OK for learning.</p>
@@ -318,6 +345,29 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Org accounts (discuss if blocked)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-11-step-4" aria-label="If org accounts is blocked…">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">If org accounts is blocked…</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face dev" role="img" aria-label="Dev"></div>
+        <div><span class="comic-name">Dev</span><span class="comic-role">QA — needs a safe copy</span></div>
+      </div>
+      <blockquote class="comic-bubble">Command fails on my trial.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Say so in the interview. Explain the pattern; don’t invent a green checkmark. Trial ≠ production org.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this would do</h4>
         <p>On an org admin role, lists accounts in the Snowflake organization — useful when wiring primary → secondary account IDs.</p>
@@ -333,6 +383,29 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Production pattern (explain — two accounts)</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-11-step-5" aria-label="Production pattern in one breath">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Production pattern in one breath</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">So what’s the plan?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Primary account lands data → replicate to secondary → practice promote (RTO) → know lag (RPO). Clone and share are different tools — don’t mix them into this sentence.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What each line means</h4>
         <p>You will not run live failover on one trial account. Read these as Marcus’s architecture slide — primary enables replication, secondary refreshes, runbook promotes failover group.</p>

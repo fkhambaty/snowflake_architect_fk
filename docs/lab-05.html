@@ -332,6 +332,8 @@
 
 
 
+
+
       <div class="explain">
         <h4>When you need this</h4>
         <p>Marcus escalated: “Elena’s role can’t run tasks.” Only ACCOUNTADMIN can stamp <code>EXECUTE TASK</code> and related grants. Skip if Lab 00 bootstrap already succeeded.</p>
@@ -400,6 +402,8 @@ SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What TXN_SILVER_CDC is</h4>
         <p>Append-only SILVER_CURATED copy fed by the task — not the same object as Lab 04’s SILVER_TXNS CTAS, but same idea: rows leave BRONZE_LANDING via automation.</p>
@@ -448,6 +452,8 @@ USE SCHEMA SILVER_CURATED;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What the stream watches</h4>
         <p><code>ON TABLE BRONZE_LANDING.TXN_EVENTS</code> — requires Lab 02 source table. <code>APPEND_ONLY = TRUE</code> matches insert-only dock behavior in this lab.</p>
@@ -484,6 +490,8 @@ USE SCHEMA SILVER_CURATED;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -534,6 +542,8 @@ AS
 
 
 
+
+
       <div class="explain">
         <h4>Why RESUME?</h4>
         <p>New tasks are suspended by default — resume so <code>EXECUTE TASK</code> can run the body when the stream has data.</p>
@@ -569,6 +579,8 @@ AS
       </div>
       
     </section>
+
+
 
 
 
@@ -623,6 +635,8 @@ DELETE FROM BRONZE_LANDING.TXN_EVENTS WHERE TXN_ID = 1099;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>Why suspend at the end?</h4>
         <p>Interview hygiene: prove automation works, then stop background warehouse use in a shared lab account.</p>
@@ -659,6 +673,8 @@ SELECT 'Lab 05 OK — task suspended' AS status;</code></pre>
       </div>
       
     </section>
+
+
 
 
 

@@ -180,6 +180,8 @@
       
     </section>
 
+
+
       <div class="explain">
         <h4>What “APPLY MASKING POLICY” means</h4>
         <p>
@@ -220,6 +222,8 @@ GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE ROLE_BANK_LAB_ADMIN;</code></pr
       </div>
       
     </section>
+
+
 
 
 
@@ -265,6 +269,8 @@ CREATE SCHEMA IF NOT EXISTS SILVER_CURATED;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>Why a copy from BRONZE_LANDING?</h4>
         <p>
@@ -305,6 +311,8 @@ FROM BRONZE_LANDING.CLIENTS;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -354,6 +362,8 @@ CREATE OR REPLACE MASKING POLICY MP_EMAIL_MASK AS (val STRING)
       </div>
       
     </section>
+
+
 
 
 
@@ -414,6 +424,8 @@ INSERT INTO RISK_CTRL.RAP_COUNTRY_ENTITLEMENT VALUES
 
 
 
+
+
       <div class="explain">
         <h4>What RETURNS BOOLEAN means</h4>
         <p>
@@ -459,6 +471,8 @@ AS (country_code STRING) RETURNS BOOLEAN ->
       </div>
       
     </section>
+
+
 
       <div class="explain">
         <h4>Attach ≠ create (common gotcha)</h4>
@@ -514,6 +528,8 @@ FROM TABLE(INFORMATION_SCHEMA.POLICY_REFERENCES(
       
     </section>
 
+
+
       <div class="explain">
         <h4>Grants vs policies</h4>
         <p>
@@ -555,6 +571,8 @@ SELECT 'Lab 03 policies attached' AS status;</code></pre>
       </div>
       
     </section>
+
+
 
       <div class="explain">
         <h4>Why SECONDARY ROLES NONE again?</h4>
@@ -603,6 +621,8 @@ ORDER BY CLIENT_ID;</code></pre>
       </div>
       
     </section>
+
+
 
       <div class="explain">
         <h4>Interview soundbite</h4>

@@ -91,7 +91,7 @@
       <blockquote class="comic-bubble">I say: job badge + key-ring + window view + hang the extra coat. Context → decision → proof → outcome. If I blank, I don’t get the job.</blockquote>
     </figure>
       </div>
-      <p class="comic-caption">Do Lab 15 first. Open each lab’s comics + Interviewer presses further. Speak.</p>
+      <p class="comic-caption">Read the coach comic → answer aloud → open “Say this”. Structure: context → decision → verify → outcome.</p>
     </section>
 <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
@@ -128,6 +128,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">1</div><div><h3>Alex must not see SSN on clients</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-01.html">Lab 01</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-1" aria-label="Out loud: keep Alex off SSN">
+      <p class="comic-kicker">Step 1 · coach</p>
+      <h2 class="comic-title">Out loud: keep Alex off SSN</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Alex must not see SSN. How?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Not a second secret copy. Give Alex a <em>window</em> view without PII columns + key-ring that can’t open the vault. Proof: FR_ANALYST + secondary roles NONE.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 01 — structure first, then prove.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -143,6 +166,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Same SQL — Sam sees real email, Alex sees masked</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-03.html">Lab 03</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-2" aria-label="Out loud: same SQL, two answers">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Out loud: same SQL, two answers</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why doesn’t Sam get a different table?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">One shelf, two stickers: masking (column look) + RAP (which rows). Same SELECT; badge changes the answer. Coats off or the demo lies.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 03 — policies, not duplicate CSVs.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -158,6 +204,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Txn fact too big for nightly full refresh</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-02.html">Lab 02</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-3" aria-label="Out loud: nightly full rebuild hurts">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Out loud: nightly full rebuild hurts</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Fact table is huge. Full refresh every night?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">No — bookmark on <code>updated_at</code>, MERGE by order id. Day-2 proof: new rows + one status change without rewriting history.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 02 — watermark = bookmark.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -173,6 +242,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Streams vs dbt incremental for BRONZE_LANDING CDC</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-05.html">Lab 05</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-4" aria-label="Out loud: streams vs dbt">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Out loud: streams vs dbt</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Pick one CDC tool.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">I won’t. Streams+tasks = Snowflake ops speed into silver. dbt incremental = git-tested marts. Two jobs; don’t force one religion.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 05 — who owns latency vs who owns CI.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -188,6 +280,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Board query scans too much — slow and costly</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-07.html">Lab 07</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-5" aria-label="Out loud: board query too expensive">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Out loud: board query too expensive</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Board SQL is slow and burns credits.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Triage: slim columns → sargable filter → filter before join → prove bytes in Profile. Then maybe a board warehouse — not “make XS huge forever.”</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 07 — method before muscle.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -203,6 +318,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Query Profile shows massive remote spill</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-08.html">Lab 08</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-6" aria-label="Out loud: remote spill">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">Out loud: remote spill</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Profile says remote spill. Panic?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Spill = ran out of local RAM for sort/join. Narrow earlier, cluster filter columns, right-size once. Measure again — diagnosis ≠ cure.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 08 — layout + SQL before endless upsizing.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -218,6 +356,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Dev needs prod-like QA without double storage day one</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-09.html">Lab 09</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-7" aria-label="Out loud: Dev wants prod-like QA">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">Out loud: Dev wants prod-like QA</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face dev" role="img" aria-label="Dev"></div>
+        <div><span class="comic-name">Dev</span><span class="comic-role">QA — needs a safe copy</span></div>
+      </div>
+      <blockquote class="comic-bubble">Can I have a full copy without double bill day one?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Zero-copy CLONE — twin pointer, same account. Refresh by re-clone. Not DR when a region dies.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 09 — clone ≠ fire escape.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -233,6 +394,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">8</div><div><h3>Nora’s credit union needs read-only txn metrics</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-10.html">Lab 10</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-8" aria-label="Out loud: Nora wants metrics">
+      <p class="comic-kicker">Step 8 · coach</p>
+      <h2 class="comic-title">Out loud: Nora wants metrics</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face nora" role="img" aria-label="Nora"></div>
+        <div><span class="comic-name">Nora</span><span class="comic-role">Partner — needs a safe window</span></div>
+      </div>
+      <blockquote class="comic-bubble">Email me the ledger Friday?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Secure share + thin view. You query; you pay your warehouse. No USB dump, no CLIENTS vault on the share.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 10 — live window, not Friday CSV.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -248,6 +432,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">9</div><div><h3>Board asks share vs replicate for DR</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-11.html">Lab 11</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-9" aria-label="Out loud: share vs replicate">
+      <p class="comic-kicker">Step 9 · coach</p>
+      <h2 class="comic-title">Out loud: share vs replicate</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Share covers disaster recovery, right?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">No. Share = Nora’s read window (dies if we die). Replicate = secondary region + failover (RPO/RTO). Clone = Dev QA. Three sentences, three tools.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 11 — never blur these.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -263,6 +470,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">10</div><div><h3>Finance needs credit chargeback by team</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-13.html">Lab 13</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-10" aria-label="Out loud: chargeback">
+      <p class="comic-kicker">Step 10 · coach</p>
+      <h2 class="comic-title">Out loud: chargeback</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Finance wants spend by team.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Meter views by warehouse mapped to teams; query history for disputes. Admit lag. Monitors stop the bleed; meters explain the bill.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 13 — after-the-fact vs guardrails.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -278,6 +508,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">11</div><div><h3>Engineer dropped a production table — Slack panic</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-09.html">Lab 09</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-11" aria-label="Out loud: dropped prod table">
+      <p class="comic-kicker">Step 11 · coach</p>
+      <h2 class="comic-title">Out loud: dropped prod table</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">I DROP’d a table. Slack is on fire.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Inside retention: UNDROP. Bad UPDATE: Time Travel / AT. Region gone: replication. Typos ≠ geography.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Lab 09 — pick the undo that matches the wound.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
@@ -293,6 +546,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">12</div><div><h3>Control runaway ad hoc warehouse spend</h3>
         <p class="hint">Meridian Bank · maps to <a href="lab-13.html">Lab 13</a>, <a href="lab-12.html">Lab 12</a></p></div></div>
+
+      <section class="comic-strip comic-step" id="comic-14-step-12" aria-label="Out loud: runaway spend">
+      <p class="comic-kicker">Step 12 · coach</p>
+      <h2 class="comic-title">Out loud: runaway spend</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Ad hoc warehouses melted the weekend.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Resource monitor suspend + auto-suspend + Slim CI. Also cut bytes: incremental + clustering. Guardrails without engineering still leak money.</blockquote>
+    </figure>
+      </div>
+      <p class="comic-caption">Labs 12+13 — brakes and smaller loads.</p>
+    </section>
+
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>

@@ -187,6 +187,8 @@
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Account usage views and creating resource monitors require elevated role — not Elena’s normal lab badge alone.</p>
@@ -202,27 +204,29 @@
     <article class="step">
       <div class="step-head"><div class="step-num">2</div><div><h3>Credits by warehouse (last 7 days)</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-13-step-2" aria-label="Meter lag">
+      <section class="comic-strip comic-step" id="comic-13-step-2" aria-label="Credits by warehouse">
       <p class="comic-kicker">Step 2 · coach</p>
-      <h2 class="comic-title">Meter lag</h2>
+      <h2 class="comic-title">Credits by warehouse</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
         <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
       </div>
-      <blockquote class="comic-bubble">I want this morning’s spike now.</blockquote>
+      <blockquote class="comic-bubble">Who left the lights on?</blockquote>
     </figure>
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">Meter views can lag 1–3 hours. Empty isn’t “SQL wrong.” Re-check later; use query history when it appears.</blockquote>
+      <blockquote class="comic-bubble">Meter by warehouse — map WH_BANK_XS to a team. Lag 1–3 hours is normal; empty isn’t always “SQL wrong.”</blockquote>
     </figure>
       </div>
       
     </section>
+
+
 
 
 
@@ -248,27 +252,29 @@ GROUP BY 1 ORDER BY 2 DESC NULLS LAST;</code></pre>
     <article class="step">
       <div class="step-head"><div class="step-num">3</div><div><h3>Top queries by runtime (last 24 hours)</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-13-step-3" aria-label="Notify vs suspend">
+      <section class="comic-strip comic-step" id="comic-13-step-3" aria-label="Top queries = the suspects">
       <p class="comic-kicker">Step 3 · coach</p>
-      <h2 class="comic-title">Notify vs suspend</h2>
+      <h2 class="comic-title">Top queries = the suspects</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
-        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
       </div>
-      <blockquote class="comic-bubble">Email at 75% is enough?</blockquote>
+      <blockquote class="comic-bubble">Warehouse total is high — then what?</blockquote>
     </figure>
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">Email still lets a runaway finish. Marcus asked for a hard stop — suspend at 100%. Plan a reset owner so month-end isn’t a surprise outage.</blockquote>
+      <blockquote class="comic-bubble">Query history: which SQL burned time. Chargeback fights end with a query id, not a feeling.</blockquote>
     </figure>
       </div>
       
     </section>
+
+
 
 
 
@@ -291,6 +297,29 @@ ORDER BY TOTAL_ELAPSED_TIME DESC NULLS LAST LIMIT 20;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Create resource monitor RM_BANK_LAB</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-13-step-4" aria-label="Notify vs suspend">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Notify vs suspend</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Email at 75% is enough?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Email still lets a runaway finish. Marcus asked for a hard stop — suspend at 100%. Name who resets the monitor.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>Read the triggers like English</h4>
         <p><code>CREDIT_QUOTA = 10</code> is a small lab budget. At <strong>75%</strong> Snowflake can <code>NOTIFY</code> (email/account alert). At <strong>100%</strong> <code>SUSPEND</code> stops the warehouse from consuming more credits until someone resets the monitor.</p>
@@ -307,6 +336,29 @@ ORDER BY TOTAL_ELAPSED_TIME DESC NULLS LAST LIMIT 20;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">5</div><div><h3>Attach monitor to WH_BANK_XS</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-13-step-5" aria-label="Why attach the monitor?">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Why attach the monitor?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">I created RM_BANK_LAB…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Breaker on the wall ≠ wired to the engine. ALTER WAREHOUSE … SET RESOURCE_MONITOR links them.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Links the monitor to Meridian’s lab warehouse — triggers apply to credit use on that warehouse.</p>
@@ -319,6 +371,29 @@ ORDER BY TOTAL_ELAPSED_TIME DESC NULLS LAST LIMIT 20;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">6</div><div><h3>Smoke status</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-13-step-6" aria-label="Smoke — did the breaker stick?">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">Smoke — did the breaker stick?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">How do I know it worked?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">SHOW or describe the warehouse — monitor name should appear. Interview sentence: meters explain, monitors stop.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What you should see</h4>
         <p>One row confirming the lab FinOps script completed — same as the full <code>sql/13_finops.sql</code> file.</p>

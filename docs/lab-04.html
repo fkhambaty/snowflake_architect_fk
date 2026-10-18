@@ -210,6 +210,8 @@
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Architect badge, cheap warehouse, bank database — same context as every build lab.</p>
@@ -250,6 +252,8 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>Why GOLD_MART?</h4>
         <p>Gold lives on Alex’s floor — separate from engineering’s SILVER_CURATED shelves so RBAC and naming stay crisp.</p>
@@ -285,6 +289,8 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -333,6 +339,8 @@ WHERE AMOUNT >= 0;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>Why aggregate here?</h4>
         <p>Alex wants lifetime value and txn counts — that’s a business question, not a raw feed. Gold reads silver only, never BRONZE_LANDING directly.</p>
@@ -371,6 +379,8 @@ GROUP BY CLIENT_ID;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -442,6 +452,8 @@ UNION ALL SELECT 'gold', COUNT(*) FROM GOLD_MART.GOLD_CLIENT_SUMMARY;</code></pr
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>
@@ -484,6 +496,8 @@ dbt run --select silver_txns gold_client_summary</code></pre>
       </div>
       
     </section>
+
+
 
 
 

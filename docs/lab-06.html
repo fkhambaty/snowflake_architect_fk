@@ -205,6 +205,8 @@
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Elena’s lab badge, cheap warehouse, bank database. <code>FILE_IN</code> is the schema where inbound file objects live (stage + format).</p>
@@ -249,6 +251,8 @@ USE SCHEMA FILE_IN;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Creates <code>FF_CSV_SIMPLE</code>: CSV type, optional double-quote wrapping, no header row in our tiny lab file.</p>
@@ -290,6 +294,8 @@ USE SCHEMA FILE_IN;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p><code>STG_TXN_INTERNAL</code> defaults to the file format above so every file in the bay parses the same way.</p>
@@ -304,6 +310,29 @@ USE SCHEMA FILE_IN;</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">4</div><div><h3>Create the BRONZE_LANDING table</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-06-step-4" aria-label="Why a bronze table before the file?">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Why a bronze table before the file?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">Can’t we invent columns while loading?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Dock shelf first — named columns waiting. Then COPY pours file rows into that shape. Empty table ≠ empty story; it’s the landing pad.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Target table with typed columns — COPY will map file fields into these slots.</p>
@@ -339,11 +368,13 @@ USE SCHEMA FILE_IN;</code></pre>
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">We COPY FROM values into the stage to simulate a file. Same idea: bytes appear in the bay, then we load the dock.</blockquote>
+      <blockquote class="comic-bubble">We put bytes on the stage to simulate a truck. Same idea: file appears in the bay, then we load the dock.</blockquote>
     </figure>
       </div>
       
     </section>
+
+
 
 
 
@@ -393,6 +424,8 @@ USE SCHEMA FILE_IN;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>
@@ -415,6 +448,29 @@ ON_ERROR = 'ABORT_STATEMENT';</code></pre>
 
     <article class="step">
       <div class="step-head"><div class="step-num">7</div><div><h3>Verify + interview close</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-06-step-7" aria-label="How do I know it worked?">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">How do I know it worked?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">COPY said success — I’m done?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">SELECT a few rows from bronze. Interview close: stage → COPY → bronze. Snowpipe is the same path with an automatic door.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
       <div class="explain">
         <h4>What you should see</h4>
         <p>Three txn ids 2001–2003 with amounts 10, 20, 30. Sam can later use load history / query history for audit.</p>
