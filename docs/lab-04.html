@@ -111,7 +111,7 @@
       <div class="flow-pipeline" aria-label="Medallion flow at Meridian">
         <div class="flow-node source">
           <span class="flow-tag">Bronze · dock</span>
-          <strong>bronze_landing.txn_events</strong>
+          <strong>BRONZE_LANDING.TXN_EVENTS</strong>
           <span class="flow-sub">Jordan loads · status as-is</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
@@ -150,7 +150,7 @@
 
     <div class="callout warn">
       <strong>Prerequisite</strong>
-      Run Lab 02 so <code>bronze_landing.txn_events</code> exists (Day 1 + Day 2 rows are fine). Empty dock = empty gold.
+      Run Lab 02 so <code>BRONZE_LANDING.TXN_EVENTS</code> exists (Day 1 + Day 2 rows are fine). Empty dock = empty gold.
     </div>
 
     <article class="step">
@@ -195,7 +195,7 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
         <div class="code-head"><span>SQL · SILVER_CURATED.SILVER_TXNS</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>CREATE OR REPLACE TABLE SILVER_CURATED.SILVER_TXNS AS
 SELECT TXN_ID, CLIENT_ID, UPPER(STATUS) AS STATUS, AMOUNT, UPDATED_AT
-FROM bronze_landing.txn_events
+FROM BRONZE_LANDING.TXN_EVENTS
 WHERE AMOUNT >= 0;</code></pre>
       </div>
       <div class="badge-ok">✓ Table under SILVER_CURATED — row count ≤ BRONZE_LANDING (reversals with negative amount drop if any)</div>
@@ -225,7 +225,7 @@ GROUP BY CLIENT_ID;</code></pre>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · layer counts</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT 'BRONZE_LANDING' AS layer, COUNT(*) AS n FROM bronze_landing.txn_events
+<pre><code>SELECT 'BRONZE_LANDING' AS layer, COUNT(*) AS n FROM BRONZE_LANDING.TXN_EVENTS
 UNION ALL SELECT 'silver', COUNT(*) FROM SILVER_CURATED.SILVER_TXNS
 UNION ALL SELECT 'gold', COUNT(*) FROM GOLD_MART.GOLD_CLIENT_SUMMARY;</code></pre>
       </div>

@@ -47,7 +47,7 @@
 
     <div class="callout ok">
       <strong>Solution you will design</strong>
-      Declare <code>bronze_landing.txn_events</code> in sources, enforce a contract on <code>fct_orders_incremental</code>, and describe Slim CI with <code>state:modified+</code> and <code>--defer</code> against a saved production manifest.
+      Declare <code>BRONZE_LANDING.TXN_EVENTS</code> in sources, enforce a contract on <code>fct_orders_incremental</code>, and describe Slim CI with <code>state:modified+</code> and <code>--defer</code> against a saved production manifest.
     </div>
 
     <div class="ba-grid">
@@ -178,7 +178,7 @@ sources:
       - name: txn_events
         description: "Meridian Bank txn events for incremental merge demo"</code></pre>
       </div>
-      <div class="badge-ok">✓ In Snowsight you still created <code>bronze_landing.txn_events</code> in Lab 02 — dbt does not create it</div>
+      <div class="badge-ok">✓ In Snowsight you still created <code>BRONZE_LANDING.TXN_EVENTS</code> in Lab 02 — dbt does not create it</div>
     </article>
 
     <article class="step">
@@ -282,7 +282,7 @@ dbt deps</code></pre>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s mart broke because nobody enforced the published schema. I declared bronze_landing.txn_events as a dbt source, enforced a contract on fct_orders_incremental, and described Slim CI so PRs only build state:modified+ with defer to prod manifest.
+      “Meridian’s mart broke because nobody enforced the published schema. I declared BRONZE_LANDING.TXN_EVENTS as a dbt source, enforced a contract on fct_orders_incremental, and described Slim CI so PRs only build state:modified+ with defer to prod manifest.
       <em>Outcome:</em> Alex’s dashboards get stable columns; Jordan’s team ships faster without full-graph builds every time.”
     </div>
 

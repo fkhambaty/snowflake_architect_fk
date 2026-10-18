@@ -48,7 +48,7 @@
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      Land Day-1 rows in <code>bronze_landing.txn_events</code>, clean them in a dbt <em>view</em> <code>stg_orders</code>,
+      Land Day-1 rows in <code>BRONZE_LANDING.TXN_EVENTS</code>, clean them in a dbt <em>view</em> <code>stg_orders</code>,
       then keep a durable fact table <code>fct_orders_incremental</code> up to date with <em>incremental merge</em>
       (only new/changed rows, keyed by txn id, filtered by an <code>updated_at</code> watermark).
     </div>
@@ -80,7 +80,7 @@
       <div class="flow-pipeline" aria-label="Animated data flow from source to fact">
         <div class="flow-node source">
           <span class="flow-tag">1 · Source (Snowflake table)</span>
-          <strong>bronze_landing.txn_events</strong>
+          <strong>BRONZE_LANDING.TXN_EVENTS</strong>
           <span class="flow-sub">Jordan’s dock · raw truth · main table</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
@@ -100,7 +100,7 @@
       <div class="see-grid three">
         <div class="see-card">
           <div class="see-label">1 · Source</div>
-          <strong><code>bronze_landing.txn_events</code></strong>
+          <strong><code>BRONZE_LANDING.TXN_EVENTS</code></strong>
           <p>You create in SQL — Jordan’s dock log.</p>
           <div class="see-example">inserts land here first</div>
         </div>
@@ -118,7 +118,7 @@
         </div>
       </div>
       <figure class="viz-panel" style="margin-top:1rem">
-        <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on bronze_landing.txn_events" width="1600" height="900" loading="lazy" />
+        <img src="assets/lab02-incremental.jpg" alt="Jordan and Elena: full refresh crossed out; dbt incremental MERGE on BRONZE_LANDING.TXN_EVENTS" width="1600" height="900" loading="lazy" />
         <figcaption>
           <strong>Picture · Only change the ledger</strong>
           Full refresh = rebuild everything. Incremental = touch only what changed since last run.
@@ -224,7 +224,7 @@
       <div class="explain">
         <h4>A) <code>stg_orders.sql</code> — the translator</h4>
         <p>
-          <code>{{ source('BRONZE_LANDING', 'txn_events') }}</code> means: “read the table declared in <code>_sources.yml</code>
+          <code>{{ source('bronze_landing', 'txn_events') }}</code> means: “read the table declared in <code>_sources.yml</code>
           as Meridian’s BRONZE_LANDING dock.” dbt does <em>not</em> create TXN_EVENTS — you did, in SQL.
         </p>
         <p>
@@ -242,7 +242,7 @@ select
     status,
     amount as order_total,
     updated_at
-from {{ source('BRONZE_LANDING', 'txn_events') }}</code></pre>
+from {{ source('bronze_landing', 'txn_events') }}</code></pre>
       </div>
 
       <div class="explain">
@@ -355,7 +355,7 @@ INSERT INTO TXN_EVENTS VALUES
 
 SELECT 'day1' AS batch, COUNT(*) AS n FROM TXN_EVENTS;</code></pre>
       </div>
-      <div class="badge-ok">✓ n = 5 in bronze_landing.txn_events</div>
+      <div class="badge-ok">✓ n = 5 in BRONZE_LANDING.TXN_EVENTS</div>
     </article>
 
     <article class="step">
@@ -420,7 +420,7 @@ FROM SILVER_CURATED.FCT_ORDERS_INCREMENTAL ORDER BY ORDER_ID;</code></pre>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s problem was a nightly full refresh on growing txn history. The main table is bronze_landing.txn_events.
+      “Meridian’s problem was a nightly full refresh on growing txn history. The main table is BRONZE_LANDING.TXN_EVENTS.
       stg_orders is a view that renames columns; fct_orders_incremental is an incremental table that MERGEs on order_id
       and only reads rows newer than the updated_at watermark — a bookmark on the last processed timestamp.
       Day 2 inserts and a status change on 1001 merged without rebuilding the whole ledger.

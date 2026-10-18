@@ -24,9 +24,19 @@ foreach ($f in $scanFiles) {
 
 foreach ($f in $htmlLabs) {
   $text = Get-Content -Raw -LiteralPath $f.FullName
-  foreach ($bad in @("ARCH_INTERVIEW", "WH_ARCH_XS", "ROLE_ARCH_LAB_ADMIN", "AR_RAW_READ", "SnowShop")) {
+  foreach ($bad in @("ARCH_INTERVIEW", "WH_ARCH_XS", "ROLE_ARCH_LAB_ADMIN", "AR_RAW_READ", "SnowShop", "AR_LANDING_READ", "AR_CURATED_READ", "FINANCE_MART")) {
     if ($text.Contains($bad)) {
       $fail.Add("$($f.Name): forbidden legacy name '$bad'")
+    }
+  }
+  # Bare schema names (allow BRONZE_LANDING / SILVER_CURATED only)
+  if ($text -match '(?<![A-Z_])LANDING(?![A-Z_])' -or $text -match '(?<![A-Z_])CURATED(?![A-Z_])') {
+    # PowerShell lookbehind limited — simple contains checks for old schema tokens in code
+    if ($text -match 'USE SCHEMA LANDING|FROM LANDING\.|SCHEMA LANDING|`LANDING`|schema: LANDING') {
+      $fail.Add("$($f.Name): old schema LANDING still referenced")
+    }
+    if ($text -match 'USE SCHEMA CURATED|FROM CURATED\.|SCHEMA CURATED|`CURATED`|schema: CURATED') {
+      $fail.Add("$($f.Name): old schema CURATED still referenced")
     }
   }
 }

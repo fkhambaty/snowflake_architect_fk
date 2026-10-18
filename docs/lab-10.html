@@ -103,7 +103,7 @@
       <div class="flow-pipeline" aria-label="Provider to consumer share">
         <div class="flow-node source">
           <span class="flow-tag">Provider · Meridian</span>
-          <strong>bronze_landing.txn_events</strong>
+          <strong>BRONZE_LANDING.TXN_EVENTS</strong>
           <span class="flow-sub">Never in the share</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
@@ -207,7 +207,7 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
         <div class="code-head"><span>SQL · V_SHARE_TXNS</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>CREATE OR REPLACE SECURE VIEW SILVER_CURATED.V_SHARE_TXNS AS
 SELECT TXN_ID, CLIENT_ID, STATUS, AMOUNT
-FROM bronze_landing.txn_events;</code></pre>
+FROM BRONZE_LANDING.TXN_EVENTS;</code></pre>
       </div>
       <div class="badge-ok">✓ View under SILVER_CURATED — four columns only</div>
     </article>

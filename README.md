@@ -20,7 +20,7 @@ Each lab has a **visual story panel** (same cast faces — see `docs/CAST_VISUAL
 | Warehouse | `WH_BANK_XS` |
 | Architect role | `ROLE_BANK_LAB_ADMIN` |
 | BRONZE_LANDING schema | `BRONZE_LANDING` (not RAW) |
-| Key tables | `BRONZE_LANDING.CLIENTS`, `bronze_landing.txn_events` |
+| Key tables | `BRONZE_LANDING.CLIENTS`, `BRONZE_LANDING.TXN_EVENTS` |
 
 Full map: [`docs/BANK_NAMING.md`](docs/BANK_NAMING.md)
 
