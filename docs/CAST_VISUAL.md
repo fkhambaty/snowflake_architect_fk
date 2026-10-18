@@ -15,3 +15,5 @@ Use this for every lab illustration so faces stay memorable.
 **Art style (all labs):** dark slate `#1a2029`, sky `#6bb8e0`, gold `#c9a45c`, flat vector storybook, no purple/neon. Generous padding; **never truncate or overlap labels**.
 
 **Reference sheet:** `docs/assets/cast-sheet.jpg` — attach as style reference when regenerating art.
+
+**Chat / comic avatars:** `docs/assets/cast/{elena,marcus,alex,jordan,sam,nora,dev}.jpg` — circular DPs used by `.comic-face.*` in `course.css`. Regenerate with `python scripts/crop_cast_faces.py` after replacing the cast sheet.

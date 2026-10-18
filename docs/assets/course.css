@@ -1643,19 +1643,19 @@ img, svg, video {
   border-radius: 50%;
   border: 3px solid #1a2433;
   background-color: #1a2029;
-  background-image: url("cast-sheet.jpg");
   background-repeat: no-repeat;
-  /* Zoom into head row of cast-sheet (7 characters across) */
-  background-size: 720% 320%;
+  background-position: center 18%;
+  background-size: 115%;
   box-shadow: 2px 2px 0 rgba(26, 36, 51, 0.25);
 }
-.comic-face.elena { background-position: 1% 8%; border-color: #c9a45c; }
-.comic-face.marcus { background-position: 17.5% 8%; border-color: #1a3658; }
-.comic-face.alex { background-position: 34% 8%; border-color: #176f9e; }
-.comic-face.jordan { background-position: 50.5% 8%; border-color: #0d7a6f; }
-.comic-face.sam { background-position: 67% 8%; border-color: #c9a45c; }
-.comic-face.nora { background-position: 83.5% 8%; border-color: #b76e79; }
-.comic-face.dev { background-position: 99.5% 8%; border-color: #6b7280; }
+/* Individual headshots (cropped from cast-sheet.jpg via scripts/crop_cast_faces.py) */
+.comic-face.elena { background-image: url("cast/elena.jpg"); border-color: #c9a45c; }
+.comic-face.marcus { background-image: url("cast/marcus.jpg"); border-color: #1a3658; }
+.comic-face.alex { background-image: url("cast/alex.jpg"); border-color: #176f9e; }
+.comic-face.jordan { background-image: url("cast/jordan.jpg"); border-color: #0d7a6f; }
+.comic-face.sam { background-image: url("cast/sam.jpg"); border-color: #c9a45c; }
+.comic-face.nora { background-image: url("cast/nora.jpg"); border-color: #b76e79; }
+.comic-face.dev { background-image: url("cast/dev.jpg"); border-color: #6b7280; }
 .comic-name {
   font-family: "Comic Neue", var(--sans);
   font-weight: 700;
