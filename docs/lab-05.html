@@ -182,32 +182,117 @@
       </figcaption>
     </figure>
 
-    <section class="teach">
-      <h2>Stream + task vs dynamic table vs dbt — when Elena picks what</h2>
-      <div class="flow-pipeline" aria-label="Automation options">
-        <div class="flow-node source">
-          <span class="flow-tag">Explicit ops</span>
-          <strong>Stream + Task</strong>
-          <span class="flow-sub">SQL in Snowflake · WHEN has data</span>
+    <section class="teach pick-wrap" id="pick-path" aria-label="When to pick streams and tasks vs dynamic tables">
+      <h2>Stream + task vs dynamic table — two different jobs</h2>
+      <p>
+        Not a pipeline left→right. Same dock of transactions — <em>different</em> reasons Elena picks a tool.
+        Watch the two lanes, then click a Meridian scenario.
+      </p>
+
+      <div class="pick-lanes" aria-hidden="false">
+        <div class="pick-lane is-stream" data-pick-lane="stream">
+          <div class="pick-lane-head">
+            <span class="pick-tag">You own the worker</span>
+            <strong>Stream + Task</strong>
+          </div>
+          <div class="pick-flow">
+            <span class="pick-box">Dock<br><code>TXN_EVENTS</code></span>
+            <span class="pick-arrow" aria-hidden="true"></span>
+            <span class="pick-box accent">Notebook<br><code>…_STR</code></span>
+            <span class="pick-arrow" aria-hidden="true"></span>
+            <span class="pick-box warn">Worker<br><code>TASK_…</code></span>
+            <span class="pick-arrow" aria-hidden="true"></span>
+            <span class="pick-box ok">Shelf<br><code>TXN_SILVER_CDC</code></span>
+          </div>
+          <ul class="pick-bullets">
+            <li>You write the INSERT / MERGE body</li>
+            <li>Wakes only when the notebook has pages</li>
+            <li>You RESUME / SUSPEND the worker</li>
+          </ul>
+          <p class="pick-one-liner">“I need <em>custom</em> CDC logic I can prove line-by-line.”</p>
         </div>
-        <div class="flow-arrow" aria-hidden="true"><span></span></div>
-        <div class="flow-node stg">
-          <span class="flow-tag">Snowflake-native DAG</span>
-          <strong>Dynamic table</strong>
-          <span class="flow-sub">TARGET_LAG refresh</span>
-        </div>
-        <div class="flow-arrow" aria-hidden="true"><span></span></div>
-        <div class="flow-node fct">
-          <span class="flow-tag">Engineering DAG</span>
-          <strong>dbt incremental</strong>
-          <span class="flow-sub">Lab 02 · MERGE + watermark</span>
+
+        <div class="pick-vs" aria-hidden="true">VS</div>
+
+        <div class="pick-lane is-dt" data-pick-lane="dt">
+          <div class="pick-lane-head">
+            <span class="pick-tag">Snowflake owns refresh</span>
+            <strong>Dynamic table</strong>
+          </div>
+          <div class="pick-flow">
+            <span class="pick-box">Dock<br><code>TXN_EVENTS</code></span>
+            <span class="pick-arrow" aria-hidden="true"></span>
+            <span class="pick-box accent">DT definition<br><code>AS SELECT …</code></span>
+            <span class="pick-arrow" aria-hidden="true"></span>
+            <span class="pick-box ok">Always-fresh shelf<br><code>DT_TXN_STATUS</code></span>
+          </div>
+          <ul class="pick-bullets">
+            <li>You declare the SELECT + <code>TARGET_LAG</code></li>
+            <li>No stream object, no task body</li>
+            <li>Snowflake refreshes to stay within lag</li>
+          </ul>
+          <p class="pick-one-liner">“Keep this result <em>fresh enough</em> — I don’t want to schedule a worker.”</p>
         </div>
       </div>
-      <p>
-        <strong>This lab:</strong> stream+task — Jordan sees every line of INSERT logic in Snowsight.
-        <strong>Optional Step 2:</strong> dynamic table for “Snowflake owns refresh.”
-        <strong>Lab 02 already did:</strong> dbt when Git, tests, and portable SQL matter more than native scheduling.
-      </p>
+
+      <h3 class="pick-h3">Click a Meridian scenario — Elena’s pick lights up</h3>
+      <div class="pick-demo" data-pick-demo>
+        <div class="pick-scenarios" role="list">
+          <button type="button" class="pick-scenario is-active" data-pick="stream" role="listitem">
+            <span class="pick-q">Ops wants every INSERT line visible</span>
+            <span class="pick-a">Jordan must prove txn 1099 moved with SQL he can read in Snowsight.</span>
+          </button>
+          <button type="button" class="pick-scenario" data-pick="dt" role="listitem">
+            <span class="pick-q">Status shelf, “fresh within minutes”</span>
+            <span class="pick-a">Marcus wants a live STATUS view — no custom MERGE, just stay current.</span>
+          </button>
+          <button type="button" class="pick-scenario" data-pick="stream" role="listitem">
+            <span class="pick-q">Custom rules on the delta</span>
+            <span class="pick-a">Only certain statuses, extra audit columns, or MERGE with bank logic.</span>
+          </button>
+          <button type="button" class="pick-scenario" data-pick="dt" role="listitem">
+            <span class="pick-q">Simple SELECT transform</span>
+            <span class="pick-a">Project/filter/join — declare once, Snowflake refreshes on lag.</span>
+          </button>
+          <button type="button" class="pick-scenario" data-pick="dbt" role="listitem">
+            <span class="pick-q">Git, tests, portable SQL</span>
+            <span class="pick-a">Engineering owns the DAG in a repo (Lab 02 watermark MERGE).</span>
+          </button>
+        </div>
+        <div class="pick-result" data-pick-result>
+          <div class="pick-result-badge" data-pick-badge>→ Stream + Task</div>
+          <p data-pick-why>
+            This lab’s path: notebook + worker. Elena writes the handoff SQL; Jordan can audit every step; suspend when done.
+          </p>
+        </div>
+      </div>
+
+      <div class="see-grid three" style="margin-top:1.1rem">
+        <div class="see-card">
+          <div class="see-label">Pick stream + task when</div>
+          <strong>You need the notebook</strong>
+          <p>Deltas, custom SQL, RESUME/SUSPEND, ops visibility.</p>
+          <div class="see-example">This lab · txn 1099 proof</div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Pick dynamic table when</div>
+          <strong>You need a fresh result</strong>
+          <p>Declare SELECT + lag; Snowflake refreshes.</p>
+          <div class="see-example">Optional Step 7 · <code>DT_TXN_STATUS</code></div>
+        </div>
+        <div class="see-card">
+          <div class="see-label">Pick dbt when</div>
+          <strong>The repo owns the graph</strong>
+          <p>CI, tests, watermark MERGE across envs.</p>
+          <div class="see-example">Lab 02 · not this lab’s worker</div>
+        </div>
+      </div>
+
+      <div class="callout warn" style="margin-top:1rem">
+        <strong>Interview trap</strong>
+        “Dynamic tables replace streams.” No — DT is managed refresh of a declared query.
+        Stream + task is <em>you</em> processing change pages with your own SQL (and you pay for the warehouse when the worker runs).
+      </div>
     </section>
 
     <div class="story">
@@ -374,7 +459,10 @@ SELECT 'Lab 05 OK — task suspended' AS status;</code></pre>
       <div class="step-head"><div class="step-num">7</div><div><h3>Optional: dynamic table pattern</h3></div></div>
       <div class="explain">
         <h4>When Elena picks dynamic tables</h4>
-        <p>Snowflake-managed refresh with <code>TARGET_LAG</code> — great when dbt isn’t owning the DAG. Jordan’s stream+task stays explicit SQL in the bank ops path.</p>
+        <p>
+          Same dock, different job than Steps 1–6: no stream, no task body — declare <code>AS SELECT</code> + <code>TARGET_LAG</code>, Snowflake keeps the shelf fresh.
+          Use the <a href="#pick-path">scenario picker above</a> if you’re unsure. Jordan’s stream+task stays for custom CDC he can audit line-by-line.
+        </p>
       </div>
       <div class="code-block">
         <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>

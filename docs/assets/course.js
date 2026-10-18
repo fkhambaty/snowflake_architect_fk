@@ -247,10 +247,67 @@
     start();
   }
 
+  function initPickDemo(root) {
+    if (!root || root.dataset.bound === "1") return;
+    root.dataset.bound = "1";
+
+    var section = root.closest(".pick-wrap") || document.getElementById("pick-path");
+    var lanes = section ? section.querySelectorAll("[data-pick-lane]") : [];
+    var buttons = root.querySelectorAll(".pick-scenario");
+    var result = root.querySelector("[data-pick-result]");
+    var badge = root.querySelector("[data-pick-badge]");
+    var why = root.querySelector("[data-pick-why]");
+
+    var copy = {
+      stream: {
+        badge: "→ Stream + Task",
+        why: "This lab’s path: change notebook + worker. Elena writes the handoff SQL; Jordan audits every step; SUSPEND when done so credits stop."
+      },
+      dt: {
+        badge: "→ Dynamic table",
+        why: "Declare the SELECT + TARGET_LAG. No stream object, no task body — Snowflake refreshes the shelf to stay within lag. Optional Step 7."
+      },
+      dbt: {
+        badge: "→ dbt incremental (Lab 02)",
+        why: "Repo owns the graph: watermark MERGE, tests, CI. Not a Snowflake task scheduler — engineering ships SQL through Git."
+      }
+    };
+
+    function apply(mode) {
+      var info = copy[mode] || copy.stream;
+      if (badge) badge.textContent = info.badge;
+      if (why) why.textContent = info.why;
+      if (result) result.setAttribute("data-mode", mode);
+
+      lanes.forEach(function (lane) {
+        var kind = lane.getAttribute("data-pick-lane");
+        var lit = mode === "stream" ? kind === "stream" : mode === "dt" ? kind === "dt" : false;
+        lane.classList.toggle("is-lit", lit || mode === "dbt");
+        lane.classList.toggle("is-dim", mode !== "dbt" && !lit);
+        if (mode === "dbt") {
+          lane.classList.add("is-dim");
+          lane.classList.remove("is-lit");
+        }
+      });
+    }
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        buttons.forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        apply(btn.getAttribute("data-pick") || "stream");
+      });
+    });
+
+    var active = root.querySelector(".pick-scenario.is-active");
+    apply(active ? active.getAttribute("data-pick") || "stream" : "stream");
+  }
+
   function boot() {
     injectGotchaStrip();
     enhanceCodeBlocks();
     document.querySelectorAll("[data-cdc-demo]").forEach(initCdcDemo);
+    document.querySelectorAll("[data-pick-demo]").forEach(initPickDemo);
   }
 
   if (document.readyState === "loading") {
