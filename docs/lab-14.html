@@ -162,12 +162,12 @@
       <div class="story"><p><strong>Scenario:</strong> Marcus or the regulator asks Elena in the interview chair — no laptop.</p></div>
       <div class="explain">
         <h4>Why this answer</h4>
-        <p>Interviewers want a method: reproduce Alex’s SQL, open Query Profile, read bytes scanned and partition pruning before blaming the warehouse. Upsizing WH_BANK_XS is a meeting-window lever, not the first permanent fix.</p>
-        <p>Naming <code>WH_BANK_XS</code> ties cost (Lab 13) to performance — same warehouse Marcus pays for.</p>
+        <p>Interviewers want a method: load enough data that partitions exist, fix SQL first (projection → sargable filter → filter-before-join), cite bytes/partitions from Query Profile and QUERY_HISTORY, and only then temporarily bump WH_BANK_XS for the meeting window.</p>
+        <p>Naming <code>WH_BANK_XS</code> ties cost (Lab 13) to performance — same warehouse Marcus pays for. Clustering on BIG_EVENTS is Lab 08.</p>
       </div>
       <details class="callout tip" style="cursor:pointer">
         <summary><strong>Say this</strong></summary>
-        <p>I reproduce Alex’s join in Snowsight, open Query Profile for bytes scanned and spill, check WH_BANK_XS. Fix SQL and clustering before permanently upsizing the warehouse.</p>
+        <p>I triage on BIG_EVENTS: slim SELECT, sargable dates, filter before join, prove bytes in Profile/history, then SMALL for the board window and back to XSMALL. Clustering next — not a permanent warehouse upsize.</p>
       </details>
     </article>
 

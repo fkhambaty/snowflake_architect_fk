@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 07 — Query Profile</title>
+  <title>Lab 07 — Query Profile triage</title>
   <link rel="stylesheet" href="assets/course.css" />
 </head>
 <body>
@@ -36,20 +36,22 @@
     <p class="eyebrow">Lab 07 · Friday AM · You are Elena · Alex’s board query</p>
     <h1>Marcus is angry — the board query crawls</h1>
     <p class="lede">
-      Read <strong>Teach first</strong> before you open Snowsight UI.
-      You will learn what Query Profile measures, <em>then</em> reproduce Alex’s SQL and inspect the profile on the heavy join.
+      This lab is <strong>live triage</strong>, not theory.
+      You load ~400k event rows, break Alex’s SQL on purpose, fix it, read Query Profile + history metrics,
+      and only then temporarily bump the warehouse — then put credits back.
     </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
-      Board meeting in two hours. Alex’s country rollup on clients + txns takes forever on <code>WH_BANK_XS</code>.
-      Marcus: “Is it the data or the engine?”
+      Board meeting in two hours. Alex’s country rollup on clients + events crawls on <code>WH_BANK_XS</code>.
+      Marcus: “Buy a bigger warehouse?” Elena: “Not until we prove what’s wasting bytes.”
     </div>
 
     <div class="callout ok">
-      <strong>Solution you will run</strong>
-      Warm up with a cheap filter query, run Alex’s join aggregate, inspect warehouse size with <code>SHOW WAREHOUSES</code>,
-      then open <strong>Query Profile</strong> on the join in Query History — narrate bytes scanned and pruning before blaming the warehouse.
+      <strong>Solution you will run (in order)</strong>
+      Load <code>SILVER_CURATED.BIG_EVENTS</code> → fix SQL (projection → sargable filter → filter-before-join)
+      → read partition/bytes metrics → last resort: <code>SMALL</code> for one query → restore <code>XSMALL</code>
+      → drop Lab-07-only fat table; <strong>keep</strong> <code>BIG_EVENTS</code> for Lab 08 clustering.
     </div>
 
     <div class="ba-grid">
@@ -64,40 +66,40 @@
         <img src="assets/lab07-after.jpg" alt="AFTER: Query Profile shows bytes scanned and pruning" width="1600" height="900" loading="eager" />
         <figcaption>
           <strong>After</strong>
-          Query Profile shows waste — fix SQL/scan before upsizing.
+          Profile + metrics — fix SQL/scan before upsizing.
         </figcaption>
       </figure>
     </div>
 
     <section class="teach">
-      <h2>See it — don’t memorize definitions</h2>
-      <p>Open the X-ray <em>after</em> the query finishes — then decide warehouse vs SQL.</p>
+      <h2>See it — what Query Profile is for</h2>
+      <p>After each before/after pair: Query History → that query → <strong>Query Profile</strong>. Compare bytes scanned and partitions.</p>
       <div class="see-grid two">
         <div class="see-card">
           <div class="see-label">Profile</div>
-          <strong>Query Profile</strong>
-          <p>Operators, time, bytes scanned, partitions touched.</p>
-          <div class="see-example">slow join → see TableScan bytes<br>not guess WH size</div>
+          <strong>Operator graph</strong>
+          <p>TableScan, Join, Aggregate — where time and bytes go.</p>
+          <div class="see-example">fat SELECT * → huge TableScan<br>fixed columns → smaller scan</div>
         </div>
         <div class="see-card">
-          <div class="see-label">Scan</div>
-          <strong>Bytes scanned · pruning</strong>
-          <p>Micro-partitions skipped when filters help.</p>
-          <div class="see-example">read 90% of table ✗<br>prune to 7 days → Lab 08</div>
+          <div class="see-label">Pruning</div>
+          <strong>Partitions scanned / total</strong>
+          <p>Micro-partitions Snowflake opened vs skipped.</p>
+          <div class="see-example">YEAR(date) wrap ✗<br>date range filter ✓</div>
         </div>
       </div>
       <div class="see-grid two" style="margin-top:0.85rem">
         <div class="see-card">
-          <div class="see-label">Scale up</div>
-          <strong>Bigger one cluster</strong>
-          <p>XS → S → M — when plan is OK but compute-bound.</p>
-          <div class="see-example">won’t fix full table scan</div>
+          <div class="see-label">Spill</div>
+          <strong>Local / remote disk spill</strong>
+          <p>Warehouse RAM wasn’t enough for the operator.</p>
+          <div class="see-example">narrow rows first<br>then size up if still spilling</div>
         </div>
         <div class="see-card">
-          <div class="see-label">Scale out</div>
-          <strong>More clusters</strong>
-          <p>Multi-cluster WH — concurrent users, not one heavy query.</p>
-          <div class="see-example">remote spill → rewrite or WH+</div>
+          <div class="see-label">Scale</div>
+          <strong>Up vs out</strong>
+          <p>Up = bigger engine for one query. Out = more clusters for concurrency.</p>
+          <div class="see-example">This lab ends with temporary size up<br>not multi-cluster</div>
         </div>
       </div>
     </section>
@@ -111,129 +113,298 @@
     </figure>
 
     <section class="teach">
-      <h2>Elena’s diagnosis order (interview script)</h2>
+      <h2>Elena’s triage order (interview script — live in this lab)</h2>
       <div class="flow-pipeline" aria-label="Performance triage order">
-        <div class="flow-node stg">
-          <span class="flow-tag">1</span>
-          <strong>SQL &amp; filters</strong>
-          <span class="flow-sub">Push filters early · correct join keys</span>
+        <div class="flow-node source">
+          <span class="flow-tag">1 · Query fix</span>
+          <strong>Projection</strong>
+          <span class="flow-sub">Stop SELECT *</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node stg">
           <span class="flow-tag">2</span>
-          <strong>Bytes &amp; pruning</strong>
-          <span class="flow-sub">Query Profile table scan stats</span>
+          <strong>Sargable filter</strong>
+          <span class="flow-sub">Don’t wrap EVENT_DATE</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">3</span>
+          <strong>Filter before join</strong>
+          <span class="flow-sub">Less rows into the join</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"><span></span></div>
+        <div class="flow-node stg">
+          <span class="flow-tag">4</span>
+          <strong>Measure</strong>
+          <span class="flow-sub">Profile + QUERY_HISTORY</span>
         </div>
         <div class="flow-arrow" aria-hidden="true"><span></span></div>
         <div class="flow-node fct">
-          <span class="flow-tag">3</span>
-          <strong>Warehouse fit</strong>
-          <span class="flow-sub">Size / queue · meeting-window bump only if needed</span>
+          <span class="flow-tag">5 · Last</span>
+          <strong>Temp WH size</strong>
+          <span class="flow-sub">SMALL → then XSMALL</span>
         </div>
       </div>
       <p>
-        Alex’s board query joins all US clients to all txn events — on small lab data it finishes fast, but the <em>pattern</em> is what you explain to Marcus:
-        profile the join, cite bytes scanned, mention clustering (Lab 08) if pruning is weak on real volume.
+        <strong>Keep for Lab 08:</strong> <code>SILVER_CURATED.BIG_EVENTS</code> (unclustered history — Lab 08 adds <code>CLUSTER BY</code>).
+        <strong>Drop before you leave:</strong> <code>PERF_WIDE</code> only.
       </p>
     </section>
 
     <div class="story">
       <div class="story-label">Friday AM · war room</div>
       <p>
-        Elena: “Profile first — partitions scanned, spill, join order — then right-size WH_BANK_XS or fix SQL.
-        Scaling out is for many dashboards at once; scaling up is a bigger engine for one heavy query.”
+        Elena: “I’ll load enough events that partitions exist, break Alex’s patterns on purpose, fix them, show Marcus the metrics —
+        and only if we’re still compute-bound for the board window, bump <code>WH_BANK_XS</code> for one run and put it back.”
       </p>
     </div>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Set session</h3></div></div>
+      <div class="step-head"><div class="step-num">0</div><div><h3>Session + fair A/B (no result-cache cheat)</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p>Same lab context as other Meridian steps — admin role, XS warehouse, bank database.</p>
+        <p>Lab context, then turn off result cache so “after” queries really re-execute — otherwise Snowsight looks magically fast.</p>
+        <h4>What you should see</h4>
+        <p>Session set; warehouse XS.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · context + cache off</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
-USE DATABASE MERIDIAN_BANK;</code></pre>
+USE DATABASE MERIDIAN_BANK;
+USE SCHEMA SILVER_CURATED;
+
+ALTER SESSION SET USE_CACHED_RESULT = FALSE;</code></pre>
       </div>
+      <div class="badge-ok">✓ Cache off for this session — fair before/after timings</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">2</div><div><h3>Baseline — cheap filter query</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>Load volume — BIG_EVENTS (kept for Lab 08)</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p>Single-table filter on <code>COUNTRY</code> — should scan only client rows, fast profile baseline.</p>
+        <p>
+          ~400k synthetic events across ~365 days — enough micro-partitions that Profile’s “partitions scanned” is meaningful.
+          Lab 08 will <em>cluster</em> this same table; do not drop it at the end.
+        </p>
         <h4>What you should see</h4>
-        <p>Small result set (US clients from Lab 00). In Profile: modest bytes scanned vs the join in step 3.</p>
+        <p><code>ROW_CNT</code> near 400000; <code>MIN_DT</code>/<code>MAX_DT</code> spanning roughly a year.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · filter only</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT * FROM BRONZE_LANDING.CLIENTS
-WHERE COUNTRY = 'US';</code></pre>
+        <div class="code-head"><span>SQL · BIG_EVENTS</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE BIG_EVENTS AS
+SELECT
+  SEQ4() AS EVENT_ID,
+  UNIFORM(1, 5, RANDOM()) AS CLIENT_ID,
+  DATEADD('day', -UNIFORM(0, 364, RANDOM()), CURRENT_DATE()) AS EVENT_DATE,
+  UNIFORM(1, 100, RANDOM())::NUMBER(12, 2) AS AMOUNT,
+  UNIFORM(1, 4, RANDOM()) AS STATUS_CODE
+FROM TABLE(GENERATOR(ROWCOUNT => 400000));
+
+SELECT COUNT(*) AS ROW_CNT, MIN(EVENT_DATE) AS MIN_DT, MAX(EVENT_DATE) AS MAX_DT
+FROM BIG_EVENTS;</code></pre>
       </div>
-      <div class="badge-ok">✓ Only US rows — note runtime in Query History</div>
+      <div class="badge-ok">✓ <code>SILVER_CURATED.BIG_EVENTS</code> ready — survives Lab 07 cleanup</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">3</div><div><h3>Reproduce Alex’s board rollup (the heavy join)</h3></div></div>
+      <div class="step-head"><div class="step-num">2</div><div><h3>Fat twin for SELECT * (Lab 07 only — will drop)</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p>Joins every client to every txn, groups by country — the pattern Alex runs before the meeting.</p>
-        <h4>Why Elena runs it separately</h4>
-        <p>So Query History shows two queries — easy to open Profile on the join, not the filter.</p>
+        <p>Copies events and pads wide text columns so <code>SELECT *</code> really burns bytes vs a slim projection.</p>
+        <h4>What you should see</h4>
+        <p>Table <code>PERF_WIDE</code> exists. You will <code>DROP</code> it in the final step.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · Alex board query</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(t.AMOUNT) AS VOLUME
+        <div class="code-head"><span>SQL · PERF_WIDE</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>CREATE OR REPLACE TABLE PERF_WIDE AS
+SELECT
+  EVENT_ID, CLIENT_ID, EVENT_DATE, AMOUNT, STATUS_CODE,
+  REPEAT('PAD', 80) AS NOTE_A,
+  REPEAT('PAD', 80) AS NOTE_B,
+  REPEAT('PAD', 80) AS NOTE_C
+FROM BIG_EVENTS;</code></pre>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">3</div><div><h3>Scenario 1 — Query fix: stop SELECT *</h3></div></div>
+      <div class="explain">
+        <h4>Problem</h4>
+        <p>Alex pulls every padded column for a 7-day window — TableScan hauls junk Marcus never charts.</p>
+        <h4>Solution</h4>
+        <p>Project only the columns the board needs. Open Profile on both — bytes scanned should drop.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · BEFORE · SELECT *</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT * FROM PERF_WIDE
+WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · AFTER · slim projection</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT EVENT_ID, CLIENT_ID, EVENT_DATE, AMOUNT
+FROM PERF_WIDE
+WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE());</code></pre>
+      </div>
+      <div class="badge-ok">✓ Profile: AFTER TableScan bytes &lt; BEFORE — say that out loud to Marcus</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Scenario 2 — Filter that fights pruning</h3></div></div>
+      <div class="explain">
+        <h4>Problem</h4>
+        <p><code>YEAR(EVENT_DATE)</code> / <code>MONTH(EVENT_DATE)</code> wraps the column — Snowflake can’t use min/max metadata as cleanly → more partitions opened.</p>
+        <h4>Solution</h4>
+        <p>Sargable range on the bare column. Same calendar month, better prune story (Lab 08 clustering makes this even stronger).</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · BEFORE · wrapped filter</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT COUNT(*), SUM(AMOUNT)
+FROM BIG_EVENTS
+WHERE YEAR(EVENT_DATE) = YEAR(CURRENT_DATE())
+  AND MONTH(EVENT_DATE) = MONTH(CURRENT_DATE());</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · AFTER · sargable range</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT COUNT(*), SUM(AMOUNT)
+FROM BIG_EVENTS
+WHERE EVENT_DATE >= DATE_TRUNC('month', CURRENT_DATE())
+  AND EVENT_DATE < DATEADD('month', 1, DATE_TRUNC('month', CURRENT_DATE()));</code></pre>
+      </div>
+      <div class="badge-ok">✓ Compare PARTITIONS_SCANNED in history (step 6) — AFTER should not be worse</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Scenario 3 — Alex’s board join: filter before join</h3></div></div>
+      <div class="explain">
+        <h4>Problem</h4>
+        <p>Join all ~400k events to clients, then aggregate — the join builds on a year of rows for a board chart that only needs recent activity.</p>
+        <h4>Solution</h4>
+        <p>CTE filters last 7 days first, then joins. Profile: smaller join build/probe.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · BEFORE · join everything</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(e.AMOUNT) AS VOLUME
 FROM BRONZE_LANDING.CLIENTS c
-JOIN BRONZE_LANDING.TXN_EVENTS t ON t.CLIENT_ID = c.CLIENT_ID
+JOIN BIG_EVENTS e ON e.CLIENT_ID = c.CLIENT_ID
 GROUP BY c.COUNTRY
 ORDER BY VOLUME DESC;</code></pre>
       </div>
-      <div class="badge-ok">✓ One row per country with txn counts — this is the query you profile</div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · AFTER · filter then join</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>WITH recent AS (
+  SELECT CLIENT_ID, AMOUNT
+  FROM BIG_EVENTS
+  WHERE EVENT_DATE >= DATEADD('day', -7, CURRENT_DATE())
+)
+SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(r.AMOUNT) AS VOLUME
+FROM BRONZE_LANDING.CLIENTS c
+JOIN recent r ON r.CLIENT_ID = c.CLIENT_ID
+GROUP BY c.COUNTRY
+ORDER BY VOLUME DESC;</code></pre>
+      </div>
+      <div class="badge-ok">✓ AFTER finishes with far fewer rows touching the join — this is the main board fix</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">4</div><div><h3>Inspect warehouse headroom</h3></div></div>
+      <div class="step-head"><div class="step-num">6</div><div><h3>Scenario 4 — Prove it with QUERY_HISTORY (not vibes)</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p><code>SHOW WAREHOUSES</code> lists size, state, and multi-cluster settings for <code>WH_BANK_XS</code>.</p>
+        <p>Pulls this session’s metrics: elapsed ms, bytes scanned, partitions scanned vs total. Same numbers interviewers expect you to cite from Profile.</p>
         <h4>What you should see</h4>
-        <p>Size column = XS (or your lab default). Interview: “I’d bump size temporarily for the board window only after SQL/scan fixes.”</p>
+        <p>Recent <code>PERF_WIDE</code> / <code>BIG_EVENTS</code> queries with BEFORE rows reading more bytes/partitions than AFTER where applicable.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · warehouse metadata</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · session metrics</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT
+  QUERY_ID,
+  LEFT(QUERY_TEXT, 80) AS QUERY_SNIP,
+  TOTAL_ELAPSED_TIME,
+  BYTES_SCANNED,
+  PARTITIONS_SCANNED,
+  PARTITIONS_TOTAL,
+  ROUND(100 * PARTITIONS_SCANNED / NULLIF(PARTITIONS_TOTAL, 0), 1) AS PCT_PARTITIONS_READ
+FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY_BY_SESSION())
+WHERE QUERY_TEXT ILIKE '%BIG_EVENTS%'
+   OR QUERY_TEXT ILIKE '%PERF_WIDE%'
+ORDER BY START_TIME DESC
+LIMIT 12;</code></pre>
+      </div>
+      <div class="callout tip">
+        <strong>UI twin</strong>
+        Also open Query History → pick the BEFORE join → Query Profile → TableScan / Join.
+        Say: “bytes scanned” and “partitions scanned” — not “it felt slow.”
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">7</div><div><h3>Scenario 5 — Last resort: temporary warehouse size</h3></div></div>
+      <div class="explain">
+        <h4>When Elena does this</h4>
+        <p>
+          SQL is already slim and filtered, but the meeting window still needs more compute (or you saw spill).
+          Bump <code>WH_BANK_XS</code> to <code>SMALL</code> for one proof query, then restore <code>XSMALL</code> so FinOps doesn’t inherit a permanent upsize.
+        </p>
+        <h4>What you should see</h4>
+        <p><code>SHOW WAREHOUSES</code> size column flips SMALL → back to X-Small / XSMALL.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · show size</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>SHOW WAREHOUSES LIKE 'WH_BANK_XS';</code></pre>
       </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · bump to SMALL</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>ALTER WAREHOUSE WH_BANK_XS SET WAREHOUSE_SIZE = 'SMALL';</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · board query on SMALL</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SELECT c.COUNTRY, COUNT(*) AS TXNS, SUM(e.AMOUNT) AS VOLUME
+FROM BRONZE_LANDING.CLIENTS c
+JOIN BIG_EVENTS e ON e.CLIENT_ID = c.CLIENT_ID
+WHERE e.EVENT_DATE >= DATEADD('day', -30, CURRENT_DATE())
+GROUP BY c.COUNTRY
+ORDER BY VOLUME DESC;</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · restore XSMALL</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>ALTER WAREHOUSE WH_BANK_XS SET WAREHOUSE_SIZE = 'XSMALL';
+SHOW WAREHOUSES LIKE 'WH_BANK_XS';</code></pre>
+      </div>
+      <div class="badge-ok">✓ Warehouse back to XS — temporary bump only</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">5</div><div><h3>Open Query Profile (UI step)</h3></div></div>
+      <div class="step-head"><div class="step-num">8</div><div><h3>Cleanup — drop Lab 07-only fat table</h3></div></div>
       <div class="explain">
         <h4>What this does</h4>
-        <p>Not SQL — Snowsight navigation after step 3 completes.</p>
-        <h4>Elena narrates in the profile</h4>
-        <ul class="checklist">
-          <li><strong>TableScan</strong> nodes — bytes scanned on CLIENTS vs TXN_EVENTS</li>
-          <li><strong>Join</strong> — build/probe side, row counts (lab data is tiny; vocabulary matters in interview)</li>
-          <li><strong>Partition pruning</strong> — if present and low on real big tables, clustering next</li>
-          <li><strong>Remote disk spill</strong> — if any, call out upsize or rewrite</li>
-          <li><strong>Warehouse load</strong> — queue time vs execution time</li>
-        </ul>
+        <p>
+          Drops <code>PERF_WIDE</code> so later labs aren’t carrying padded junk.
+          <strong>Does not</strong> drop <code>BIG_EVENTS</code> — Lab 08 clusters that table next.
+        </p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · reminder row</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT 'Open Query History → JOIN query → Query Profile' AS next_step;</code></pre>
+        <div class="code-head"><span>SQL · cleanup</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>DROP TABLE IF EXISTS PERF_WIDE;
+
+SELECT 'Lab 07 OK — BIG_EVENTS kept for Lab 08; PERF_WIDE dropped; WH back to XSMALL' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ You can explain bytes scanned vs warehouse size without guessing</div>
+      <div class="badge-ok">✓ Status row · matches <code>sql/07_query_profile.sql</code></div>
     </article>
+
+    <div class="callout warn">
+      <strong>Interview trap</strong>
+      Scaling the warehouse does not fix a full-year join or <code>SELECT *</code>.
+      Multi-cluster (scale <em>out</em>) is for many concurrent dashboards — not today’s single board query.
+      Lab 08: clustering improves pruning on <code>EVENT_DATE</code> for the table you just kept.
+    </div>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s board query wasn’t magic — it was join cost and how much data we read.
-      I reproduced Alex’s SQL, checked WH_BANK_XS size, and opened Query Profile on the join to cite bytes scanned and pruning.
-      <em>Outcome:</em> Marcus gets a data-driven answer — tune SQL and clustering first, then scale warehouse size for the meeting window if compute-bound.”
+      “I loaded SILVER_CURATED.BIG_EVENTS so partitions exist, then triaged Alex’s board path:
+      slim projection, sargable date filters, filter-before-join, proved bytes and partitions from QUERY_HISTORY and Query Profile,
+      and only then bumped WH_BANK_XS to SMALL for the meeting window and put it back to XSMALL.
+      PERF_WIDE is gone; BIG_EVENTS stays for clustering next.
+      <em>Outcome:</em> Marcus gets a data-driven answer — SQL and scan first, warehouse last.”
     </div>
 
     <div class="pager">
@@ -241,7 +412,7 @@ ORDER BY VOLUME DESC;</code></pre>
       <a class="btn primary" href="lab-08.html">Lab 08 →</a>
     </div>
   </div>
-  <footer class="footer">sql/07_query_profile.sql · teach-first lab</footer>
+  <footer class="footer">sql/07_query_profile.sql · keep BIG_EVENTS · drop PERF_WIDE</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>
