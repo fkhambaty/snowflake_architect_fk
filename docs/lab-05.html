@@ -68,6 +68,79 @@
       </figure>
     </div>
 
+    <!-- Animated Lab 05 workflow (visual memory) -->
+    <section class="teach cdc-wrap" id="cdc-flow" aria-label="Animated stream and task workflow">
+      <h2>Watch the whole Lab 05 flow</h2>
+      <p>Press play. Follow the glowing step — this is everything you build below, in order.</p>
+
+      <div class="cdc-stage" data-cdc-demo>
+        <div class="cdc-controls">
+          <button type="button" class="cdc-btn" data-cdc-prev aria-label="Previous step">←</button>
+          <button type="button" class="cdc-btn primary" data-cdc-play aria-pressed="true">Pause</button>
+          <button type="button" class="cdc-btn" data-cdc-next aria-label="Next step">→</button>
+          <span class="cdc-step-label" data-cdc-label>Step 1 / 6</span>
+        </div>
+
+        <div class="cdc-track" role="list">
+          <div class="cdc-node" data-step="0" role="listitem">
+            <span class="cdc-num">1</span>
+            <strong>CDC table</strong>
+            <span class="cdc-obj">SILVER_CURATED.TXN_SILVER_CDC</span>
+            <span class="cdc-hint">Empty shelf waiting</span>
+          </div>
+          <div class="cdc-pipe" aria-hidden="true"><i></i></div>
+          <div class="cdc-node" data-step="1" role="listitem">
+            <span class="cdc-num">2</span>
+            <strong>Stream</strong>
+            <span class="cdc-obj">BRONZE_LANDING.TXN_EVENTS_STR</span>
+            <span class="cdc-hint">Change notebook on dock</span>
+          </div>
+          <div class="cdc-pipe" aria-hidden="true"><i></i></div>
+          <div class="cdc-node" data-step="2" role="listitem">
+            <span class="cdc-num">3</span>
+            <strong>Task</strong>
+            <span class="cdc-obj">TASK_TXN_CDC · RESUME</span>
+            <span class="cdc-hint">Worker wakes if stream has rows</span>
+          </div>
+          <div class="cdc-pipe" aria-hidden="true"><i></i></div>
+          <div class="cdc-node" data-step="3" role="listitem">
+            <span class="cdc-num">4</span>
+            <strong>Insert on dock</strong>
+            <span class="cdc-obj">TXN_EVENTS ← 1099</span>
+            <span class="cdc-hint">Stream page appears</span>
+          </div>
+          <div class="cdc-pipe" aria-hidden="true"><i></i></div>
+          <div class="cdc-node" data-step="4" role="listitem">
+            <span class="cdc-num">5</span>
+            <strong>EXECUTE TASK</strong>
+            <span class="cdc-obj">INSERT…SELECT from stream</span>
+            <span class="cdc-hint">1099 lands in silver CDC</span>
+          </div>
+          <div class="cdc-pipe" aria-hidden="true"><i></i></div>
+          <div class="cdc-node" data-step="5" role="listitem">
+            <span class="cdc-num">6</span>
+            <strong>SUSPEND</strong>
+            <span class="cdc-obj">Task sleeps</span>
+            <span class="cdc-hint">Credits stop burning</span>
+          </div>
+        </div>
+
+        <div class="cdc-packet" data-cdc-packet aria-hidden="true">1099</div>
+
+        <div class="cdc-caption" data-cdc-caption>
+          <strong>1 · Build the silver CDC table</strong>
+          <p><code>SILVER_CURATED.TXN_SILVER_CDC</code> is the destination shelf. Nothing in it yet — Jordan’s handoff will fill it.</p>
+        </div>
+
+        <ol class="cdc-legend">
+          <li><span>Dock</span> <code>BRONZE_LANDING.TXN_EVENTS</code></li>
+          <li><span>Notebook</span> <code>TXN_EVENTS_STR</code></li>
+          <li><span>Worker</span> <code>TASK_TXN_CDC</code> on <code>WH_BANK_XS</code></li>
+          <li><span>Shelf</span> <code>TXN_SILVER_CDC</code></li>
+        </ol>
+      </div>
+    </section>
+
     <section class="teach">
       <h2>See it — don’t memorize definitions</h2>
       <p>Stream = change notebook. Task = worker that runs only when notebook has pages.</p>

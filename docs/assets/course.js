@@ -138,9 +138,119 @@
     }
   }
 
+  function initCdcDemo(root) {
+    if (!root || root.dataset.bound === "1") return;
+    root.dataset.bound = "1";
+
+    var captions = [
+      {
+        title: "1 · Build the silver CDC table",
+        body: "<code>SILVER_CURATED.TXN_SILVER_CDC</code> is the destination shelf. Nothing in it yet — the stream+task handoff will fill it."
+      },
+      {
+        title: "2 · Create the stream (change notebook)",
+        body: "<code>BRONZE_LANDING.TXN_EVENTS_STR</code> watches <code>TXN_EVENTS</code>. New inserts become pages in the notebook (<code>APPEND_ONLY</code>)."
+      },
+      {
+        title: "3 · Create + RESUME the task",
+        body: "<code>TASK_TXN_CDC</code> is the worker. It only runs when <code>SYSTEM$STREAM_HAS_DATA(...)</code> is true — not on an empty notebook."
+      },
+      {
+        title: "4 · Insert txn 1099 on the dock",
+        body: "Lab cleans old 1099, then <code>INSERT INTO BRONZE_LANDING.TXN_EVENTS</code>. The stream now has a page for 1099."
+      },
+      {
+        title: "5 · EXECUTE TASK — row moves to silver",
+        body: "Task runs <code>INSERT … SELECT</code> from the stream into <code>TXN_SILVER_CDC</code>. Prove with <code>SELECT … WHERE TXN_ID = 1099</code>."
+      },
+      {
+        title: "6 · SUSPEND the task",
+        body: "Lab done — sleep the worker so <code>WH_BANK_XS</code> doesn’t keep waking. Credits stay sane until you need CDC again."
+      }
+    ];
+
+    var step = 0;
+    var playing = true;
+    var timer = null;
+    var nodes = root.querySelectorAll(".cdc-node");
+    var pipes = root.querySelectorAll(".cdc-pipe");
+    var label = root.querySelector("[data-cdc-label]");
+    var caption = root.querySelector("[data-cdc-caption]");
+    var playBtn = root.querySelector("[data-cdc-play]");
+    var packet = root.querySelector("[data-cdc-packet]");
+
+    function render() {
+      nodes.forEach(function (n, i) {
+        n.classList.toggle("is-active", i === step);
+        n.classList.toggle("is-done", i < step);
+      });
+      pipes.forEach(function (p, i) {
+        p.classList.toggle("is-lit", i < step);
+      });
+      if (label) label.textContent = "Step " + (step + 1) + " / " + captions.length;
+      if (caption && captions[step]) {
+        caption.innerHTML =
+          "<strong>" + captions[step].title + "</strong><p>" + captions[step].body + "</p>";
+      }
+      if (packet) {
+        packet.classList.toggle("is-visible", step >= 3);
+        packet.classList.toggle("at-stream", step === 3);
+        packet.classList.toggle("at-task", step === 4);
+        packet.classList.toggle("at-silver", step >= 5);
+      }
+      if (playBtn) {
+        playBtn.textContent = playing ? "Pause" : "Play";
+        playBtn.setAttribute("aria-pressed", playing ? "true" : "false");
+      }
+    }
+
+    function go(n) {
+      step = (n + captions.length) % captions.length;
+      render();
+    }
+
+    function tick() {
+      go(step + 1);
+    }
+
+    function start() {
+      stop();
+      playing = true;
+      timer = setInterval(tick, 2800);
+      render();
+    }
+
+    function stop() {
+      playing = false;
+      if (timer) clearInterval(timer);
+      timer = null;
+      render();
+    }
+
+    var prev = root.querySelector("[data-cdc-prev]");
+    var next = root.querySelector("[data-cdc-next]");
+    if (prev) prev.addEventListener("click", function () { stop(); go(step - 1); });
+    if (next) next.addEventListener("click", function () { stop(); go(step + 1); });
+    if (playBtn) {
+      playBtn.addEventListener("click", function () {
+        if (playing) stop();
+        else start();
+      });
+    }
+
+    nodes.forEach(function (n, i) {
+      n.addEventListener("click", function () { stop(); go(i); });
+      n.style.cursor = "pointer";
+    });
+
+    render();
+    start();
+  }
+
   function boot() {
     injectGotchaStrip();
     enhanceCodeBlocks();
+    document.querySelectorAll("[data-cdc-demo]").forEach(initCdcDemo);
   }
 
   if (document.readyState === "loading") {
