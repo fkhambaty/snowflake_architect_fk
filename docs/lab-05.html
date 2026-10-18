@@ -158,36 +158,22 @@
           <div class="see-example">WHEN SYSTEM$STREAM_HAS_DATA(...)<br>→ <code>SILVER_CURATED.TXN_SILVER_CDC</code></div>
         </div>
       </div>
-      <div class="see-grid two" style="margin-top:0.85rem">
-        <div class="see-card">
-          <div class="see-label">Snowflake-native</div>
-          <strong>Dynamic table</strong>
-          <p>Self-refresh shelf — less explicit SQL.</p>
-          <div class="see-example">TARGET_LAG · managed refresh</div>
-        </div>
-        <div class="see-card">
-          <div class="see-label">Git DAG</div>
-          <strong>dbt incremental (Lab 02)</strong>
-          <p><code>dbt run</code> on schedule — repo owns the graph.</p>
-          <div class="see-example">watermark MERGE<br>not task scheduler</div>
-        </div>
-      </div>
     </section>
-
-    <figure class="viz-panel">
-      <img src="assets/lab05-streams.jpg" alt="Stream and Task automate Jordan's txn handoff instead of hand-carrying; contrast with Dynamic Table and dbt" width="1600" height="900" loading="lazy" />
-      <figcaption>
-        <strong>Picture · Stop hand-carrying</strong>
-        Stream + Task automate Jordan’s txn handoff (vs Dynamic Table / dbt).
-      </figcaption>
-    </figure>
 
     <section class="teach pick-wrap" id="pick-path" aria-label="When to pick streams and tasks vs dynamic tables">
       <h2>Stream + task vs dynamic table — two different jobs</h2>
       <p>
-        Not a pipeline left→right. Same dock of transactions — <em>different</em> reasons Elena picks a tool.
+        Same dock of transactions — <em>different</em> jobs. This fork is <strong>stream + task vs dynamic table</strong> (dbt is Lab 02, not this comparison).
         Watch the two lanes, then click a Meridian scenario.
       </p>
+
+      <figure class="viz-panel" style="margin-top:0.85rem;margin-bottom:1rem">
+        <img src="assets/lab05-streams.jpg" alt="Stream plus Task versus Dynamic Table: you write the SQL versus Snowflake refreshes" width="1600" height="900" loading="lazy" />
+        <figcaption>
+          <strong>Picture · The real fork</strong>
+          Stream + Task = you own the notebook and worker. Dynamic table = you declare the SELECT; Snowflake refreshes.
+        </figcaption>
+      </figure>
 
       <div class="pick-lanes" aria-hidden="false">
         <div class="pick-lane is-stream" data-pick-lane="stream">
@@ -254,10 +240,6 @@
             <span class="pick-q">Simple SELECT transform</span>
             <span class="pick-a">Project/filter/join — declare once, Snowflake refreshes on lag.</span>
           </button>
-          <button type="button" class="pick-scenario" data-pick="dbt" role="listitem">
-            <span class="pick-q">Git, tests, portable SQL</span>
-            <span class="pick-a">Engineering owns the DAG in a repo (Lab 02 watermark MERGE).</span>
-          </button>
         </div>
         <div class="pick-result" data-pick-result>
           <div class="pick-result-badge" data-pick-badge>→ Stream + Task</div>
@@ -267,7 +249,7 @@
         </div>
       </div>
 
-      <div class="see-grid three" style="margin-top:1.1rem">
+      <div class="see-grid two" style="margin-top:1.1rem">
         <div class="see-card">
           <div class="see-label">Pick stream + task when</div>
           <strong>You need the notebook</strong>
@@ -280,13 +262,11 @@
           <p>Declare SELECT + lag; Snowflake refreshes.</p>
           <div class="see-example">Optional Step 7 · <code>DT_TXN_STATUS</code></div>
         </div>
-        <div class="see-card">
-          <div class="see-label">Pick dbt when</div>
-          <strong>The repo owns the graph</strong>
-          <p>CI, tests, watermark MERGE across envs.</p>
-          <div class="see-example">Lab 02 · not this lab’s worker</div>
-        </div>
       </div>
+
+      <p style="margin:0.9rem 0 0;color:var(--muted);font-size:0.92rem">
+        <strong>Not this fork:</strong> Git / tests / portable SQL → dbt incremental (Lab 02). Different conversation.
+      </p>
 
       <div class="callout warn" style="margin-top:1rem">
         <strong>Interview trap</strong>
