@@ -1,3 +1,6 @@
+-- Lab 10 · PROVIDER (Meridian / Elena)
+-- Requires BRONZE_LANDING.TXN_EVENTS (Lab 02 / 05 / 06 path).
+
 USE ROLE ROLE_BANK_LAB_ADMIN;
 USE WAREHOUSE WH_BANK_XS;
 USE DATABASE MERIDIAN_BANK;
@@ -12,4 +15,16 @@ GRANT USAGE ON SCHEMA SILVER_CURATED TO SHARE SHARE_MERIDIAN_TXNS;
 GRANT SELECT ON VIEW SILVER_CURATED.V_SHARE_TXNS TO SHARE SHARE_MERIDIAN_TXNS;
 
 SHOW SHARES LIKE 'SHARE_MERIDIAN_TXNS';
-SELECT 'Lab 10 share ready for Nora (add consumer account next)' AS status;
+SELECT CURRENT_ACCOUNT() AS meridian_locator;
+
+-- ---- Attach consumer (usually ACCOUNTADMIN) ----
+-- Path A: create reader, then ADD ACCOUNTS = that locator
+-- USE ROLE ACCOUNTADMIN;
+-- CREATE MANAGED ACCOUNT NA_NORA_READER
+--   ADMIN_NAME = 'nora_admin'
+--   , ADMIN_PASSWORD = 'ChangeMe_NoraLab1!'
+--   , TYPE = READER;
+-- SHOW MANAGED ACCOUNTS;
+-- ALTER SHARE SHARE_MERIDIAN_TXNS ADD ACCOUNTS = NORA_LOCATOR_HERE;
+
+SELECT 'Lab 10 provider share ready — attach Nora locator, then run 10_share_consumer.sql as Nora' AS status;

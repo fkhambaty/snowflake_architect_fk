@@ -558,9 +558,25 @@ L["10"] = {
       ["jordan", "I created SHARE_… but Nora sees nothing."],
       ["elena", "Empty envelope. GRANT database/schema/view <em>to the share</em> puts the window inside. Create ≠ stocked."]
     ]),
-    "5": S("Who pays when Nora queries?", [
+    "5": S("Share exists — now what?", [
+      ["alex", "SHOW SHARES worked. Can I SELECT as Alex now?"],
+      ["elena", "Alex is still Meridian. Copy <code>CURRENT_ACCOUNT()</code> — Nora’s login will need that locator to open the envelope."]
+    ]),
+    "6": S("Another user ≠ Nora", [
+      ["alex", "I’ll just create user NORA in our account…"],
+      ["elena", "That’s Lab 01. Sharing is <em>account → account</em>. Reader account (or a second trial) gives Nora a real second login."]
+    ]),
+    "7": S("Whitelist Nora’s locator", [
+      ["jordan", "Share is stocked but she still can’t see it."],
+      ["elena", "<code>ALTER SHARE … ADD ACCOUNTS</code> is the guest list. Without it the envelope never arrives."]
+    ]),
+    "8": S("Log in as Nora", [
+      ["nora", "Empty account. Where’s the data?"],
+      ["elena", "Create a warehouse, then <code>CREATE DATABASE … FROM SHARE meridian.SHARE_MERIDIAN_TXNS</code>. Then SELECT the view."]
+    ]),
+    "9": S("Who pays — say it right", [
       ["marcus", "Do we pay when Nora runs SQL?"],
-      ["elena", "Nora’s warehouse pays her scans. That’s why share beats us running Friday CSVs on WH_BANK_XS “as a favor.”"]
+      ["elena", "Her own account → she pays. Reader account we created for practice → Meridian pays. Don’t blur those in an interview."]
     ])
   }
 };

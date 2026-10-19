@@ -37,20 +37,22 @@
     <p class="eyebrow">Lab 10 · Saturday · You are Elena · Nora Patel</p>
     <h1>Nora’s credit union needs a window — not a USB dump</h1>
     <p class="lede">
-      Read <strong>Teach first</strong> before provider SQL.
-      Partner Nora needs read-only txn metrics in <em>her</em> Snowflake account.
-      Elena publishes a <strong>secure view</strong> and a <strong>share</strong> — minimum columns, no BRONZE_LANDING vault, Nora pays her own compute.
+      Read <strong>Teach first</strong> before SQL.
+      Partner Nora needs read-only txn metrics in <em>another Snowflake account</em> — not another user inside Meridian.
+      You will build the share as Elena, then <strong>log in as Nora</strong> (reader account or a second trial) and query it.
     </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
       Nora Patel’s credit union asked for a weekly CSV of transactions. Marcus refuses email attachments — compliance nightmare, stale by Friday, no audit trail.
+      Alex’s Meridian login cannot “be Nora” — shares are <strong>account → account</strong>, not user → user in the same account.
     </div>
 
     <div class="callout ok">
       <strong>Solution you will build</strong>
-      <code>SILVER_CURATED.V_SHARE_TXNS</code> (secure, column-trimmed) + share object <code>SHARE_MERIDIAN_TXNS</code>
-      with grants on database, schema, and view. Production adds Nora’s account locator to the share.
+      Provider (you): secure view + <code>SHARE_MERIDIAN_TXNS</code> + attach Nora’s account.
+      Consumer (Nora login): create database <em>from the share</em>, warehouse, <code>SELECT</code>.
+      Solo path today: Snowflake <strong>reader account</strong> (managed by Meridian) so you get a second login without buying a second org.
     </div>
 
     <div class="ba-grid">
@@ -191,6 +193,10 @@
       
     </section>
 
+
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Only ACCOUNTADMIN can grant <code>CREATE SHARE</code> and related powers to <code>ROLE_BANK_LAB_ADMIN</code>. Skip if Lab 00 smoke test already passed.</p>
@@ -260,6 +266,10 @@ SELECT 'Meridian Bank privilege repair OK' AS status;</code></pre>
 
 
 
+
+
+
+
       <div class="code-block">
         <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
@@ -292,6 +302,10 @@ USE DATABASE MERIDIAN_BANK;</code></pre>
       </div>
       
     </section>
+
+
+
+
 
 
 
@@ -341,6 +355,10 @@ FROM BRONZE_LANDING.TXN_EVENTS;</code></pre>
 
 
 
+
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Empty share container — grants in the next step attach Meridian objects to it.</p>
@@ -377,6 +395,10 @@ CREATE SHARE SHARE_MERIDIAN_TXNS;</code></pre>
       
     </section>
 
+
+
+
+
       <div class="explain">
         <h4>What this does</h4>
         <p>Consumers need USAGE on database and schema, then SELECT on the view. Without all three, Nora sees nothing.</p>
@@ -391,11 +413,201 @@ GRANT SELECT ON VIEW SILVER_CURATED.V_SHARE_TXNS TO SHARE SHARE_MERIDIAN_TXNS;</
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">5</div><div><h3>Verify + Nora’s next step</h3></div></div>
+      <div class="step-head"><div class="step-num">5</div><div><h3>Prove the share exists (still on Meridian)</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-10-step-5" aria-label="Who pays when Nora queries?">
+      <section class="comic-strip comic-step" id="comic-10-step-5" aria-label="Share exists — now what?">
       <p class="comic-kicker">Step 5 · coach</p>
-      <h2 class="comic-title">Who pays when Nora queries?</h2>
+      <h2 class="comic-title">Share exists — now what?</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">SHOW SHARES worked. Can I SELECT as Alex now?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Alex is still Meridian. Copy <code>CURRENT_ACCOUNT()</code> — Nora’s login will need that locator to open the envelope.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+      <div class="explain">
+        <h4>What you should see</h4>
+        <p><code>SHOW SHARES</code> lists <code>SHARE_MERIDIAN_TXNS</code> as an <em>outbound</em> share. Note your provider locator — Nora needs it.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · provider proof</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>SHOW SHARES LIKE 'SHARE_MERIDIAN_TXNS';
+SELECT CURRENT_ACCOUNT() AS meridian_locator;
+-- Copy meridian_locator — Nora’s CREATE DATABASE … FROM SHARE uses it.</code></pre>
+      </div>
+      <div class="badge-ok">✓ Outbound share ready · next: give Nora an account that can see it</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">6</div><div><h3>Create Nora’s login (reader account) — or use a second trial</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-6" aria-label="Another user ≠ Nora">
+      <p class="comic-kicker">Step 6 · coach</p>
+      <h2 class="comic-title">Another user ≠ Nora</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face alex" role="img" aria-label="Alex"></div>
+        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
+      </div>
+      <blockquote class="comic-bubble">I’ll just create user NORA in our account…</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">That’s Lab 01. Sharing is <em>account → account</em>. Reader account (or a second trial) gives Nora a real second login.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+      <div class="explain">
+        <h4>Two ways to be “Nora”</h4>
+        <p><strong>A · Reader account (solo lab — recommended):</strong> Meridian creates a managed reader account. You get a second Snowsight URL + user. Reader can only consume Meridian’s shares. <em>Credits for Nora’s warehouse bill Meridian</em> — fine for practice; say that honestly in interviews.</p>
+        <p><strong>B · Real second Snowflake account:</strong> Sign up another free trial as Nora’s credit union. She pays her own warehouse. This matches production billing. Skip the CREATE MANAGED ACCOUNT below; use her account locator in Step 7.</p>
+        <p><strong>Not a path:</strong> Creating user <code>NORA</code> inside <code>MERIDIAN_BANK</code>. That’s Lab 01 RBAC, not Secure Data Sharing.</p>
+      </div>
+      <div class="callout tip">
+        <strong>Trial gotcha:</strong> Some personal trials block provider sharing / managed accounts.
+        If CREATE MANAGED ACCOUNT fails, use Path B (second trial) or finish Steps 1–5 and speak the consumer steps aloud for the interview.
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Path A — create Nora reader (ACCOUNTADMIN)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+
+-- Pick your own strong password; do not commit real passwords to git.
+-- Re-run fails if name exists — DROP MANAGED ACCOUNT NA_NORA_READER; first if needed
+CREATE MANAGED ACCOUNT NA_NORA_READER
+  ADMIN_NAME = 'nora_admin'
+  , ADMIN_PASSWORD = 'ChangeMe_NoraLab1!'
+  , TYPE = READER
+  , COMMENT = 'Lab 10 Nora consumer practice';
+
+SHOW MANAGED ACCOUNTS;
+-- Result includes account locator + login URL. Save both.</code></pre>
+      </div>
+      <div class="badge-ok">✓ Reader locator saved · or Path B second-trial locator ready</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">7</div><div><h3>Attach Nora’s account to the share</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-7" aria-label="Whitelist Nora’s locator">
+      <p class="comic-kicker">Step 7 · coach</p>
+      <h2 class="comic-title">Whitelist Nora’s locator</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">Share is stocked but she still can’t see it.</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble"><code>ALTER SHARE … ADD ACCOUNTS</code> is the guest list. Without it the envelope never arrives.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+      <div class="explain">
+        <h4>What this does</h4>
+        <p>Stocked share still invisible until you whitelist the consumer account. Usually run as <code>ACCOUNTADMIN</code> (needs share ownership + manage-share-target powers).</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · whitelist Nora</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+
+-- Paste locator from SHOW MANAGED ACCOUNTS (or Nora’s second-trial locator)
+ALTER SHARE SHARE_MERIDIAN_TXNS ADD ACCOUNTS = NORA_LOCATOR_HERE;
+
+SHOW SHARES LIKE 'SHARE_MERIDIAN_TXNS';
+-- “to” column should list Nora’s locator</code></pre>
+      </div>
+      <div class="badge-ok">✓ Share targets Nora · now switch browser login</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">8</div><div><h3>Log in as Nora — open the window and SELECT</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-8" aria-label="Log in as Nora">
+      <p class="comic-kicker">Step 8 · coach</p>
+      <h2 class="comic-title">Log in as Nora</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face nora" role="img" aria-label="Nora"></div>
+        <div><span class="comic-name">Nora</span><span class="comic-role">Partner — needs a safe window</span></div>
+      </div>
+      <blockquote class="comic-bubble">Empty account. Where’s the data?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Create a warehouse, then <code>CREATE DATABASE … FROM SHARE meridian.SHARE_MERIDIAN_TXNS</code>. Then SELECT the view.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+      <div class="explain">
+        <h4>Consumer bootstrap</h4>
+        <p>Open the reader (or second-trial) Snowsight URL. Sign in as <code>nora_admin</code> (or Nora’s trial user). New account is empty until she creates a warehouse and a database <em>from</em> the share.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>SQL · Nora account — warehouse + import share</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>USE ROLE ACCOUNTADMIN;
+
+CREATE WAREHOUSE IF NOT EXISTS WH_NORA_XS
+  WAREHOUSE_SIZE = 'XSMALL'
+  AUTO_SUSPEND = 60
+  AUTO_RESUME = TRUE
+  INITIALLY_SUSPENDED = TRUE;
+
+-- Paste Meridian locator from Step 5 (CURRENT_ACCOUNT on provider)
+CREATE DATABASE IF NOT EXISTS NORA_FROM_MERIDIAN
+  FROM SHARE MERIDIAN_LOCATOR_HERE.SHARE_MERIDIAN_TXNS;
+
+GRANT IMPORTED PRIVILEGES ON DATABASE NORA_FROM_MERIDIAN TO ROLE ACCOUNTADMIN;
+USE WAREHOUSE WH_NORA_XS;
+USE DATABASE NORA_FROM_MERIDIAN;
+
+SHOW VIEWS;
+SELECT * FROM SILVER_CURATED.V_SHARE_TXNS LIMIT 20;</code></pre>
+      </div>
+      <div class="callout tip">
+        <strong>Reader billing:</strong> Path A warehouse credits hit Meridian — set a resource monitor if you leave it running.
+        <strong>Cleanup (provider):</strong> <code>DROP MANAGED ACCOUNT NA_NORA_READER;</code> when done practicing.
+      </div>
+      <div class="badge-ok">✓ Nora sees txn rows · vault CLIENTS not on the share</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">9</div><div><h3>Who pays? — say it correctly</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-10-step-9" aria-label="Who pays — say it right">
+      <p class="comic-kicker">Step 9 · coach</p>
+      <h2 class="comic-title">Who pays — say it right</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
@@ -409,22 +621,22 @@ GRANT SELECT ON VIEW SILVER_CURATED.V_SHARE_TXNS TO SHARE SHARE_MERIDIAN_TXNS;</
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">Nora’s warehouse pays her scans. That’s why share beats us running Friday CSVs on WH_BANK_XS “as a favor.”</blockquote>
+      <blockquote class="comic-bubble">Her own account → she pays. Reader account we created for practice → Meridian pays. Don’t blur those in an interview.</blockquote>
     </figure>
       </div>
       
     </section>
 
       <div class="explain">
-        <h4>What you should see</h4>
-        <p><code>SHOW SHARES</code> returns <code>SHARE_MERIDIAN_TXNS</code>. Production: <code>ALTER SHARE … ADD ACCOUNTS = NoraOrgAccount</code>; Nora creates a database from the share in her account.</p>
+        <h4>Interview sentence</h4>
+        <p><strong>Production Nora (her own account):</strong> she pays her warehouse — Meridian does not run her dashboards on <code>WH_BANK_XS</code>.</p>
+        <p><strong>Lab Path A (reader):</strong> Meridian pays reader compute — useful when the partner has no Snowflake license yet. Different product choice; don’t blur them.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · proof</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SHOW SHARES LIKE 'SHARE_MERIDIAN_TXNS';
-SELECT 'Lab 10 share ready for Nora (add consumer account next)' AS status;</code></pre>
+        <div class="code-head"><span>SQL · provider wrap status</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Back on Meridian (Elena):
+SELECT 'Lab 10: share + consumer login path complete' AS status;</code></pre>
       </div>
-      <div class="badge-ok">✓ Status row · parity with <code>sql/10_share_provider.sql</code></div>
     </article>
 
         <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
@@ -439,7 +651,7 @@ SELECT 'Lab 10 share ready for Nora (add consumer account next)' AS status;</cod
       </details>
       <details class="drill">
         <summary><strong>Q2.</strong> Who pays compute when Nora queries the share?</summary>
-        <p class="drill-say"><strong>Say:</strong> Nora — consumer warehouse in her account. Live data, Meridian keeps provider control, partner pays scans. Failure mode: Meridian running Nora’s reports on WH_BANK_XS “as a courtesy” and eating the bill.</p>
+        <p class="drill-say"><strong>Say:</strong> If Nora has her own Snowflake account — she pays her warehouse. If we provision a reader account for her — Meridian pays reader compute. Failure mode: Meridian running Nora’s reports on WH_BANK_XS “as a courtesy,” or forgetting a monitor on a reader warehouse.</p>
       </details>
       <details class="drill">
         <summary><strong>Q3.</strong> Share revoked — what still hurts?</summary>
@@ -450,16 +662,20 @@ SELECT 'Lab 10 share ready for Nora (add consumer account next)' AS status;</cod
         <p class="drill-say"><strong>Say:</strong> Don’t assume her roles map to FR_COMPLIANCE. Share only non-PII txn fields so we don’t rely on her role names matching ours. Cross-account role mapping is designed explicitly, not inherited from Lab 03.</p>
       </details>
       <details class="drill">
-        <summary><strong>Q5.</strong> Trial limitation you’d call out?</summary>
-        <p class="drill-say"><strong>Say:</strong> Adding Nora’s real account locator and validating consume often isn’t available on personal trial. SHOW shares/grants locally, then production completes with consumer smoke tests — same honesty as Lab 11 replication.</p>
+        <summary><strong>Q5.</strong> Can I share with another <em>user</em> in my Meridian account?</summary>
+        <p class="drill-say"><strong>Say:</strong> No — that’s RBAC/views (Lab 01). Secure Data Sharing is account-to-account. For a solo lab I create a reader account (or a second trial), ALTER SHARE ADD ACCOUNTS, then log in as that consumer and CREATE DATABASE … FROM SHARE.</p>
+      </details>
+      <details class="drill">
+        <summary><strong>Q6.</strong> Trial limitation you’d call out?</summary>
+        <p class="drill-say"><strong>Say:</strong> Some trials block managed accounts or provider sharing. I still show the secure view + share grants, then either use a second trial as Nora or narrate the consumer CREATE DATABASE FROM SHARE — same honesty as Lab 11.</p>
       </details>
     </section>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Nora needed partner metrics without USB-era leaks. I built SILVER_CURATED.V_SHARE_TXNS as a secure view with least columns — no PII vault — and published it through SHARE_MERIDIAN_TXNS with database, schema, and view grants.
-      Share beats weekly CSV because data stays live and Nora pays her own warehouse; clone is for internal QA, not cross-org delivery.
-      <em>Outcome:</em> Nora queries governed txns in her account; Meridian keeps control on the provider side.”
+      “Nora needed partner metrics without USB-era leaks. I built SILVER_CURATED.V_SHARE_TXNS as a secure view with least columns — no PII vault — published SHARE_MERIDIAN_TXNS, attached Nora’s account, then logged in as Nora and created NORA_FROM_MERIDIAN FROM SHARE.
+      Share is account-to-account; clone is internal QA. Production Nora with her own account pays her warehouse; a reader account is for partners without Snowflake and Meridian pays that compute.
+      <em>Outcome:</em> Nora SELECTs governed txns in her login; Meridian never emailed a CSV.”
     </div>
 
     <div class="pager">
@@ -467,7 +683,7 @@ SELECT 'Lab 10 share ready for Nora (add consumer account next)' AS status;</cod
       <a class="btn primary" href="lab-11.html">Lab 11 →</a>
     </div>
   </div>
-  <footer class="footer">sql/10_share_provider.sql · sql/00_privilege_repair.sql · teach-first lab</footer>
+  <footer class="footer">sql/10_share_provider.sql · sql/10_share_consumer.sql · teach-first lab</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>
