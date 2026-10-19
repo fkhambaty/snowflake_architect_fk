@@ -99,7 +99,7 @@
           <div class="see-label">Rows changed</div>
           <strong>Time Travel SELECT</strong>
           <p>Table still exists — read an older version.</p>
-          <div class="see-example">AT (OFFSET => -120)<br>deleted row reappears in result</div>
+          <div class="see-example">BEFORE (STATEMENT =&gt; delete’s query id)<br>deleted row reappears in result</div>
         </div>
         <div class="see-card">
           <div class="see-label">Table dropped</div>
@@ -192,6 +192,8 @@
 
 
 
+
+
       <div class="code-block">
         <div class="code-head"><span>SQL · context</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>USE ROLE ROLE_BANK_LAB_ADMIN;
@@ -220,7 +222,7 @@ USE SCHEMA SILVER_CURATED;</code></pre>
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">Not yet. Ask Snowflake for the table <em>as of a few minutes ago</em>. That’s Time Travel. The trash didn’t leave the building immediately.</blockquote>
+      <blockquote class="comic-bubble">Not yet. Ask for the table <em>before that DELETE’s query id</em> — <code>BEFORE (STATEMENT =&gt; …)</code>. Don’t use a 2‑minute clock offset right after CREATE — the table didn’t exist yet.</blockquote>
     </figure>
       </div>
       
@@ -230,24 +232,34 @@ USE SCHEMA SILVER_CURATED;</code></pre>
 
 
 
+
+
       <div class="explain">
         <h4>What this does</h4>
-        <p>Create tiny table, mutate it, delete the row, then SELECT with <code>AT (OFFSET => -60*2)</code> (~2 minutes back) to see the row again.</p>
+        <p>Create a tiny table, change it, delete the row, then ask Snowflake for the table <em>as it was immediately before that DELETE</em>.</p>
+        <h4>Why not <code>AT (OFFSET =&gt; -120)</code>?</h4>
+        <p>Offset = “N seconds ago on the clock.” If you just ran <code>CREATE OR REPLACE</code>, two minutes ago the table <em>didn’t exist</em> → the error you saw. Statement Time Travel keys off the DELETE’s query id — works even if you run the lab in under a minute.</p>
         <h4>What you should see</h4>
-        <p>Current table empty (or no row 1); time-travel query shows <code>NOTE = 'after'</code> or earlier state depending on timing — proves history exists.</p>
+        <p>Live table: 0 rows. Time-travel SELECT: <code>ID=1</code>, <code>NOTE='after'</code>.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · build TT_DEMO</span><button type="button" class="copy-btn">Copy</button></div>
+        <div class="code-head"><span>SQL · build + delete</span><button type="button" class="copy-btn">Copy</button></div>
 <pre><code>CREATE OR REPLACE TABLE TT_DEMO (ID NUMBER, NOTE STRING);
 INSERT INTO TT_DEMO VALUES (1, 'before');
 UPDATE TT_DEMO SET NOTE = 'after' WHERE ID = 1;
 DELETE FROM TT_DEMO WHERE ID = 1;</code></pre>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>SQL · rewind ~2 minutes</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>SELECT * FROM TT_DEMO AT (OFFSET => -60*2);</code></pre>
+        <div class="code-head"><span>SQL · Time Travel before the DELETE</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>-- Run alone, right after the DELETE (LAST_QUERY_ID must be that DELETE)
+SELECT * FROM TT_DEMO BEFORE (STATEMENT => LAST_QUERY_ID());</code></pre>
       </div>
-      <div class="badge-ok">✓ At least one historical row visible — interview: “restore via INSERT…SELECT from AT”</div>
+      <div class="callout tip">
+        <strong>Gotcha:</strong> If you ran anything after the DELETE, paste the DELETE’s Query ID from History:
+        <code>SELECT * FROM TT_DEMO BEFORE (STATEMENT =&gt; '&lt;paste-query-id&gt;');</code>
+        Clock offsets like <code>AT (OFFSET =&gt; -120)</code> fail when the table is younger than 2 minutes.
+      </div>
+      <div class="badge-ok">✓ Historical row visible — interview: “restore via INSERT…SELECT from AT/BEFORE”</div>
     </article>
 
     <article class="step">
@@ -274,6 +286,8 @@ DELETE FROM TT_DEMO WHERE ID = 1;</code></pre>
       </div>
       
     </section>
+
+
 
 
 
@@ -330,6 +344,8 @@ UNDROP TABLE TT_DEMO2;</code></pre>
       </div>
       
     </section>
+
+
 
 
 

@@ -511,7 +511,7 @@ L["09"] = {
     ]),
     "2": S("Time Travel after DELETE", [
       ["alex", "I deleted the row — it’s gone forever?"],
-      ["elena", "Not yet. Ask Snowflake for the table <em>as of a few minutes ago</em>. That’s Time Travel. The trash didn’t leave the building immediately."]
+      ["elena", "Not yet. Ask for the table <em>before that DELETE’s query id</em> — <code>BEFORE (STATEMENT =&gt; …)</code>. Don’t use a 2‑minute clock offset right after CREATE — the table didn’t exist yet."]
     ]),
     "3": S("UNDROP", [
       ["jordan", "I DROP TABLE by mistake…"],
