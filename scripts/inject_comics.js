@@ -622,45 +622,34 @@ L["12"] = {
   open: [
     {
       kicker: "Episode 12 · Silent break",
-      title: "CI was green. Alex’s tile was empty.",
+      title: "One job: stop silent column breaks",
       panels: [
-        ["jordan", "I renamed a column. Tests passed. Why is Looker dead?"],
-        ["elena", "You protected the wrong door. Contract the <strong>published mart</strong> Alex uses — not every staging scratch view. And Slim CI needs a fresh map of prod or it compares to a ghost."]
-      ]
+        ["jordan", "I renamed a column. Tests passed. Alex’s tile is blank."],
+        ["elena", "Promise the published columns in YAML (<strong>contract</strong>). If someone renames <code>order_total</code>, dbt fails <em>before</em> Looker. Slim CI is just “don’t rebuild the whole bank on every PR.”"]
+      ],
+      caption: "Contract = seatbelt for Alex’s columns. Slim CI = cheaper PRs."
     }
   ],
   steps: {
-    "1": S("What is a source YAML?", [
-      ["alex", "Is this SQL?"],
-      ["elena", "It’s a name tag: “this Snowflake table is our bronze dock.” dbt doesn’t create bronze here — it points at it."]
-    ]),
-    "2": S("Why describe txn_events?", [
-      ["jordan", "Extra typing…"],
-      ["elena", "So humans and tests know which dock table matters. Documentation is part of the contract with future-you."]
-    ]),
-    "3": S("What is contract enforcement?", [
+    "1": S("What is a contract?", [
       ["alex", "Like a legal contract?"],
-      ["elena", "A column promise: name + type must match. Break it → CI fails before Alex’s tile goes blank."]
+      ["elena", "A column promise on the mart Alex uses: names + types. Break the promise → build fails. We don’t contract every staging scratch."]
     ]),
-    "4": S("Why order_id in the contract?", [
-      ["jordan", "It’s obvious…"],
-      ["elena", "Obvious until someone renames it. Unique + not_null on the grain is the seatbelt."]
+    "2": S("Why on_schema_change = fail?", [
+      ["jordan", "dbt yelled about ignore…"],
+      ["elena", "Incremental + contract can’t shrug at new columns. <code>fail</code> = stop the PR. That’s the seatbelt."]
     ]),
-    "5": S("Why updated_at in the contract?", [
-      ["alex", "That’s the watermark thing from Lab 02?"],
-      ["elena", "Yes — if type drifts, incremental MERGE and “last refresh” both break. Put the watermark in the promise, not a wiki."]
+    "3": S("Prove it green", [
+      ["alex", "How do I know it works?"],
+      ["elena", "Run the one model. Green = promise matches SQL. Then try a rename if you want to feel the red."]
     ]),
-    "6": S("dbt deps?", [
-      ["jordan", "Why install packages?"],
-      ["elena", "Slim CI helpers live in packages. deps = download the toolbox before you build."]
+    "4": S("Save yesterday’s map", [
+      ["jordan", "What’s prod_artifact?"],
+      ["elena", "A copy of prod’s <code>manifest.json</code> — the map Slim CI compares against. No map → state:modified can’t work."]
     ]),
-    "7": S("Slim CI list", [
-      ["marcus", "Why not rebuild the world every PR?"],
-      ["elena", "Credits and time. First we <em>list</em> what would run — modified models + downstream. Sanity check before spending."]
-    ]),
-    "8": S("Defer means what?", [
-      ["alex", "Defer sounds like procrastination…"],
-      ["elena", "It means “reuse prod for things we didn’t change.” Needs a fresh prod manifest. Stale map = false safety."]
+    "5": S("Slim CI in one breath", [
+      ["marcus", "Why not rebuild everything every PR?"],
+      ["elena", "Credits. Build only what changed (+ kids). <code>--defer</code> borrows unchanged parents from that prod map."]
     ])
   }
 };

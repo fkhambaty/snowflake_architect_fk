@@ -35,20 +35,22 @@
 
   <div class="wrap">
     <p class="eyebrow">Lab 12 · Sunday · You are Elena · Alex’s broken metric</p>
-    <h1>Silent dbt changes broke the board deck</h1>
+    <h1>If a column changes, Alex’s report must not silently break</h1>
     <p class="lede">
-      Read the <strong>Teach first</strong> sections before you edit YAML.
-      Lab 02 proved incremental merge — this lab governs what Alex’s dashboards may depend on: declared sources, enforced contracts on published marts, and Slim CI so pull requests do not rebuild all of Meridian.
+      One problem. One seatbelt. Then a short “don’t rebuild the whole bank on every PR” bonus.
+      Lab 02’s <code>fct_orders_incremental</code> must already exist (and <code>BRONZE_LANDING.TXN_EVENTS</code>).
     </p>
 
     <div class="callout bad">
       <strong>Business problem</strong>
-      A column rename in the txn mart shipped without notice. Alex’s Looker tile went blank before the board meeting. Marcus: “Govern the published marts.”
+      Jordan renamed a column. Tests looked fine. Alex’s Looker tile went blank before the board.
+      Marcus: “Govern the published mart — not every scratch view.”
     </div>
 
     <div class="callout ok">
-      <strong>Solution you will design</strong>
-      Declare <code>BRONZE_LANDING.TXN_EVENTS</code> in sources, enforce a contract on <code>fct_orders_incremental</code>, and describe Slim CI with <code>state:modified+</code> and <code>--defer</code> against a saved production manifest.
+      <strong>Solution (keep it this simple)</strong>
+      <strong>1 · Contract</strong> — YAML promises column names + types on <code>fct_orders_incremental</code>. Break the promise → dbt fails before Looker.
+      <strong>2 · Slim CI (bonus)</strong> — PRs only build what changed, using a saved prod <code>manifest.json</code>.
     </div>
 
     <div class="ba-grid">
@@ -56,214 +58,69 @@
         <img src="assets/lab12-before.jpg" alt="BEFORE: Silent column rename breaks Alex's Looker tile" width="1600" height="900" loading="eager" />
         <figcaption>
           <strong>Before</strong>
-          Silent dbt break — board tile blank.
+          Silent rename — board tile blank.
         </figcaption>
       </figure>
       <figure class="ba-panel after">
         <img src="assets/lab12-after.jpg" alt="AFTER: Contract enforced plus Slim CI on PRs" width="1600" height="900" loading="eager" />
         <figcaption>
           <strong>After</strong>
-          Contract + Slim CI — fail before prod.
+          Contract fails the PR — Alex stays safe.
         </figcaption>
       </figure>
     </div>
 
-
-<section class="comic-strip" id="comic-12-open-0" aria-label="CI was green. Alex’s tile was empty.">
+    
+<section class="comic-strip" id="comic-12-open-0" aria-label="One job: stop silent column breaks">
       <p class="comic-kicker">Episode 12 · Silent break</p>
-      <h2 class="comic-title">CI was green. Alex’s tile was empty.</h2>
+      <h2 class="comic-title">One job: stop silent column breaks</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
         <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
       </div>
-      <blockquote class="comic-bubble">I renamed a column. Tests passed. Why is Looker dead?</blockquote>
+      <blockquote class="comic-bubble">I renamed a column. Tests passed. Alex’s tile is blank.</blockquote>
     </figure>
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">You protected the wrong door. Contract the <strong>published mart</strong> Alex uses — not every staging scratch view. And Slim CI needs a fresh map of prod or it compares to a ghost.</blockquote>
+      <blockquote class="comic-bubble">Promise the published columns in YAML (<strong>contract</strong>). If someone renames <code>order_total</code>, dbt fails <em>before</em> Looker. Slim CI is just “don’t rebuild the whole bank on every PR.”</blockquote>
     </figure>
       </div>
-      
+      <p class="comic-caption">Contract = seatbelt for Alex’s columns. Slim CI = cheaper PRs.</p>
     </section>
-<div class="story">
-      <div class="story-label">Sunday planning</div>
-      <p>Jordan owns git; Elena owns what may break Alex — contracts on <strong>published marts</strong>, not every staging view.
-      Refresh <a href="lab-02.html">Lab 02</a> if watermark / incremental is fuzzy — this lab builds on that fact table.</p>
-    </div>
-
-    <section class="teach">
-      <h2>See it — don’t memorize definitions</h2>
-      <p>Govern what Alex’s dashboards depend on — not every staging view.</p>
+<section class="teach">
+      <h2>See it — two ideas only</h2>
       <div class="see-grid two">
         <div class="see-card">
-          <div class="see-label">Source</div>
-          <strong>YAML dock address</strong>
-          <p>Declares Jordan’s table — lineage in git.</p>
-          <div class="see-example">{{ source('bronze_landing', 'txn_events') }}<br>not hard-coded BRONZE_LANDING.*</div>
-        </div>
-        <div class="see-card">
-          <div class="see-label">Contract</div>
-          <strong>Published mart promise</strong>
-          <p>Column names + types enforced on build.</p>
+          <div class="see-label">Main idea</div>
+          <strong>Contract</strong>
+          <p>Published mart = API for Alex. Names + types must match YAML.</p>
           <div class="see-example">rename order_total ✗<br>dbt fails before Looker</div>
         </div>
-      </div>
-      <div class="see-grid two" style="margin-top:0.85rem">
         <div class="see-card">
-          <div class="see-label">Slim CI</div>
-          <strong>PR builds less</strong>
-          <p>Only changed models + downstream.</p>
-          <div class="see-example">state:modified+<br>--defer to prod manifest</div>
-        </div>
-        <div class="see-card">
-          <div class="see-label">Saved state</div>
-          <strong><code>prod_artifact/manifest.json</code></strong>
-          <p>Yesterday’s prod graph — compare in CI.</p>
-          <div class="see-example">skip full bank rebuild<br>borrow prod parents</div>
+          <div class="see-label">Bonus idea</div>
+          <strong>Slim CI</strong>
+          <p>Don’t rebuild every model on every PR — only changed + downstream.</p>
+          <div class="see-example">state:modified+<br>needs a prod manifest map</div>
         </div>
       </div>
-
-      <div class="flow-pipeline" aria-label="Governed dbt flow">
-        <div class="flow-node source">
-          <span class="flow-tag">Source (YAML)</span>
-          <strong>TXN_EVENTS</strong>
-          <span class="flow-sub">Jordan lands rows · dbt declares dock</span>
-        </div>
-        <div class="flow-arrow" aria-hidden="true"><span></span></div>
-        <div class="flow-node stg">
-          <span class="flow-tag">Staging view</span>
-          <strong>stg_orders</strong>
-          <span class="flow-sub">rename columns · no contract required</span>
-        </div>
-        <div class="flow-arrow" aria-hidden="true"><span></span></div>
-        <div class="flow-node fct">
-          <span class="flow-tag">Published mart</span>
-          <strong>fct_orders_incremental</strong>
-          <span class="flow-sub">contract enforced · Alex’s tile</span>
-        </div>
-      </div>
-    </section>
-
-    <figure class="viz-panel">
-      <img src="assets/lab12-dbt.jpg" alt="Contract the mart: silent dbt change breaks Alex's tile; contracts and Slim CI" width="1600" height="900" loading="lazy" />
-      <figcaption>
-        <strong>Picture · Contract the mart</strong>
-        silent dbt breaks Alex’s tile; contracts + Slim CI.
-      </figcaption>
-    </figure>
-
-    <section class="teach">
-      <h2>Where contracts belong (and where they don’t)</h2>
-      <p>
-        <code>stg_orders</code> is an internal translator — Elena does not contract it.
-        <code>fct_orders_incremental</code> is what Alex and Looker treat as stable — that gets <code>contract.enforced: true</code> and explicit <code>data_type</code> on each column.
-      </p>
-      <div class="callout warn">
-        <strong>Classic mistake</strong>
-        Enforcing contracts on every staging view slows the team without protecting consumers. Contract the <em>published</em> boundary.
+      <div class="callout tip" style="margin-top:0.85rem">
+        <strong>Where the contract lives</strong>
+        On <code>fct_orders_incremental</code> (Alex’s fact) — <em>not</em> on every <code>stg_</code> view.
+        Staging can churn; the published door stays locked.
       </div>
     </section>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">1</div><div><h3>Sources file — header and BRONZE_LANDING database</h3></div></div>
+      <div class="step-head"><div class="step-num">1</div><div><h3>The contract YAML (already in the repo)</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-12-step-1" aria-label="What is a source YAML?">
+      <section class="comic-strip comic-step" id="comic-12-step-1" aria-label="What is a contract?">
       <p class="comic-kicker">Step 1 · coach</p>
-      <h2 class="comic-title">What is a source YAML?</h2>
-      <div class="comic-row two">
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face alex" role="img" aria-label="Alex"></div>
-        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
-      </div>
-      <blockquote class="comic-bubble">Is this SQL?</blockquote>
-    </figure>
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face elena" role="img" aria-label="Elena"></div>
-        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
-      </div>
-      <blockquote class="comic-bubble">It’s a name tag: “this Snowflake table is our bronze dock.” dbt doesn’t create bronze here — it points at it.</blockquote>
-    </figure>
-      </div>
-      
-    </section>
-
-
-
-
-
-      <div class="explain">
-        <h4>What this does</h4>
-        <p><code>version: 2</code> tells dbt this is modern YAML schema. The <code>sources:</code> list begins the BRONZE_LANDING dock definition.</p>
-        <h4>Why Elena does it</h4>
-        <p>Without a source entry, dbt can still query via raw SQL — but lineage breaks and renames hide from the graph.</p>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>YAML · dbt_project/models/staging/_sources.yml (part 1)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>version: 2
-
-sources:
-  - name: bronze_landing
-    database: MERIDIAN_BANK
-    schema: BRONZE_LANDING</code></pre>
-      </div>
-      <div class="badge-ok">✓ <code>name: bronze_landing</code> is the logical name in <code>source('bronze_landing', …)</code> — not the schema name by itself</div>
-    </article>
-
-    <article class="step">
-      <div class="step-head"><div class="step-num">2</div><div><h3>Sources file — table txn_events</h3></div></div>
-
-      <section class="comic-strip comic-step" id="comic-12-step-2" aria-label="Why describe txn_events?">
-      <p class="comic-kicker">Step 2 · coach</p>
-      <h2 class="comic-title">Why describe txn_events?</h2>
-      <div class="comic-row two">
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
-      </div>
-      <blockquote class="comic-bubble">Extra typing…</blockquote>
-    </figure>
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face elena" role="img" aria-label="Elena"></div>
-        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
-      </div>
-      <blockquote class="comic-bubble">So humans and tests know which dock table matters. Documentation is part of the contract with future-you.</blockquote>
-    </figure>
-      </div>
-      
-    </section>
-
-
-
-
-
-      <div class="explain">
-        <h4>What each line does</h4>
-        <p><code>tables:</code> lists physical tables at that dock. <code>name: txn_events</code> matches Snowflake object <code>TXN_EVENTS</code> (dbt lowercases in docs; Snowflake stores uppercase unless quoted).</p>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>YAML · _sources.yml (part 2) — matches repo</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>    tables:
-      - name: txn_events
-        description: "Meridian Bank txn events for incremental merge demo"</code></pre>
-      </div>
-      <div class="badge-ok">✓ In Snowsight you still created <code>BRONZE_LANDING.TXN_EVENTS</code> in Lab 02 — dbt does not create it</div>
-    </article>
-
-    <article class="step">
-      <div class="step-head"><div class="step-num">3</div><div><h3>Contract — turn enforcement on</h3></div></div>
-
-      <section class="comic-strip comic-step" id="comic-12-step-3" aria-label="What is contract enforcement?">
-      <p class="comic-kicker">Step 3 · coach</p>
-      <h2 class="comic-title">What is contract enforcement?</h2>
+      <h2 class="comic-title">What is a contract?</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
@@ -277,108 +134,30 @@ sources:
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">A column promise: name + type must match. Break it → CI fails before Alex’s tile goes blank.</blockquote>
+      <blockquote class="comic-bubble">A column promise on the mart Alex uses: names + types. Break the promise → build fails. We don’t contract every staging scratch.</blockquote>
     </figure>
       </div>
       
     </section>
 
-
-
       <div class="explain">
-        <h4>What this does</h4>
-        <p>Under <code>models:</code>, target <code>fct_orders_incremental</code>. <code>contract.enforced: true</code> tells dbt to compare built columns to the YAML contract before succeeding.</p>
-        <h4>Why Elena does it</h4>
-        <p>A PR that renames <code>order_total</code> fails in CI instead of shipping a silent NULL tile for Marcus.</p>
+        <h4>What this is</h4>
+        <p>A written promise: these five columns, these types. Open <code>dbt_project/models/marts/schema.yml</code> — you should already see <code>contract.enforced: true</code>.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>YAML · models/marts/schema.yml (part 1)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>version: 2
-
-models:
+        <div class="code-head"><span>YAML · models/marts/schema.yml (the promise)</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>models:
   - name: fct_orders_incremental
     config:
       contract:
-        enforced: true</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head"><div class="step-num">4</div><div><h3>Contract — column order_id</h3></div></div>
-
-      <section class="comic-strip comic-step" id="comic-12-step-4" aria-label="Why order_id in the contract?">
-      <p class="comic-kicker">Step 4 · coach</p>
-      <h2 class="comic-title">Why order_id in the contract?</h2>
-      <div class="comic-row two">
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
-        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
-      </div>
-      <blockquote class="comic-bubble">It’s obvious…</blockquote>
-    </figure>
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face elena" role="img" aria-label="Elena"></div>
-        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
-      </div>
-      <blockquote class="comic-bubble">Obvious until someone renames it. Unique + not_null on the grain is the seatbelt.</blockquote>
-    </figure>
-      </div>
-      
-    </section>
-
-
-
-      <div class="explain">
-        <h4>Read the column block</h4>
-        <p><code>data_type: number</code> must match Snowflake. <code>tests: [unique, not_null]</code> keeps the txn key trustworthy — same as Lab 02’s merge key.</p>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>YAML · schema.yml (part 2)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>    columns:
+        enforced: true
+    columns:
       - name: order_id
         data_type: number
         tests: [unique, not_null]
       - name: customer_id
-        data_type: number</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head"><div class="step-num">5</div><div><h3>Contract — status, order_total, updated_at</h3></div></div>
-
-      <section class="comic-strip comic-step" id="comic-12-step-5" aria-label="Why updated_at in the contract?">
-      <p class="comic-kicker">Step 5 · coach</p>
-      <h2 class="comic-title">Why updated_at in the contract?</h2>
-      <div class="comic-row two">
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face alex" role="img" aria-label="Alex"></div>
-        <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
-      </div>
-      <blockquote class="comic-bubble">That’s the watermark thing from Lab 02?</blockquote>
-    </figure>
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face elena" role="img" aria-label="Elena"></div>
-        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
-      </div>
-      <blockquote class="comic-bubble">Yes — if type drifts, incremental MERGE and “last refresh” both break. Put the watermark in the promise, not a wiki.</blockquote>
-    </figure>
-      </div>
-      
-    </section>
-
-
-
-      <div class="explain">
-        <h4>Why list every published column</h4>
-        <p>Contract mode requires the YAML to be complete. <code>updated_at</code> is the watermark column — if its type drifts, incremental logic and Alex’s “last refresh” both break.</p>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>YAML · schema.yml (part 3)</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>      - name: status
+        data_type: number
+      - name: status
         data_type: varchar
       - name: order_total
         data_type: number
@@ -386,161 +165,216 @@ models:
         data_type: timestamp_ntz
         tests: [not_null]</code></pre>
       </div>
-      <div class="badge-ok">✓ After edits: <code>dbt run --select fct_orders_incremental</code> should pass or fail loudly on mismatch</div>
+      <div class="badge-ok">✓ Promise written — next step wires incremental so dbt accepts the contract</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">6</div><div><h3>Slim CI — install packages</h3></div></div>
+      <div class="step-head"><div class="step-num">2</div><div><h3>Fix incremental + contract (the error you hit)</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-12-step-6" aria-label="dbt deps?">
-      <p class="comic-kicker">Step 6 · coach</p>
-      <h2 class="comic-title">dbt deps?</h2>
+      <section class="comic-strip comic-step" id="comic-12-step-2" aria-label="Why on_schema_change = fail?">
+      <p class="comic-kicker">Step 2 · coach</p>
+      <h2 class="comic-title">Why on_schema_change = fail?</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
         <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
       </div>
-      <blockquote class="comic-bubble">Why install packages?</blockquote>
+      <blockquote class="comic-bubble">dbt yelled about ignore…</blockquote>
     </figure>
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">Slim CI helpers live in packages. deps = download the toolbox before you build.</blockquote>
+      <blockquote class="comic-bubble">Incremental + contract can’t shrug at new columns. <code>fail</code> = stop the PR. That’s the seatbelt.</blockquote>
     </figure>
       </div>
       
     </section>
 
-
-
       <div class="explain">
-        <h4>What this does</h4>
-        <p><code>dbt deps</code> pulls package dependencies (if any) before CI compiles the graph — same as local dev.</p>
+        <h4>Why dbt yelled</h4>
+        <p>On dbt 1.x+, an <em>incremental</em> model with a contract cannot use <code>on_schema_change: ignore</code>.
+        It must be <code>fail</code> or <code>append_new_columns</code>. We want <code>fail</code> — silent new columns are how Alex’s tile dies.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>Shell · step 1</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>cd dbt_project
-dbt deps</code></pre>
+        <div class="code-head"><span>SQL/Jinja · fct_orders_incremental.sql config</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>{{
+  config(
+    materialized='incremental',
+    unique_key='order_id',
+    incremental_strategy='merge',
+    on_schema_change='fail',
+    schema='SILVER_CURATED'
+  )
+}}</code></pre>
       </div>
+      <div class="callout tip">
+        Pull latest git if your file still lacks <code>on_schema_change='fail'</code> — that was the Lab 12 bug.
+      </div>
+      <div class="badge-ok">✓ Seatbelt wired — ignore is gone</div>
     </article>
 
     <article class="step">
-      <div class="step-head"><div class="step-num">7</div><div><h3>Slim CI — list what would run</h3></div></div>
+      <div class="step-head"><div class="step-num">3</div><div><h3>Prove green — then (optional) feel the red</h3></div></div>
 
-      <section class="comic-strip comic-step" id="comic-12-step-7" aria-label="Slim CI list">
-      <p class="comic-kicker">Step 7 · coach</p>
-      <h2 class="comic-title">Slim CI list</h2>
-      <div class="comic-row two">
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
-        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
-      </div>
-      <blockquote class="comic-bubble">Why not rebuild the world every PR?</blockquote>
-    </figure>
-        <figure class="comic-panel">
-      <div class="comic-who">
-        <div class="comic-face elena" role="img" aria-label="Elena"></div>
-        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
-      </div>
-      <blockquote class="comic-bubble">Credits and time. First we <em>list</em> what would run — modified models + downstream. Sanity check before spending.</blockquote>
-    </figure>
-      </div>
-      
-    </section>
-
-
-
-
-
-      <div class="explain">
-        <h4>What this does</h4>
-        <p><code>dbt ls --select state:modified+</code> prints model names that differ from <code>prod_artifact/manifest.json</code>, plus downstream. No Snowflake build yet — cheap sanity check for Jordan’s PR.</p>
-        <h4>What you should see</h4>
-        <p>On a small change to <code>stg_orders</code>, both staging and <code>fct_orders_incremental</code> appear — downstream of the edit.</p>
-      </div>
-      <div class="code-block">
-        <div class="code-head"><span>Shell · step 2</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>dbt ls --select state:modified+ --resource-type model --state ./prod_artifact/</code></pre>
-      </div>
-    </article>
-
-    <article class="step">
-      <div class="step-head"><div class="step-num">8</div><div><h3>Slim CI — build with defer</h3></div></div>
-
-      <section class="comic-strip comic-step" id="comic-12-step-8" aria-label="Defer means what?">
-      <p class="comic-kicker">Step 8 · coach</p>
-      <h2 class="comic-title">Defer means what?</h2>
+      <section class="comic-strip comic-step" id="comic-12-step-3" aria-label="Prove it green">
+      <p class="comic-kicker">Step 3 · coach</p>
+      <h2 class="comic-title">Prove it green</h2>
       <div class="comic-row two">
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face alex" role="img" aria-label="Alex"></div>
         <div><span class="comic-name">Alex</span><span class="comic-role">Analyst — still learning</span></div>
       </div>
-      <blockquote class="comic-bubble">Defer sounds like procrastination…</blockquote>
+      <blockquote class="comic-bubble">How do I know it works?</blockquote>
     </figure>
         <figure class="comic-panel">
       <div class="comic-who">
         <div class="comic-face elena" role="img" aria-label="Elena"></div>
         <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
       </div>
-      <blockquote class="comic-bubble">It means “reuse prod for things we didn’t change.” Needs a fresh prod manifest. Stale map = false safety.</blockquote>
+      <blockquote class="comic-bubble">Run the one model. Green = promise matches SQL. Then try a rename if you want to feel the red.</blockquote>
     </figure>
       </div>
       
     </section>
 
-
-
       <div class="explain">
-        <h4>What this does</h4>
-        <p><code>dbt build</code> runs models and tests for the selected slice. <code>--defer</code> reads unchanged parents from prod relations named in the manifest — so CI does not rebuild the entire Meridian graph on every PR.</p>
+        <h4>What you should see</h4>
+        <p>Green run = SQL matches the YAML promise. If <code>stg_orders</code> is stale (old <code>LANDING</code> schema), rebuild staging first.</p>
       </div>
       <div class="code-block">
-        <div class="code-head"><span>Shell · step 3</span><button type="button" class="copy-btn">Copy</button></div>
-<pre><code>dbt build --select state:modified+ --defer --state ./prod_artifact/</code></pre>
+        <div class="code-head"><span>Shell · prove contract</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>cd dbt_project
+dbt run --select stg_orders fct_orders_incremental</code></pre>
       </div>
-      <div class="callout warn">
-        <strong>CI prerequisite</strong>
-        Your pipeline must upload <code>manifest.json</code> from prod into <code>prod_artifact/</code> each deploy. Without it, <code>state:</code> selectors have nothing to compare.
+      <div class="code-block">
+        <div class="code-head"><span>Optional · break it on purpose, then undo</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code># In fct_orders_incremental.sql temporarily rename order_total → order_total_x
+# Save, then:
+dbt run --select fct_orders_incremental
+# Expect FAIL (contract / schema mismatch)
+# Rename back to order_total and re-run until green</code></pre>
+      </div>
+      <div class="badge-ok">✓ That’s the whole main idea — column changes can’t sneak to Alex</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">4</div><div><h3>Bonus — save a “prod map” for Slim CI</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-4" aria-label="Save yesterday’s map">
+      <p class="comic-kicker">Step 4 · coach</p>
+      <h2 class="comic-title">Save yesterday’s map</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face jordan" role="img" aria-label="Jordan"></div>
+        <div><span class="comic-name">Jordan</span><span class="comic-role">Engineer — builds pipelines</span></div>
+      </div>
+      <blockquote class="comic-bubble">What’s prod_artifact?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">A copy of prod’s <code>manifest.json</code> — the map Slim CI compares against. No map → state:modified can’t work.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+      <div class="explain">
+        <h4>Why</h4>
+        <p>Slim CI compares your PR graph to yesterday’s prod graph (<code>manifest.json</code>).
+        No map → <code>state:modified+</code> has nothing to compare. Skip Steps 4–5 if you only care about contracts today.</p>
+        <h4>About <code>dbt deps</code></h4>
+        <p>Our <code>packages.yml</code> is empty — “No packages were found” is normal, not an error. You can skip <code>dbt deps</code>.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Shell · pretend today’s target is prod</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>cd dbt_project
+dbt run --select stg_orders fct_orders_incremental
+mkdir prod_artifact 2>$null
+copy target\manifest.json prod_artifact\manifest.json</code></pre>
+      </div>
+      <div class="badge-ok">✓ prod_artifact/manifest.json exists</div>
+    </article>
+
+    <article class="step">
+      <div class="step-head"><div class="step-num">5</div><div><h3>Bonus — Slim CI list + build</h3></div></div>
+
+      <section class="comic-strip comic-step" id="comic-12-step-5" aria-label="Slim CI in one breath">
+      <p class="comic-kicker">Step 5 · coach</p>
+      <h2 class="comic-title">Slim CI in one breath</h2>
+      <div class="comic-row two">
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face marcus" role="img" aria-label="Marcus"></div>
+        <div><span class="comic-name">Marcus</span><span class="comic-role">COO — business pressure</span></div>
+      </div>
+      <blockquote class="comic-bubble">Why not rebuild everything every PR?</blockquote>
+    </figure>
+        <figure class="comic-panel">
+      <div class="comic-who">
+        <div class="comic-face elena" role="img" aria-label="Elena"></div>
+        <div><span class="comic-name">Elena</span><span class="comic-role">Architect — explains why</span></div>
+      </div>
+      <blockquote class="comic-bubble">Credits. Build only what changed (+ kids). <code>--defer</code> borrows unchanged parents from that prod map.</blockquote>
+    </figure>
+      </div>
+      
+    </section>
+
+      <div class="explain">
+        <h4>In one breath</h4>
+        <p><code>state:modified+</code> = models you changed + anything that depends on them.
+        <code>--defer</code> = reuse unchanged parents from the prod map instead of rebuilding the world.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Shell · list then build</span><button type="button" class="copy-btn">Copy</button></div>
+<pre><code>cd dbt_project
+dbt ls --select state:modified+ --resource-type model --state ./prod_artifact/
+dbt build --select state:modified+ --defer --state ./prod_artifact/</code></pre>
+      </div>
+      <div class="callout tip">
+        If nothing is “modified,” tweak a comment in <code>stg_orders.sql</code>, save, then re-run the two commands — you should see staging + the fact.
       </div>
     </article>
 
-        <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
+    <section class="teach drill-wrap" id="interview-drill" aria-label="Interviewer presses further">
       <h2>Interviewer presses further — say these out loud</h2>
-      <p>
-        Basics got you into the room. Cover each answer <em>before</em> you open it.
-        If you blank here, an Architect + dbt interviewer will know.
-      </p>
+      <p>Cover each answer before you open it.</p>
       <details class="drill">
-        <summary><strong>Q1.</strong> Why contract fct_orders_incremental but not every stg_ model?</summary>
-        <p class="drill-say"><strong>Say:</strong> Staging is an internal translator; published marts are Alex/Looker’s API. Contracting every stage slows the team without protecting consumers. Contract the boundary where silent rename becomes a NULL board tile.</p>
+        <summary><strong>Q1.</strong> Why contract the fact, not every staging model?</summary>
+        <p class="drill-say"><strong>Say:</strong> Staging is an internal translator. The fact is Alex/Looker’s API. Contract the published boundary — contracting every stg_ slows the team without protecting the board.</p>
       </details>
       <details class="drill">
-        <summary><strong>Q2.</strong> Contract enforced — what still breaks Alex?</summary>
-        <p class="drill-say"><strong>Say:</strong> Semantic drift: same column name/type, wrong grain or business meaning; or updated_at “ok” but source stops updating it. Contracts catch schema breaks; tests and ownership catch meaning breaks.</p>
+        <summary><strong>Q2.</strong> Why on_schema_change = fail with contracts?</summary>
+        <p class="drill-say"><strong>Say:</strong> Incremental + contract can’t ignore schema drift. fail stops the PR; append_new_columns is the other legal option when you intentionally add columns. ignore is invalid and unsafe for Alex.</p>
       </details>
       <details class="drill">
-        <summary><strong>Q3.</strong> Slim CI state:modified+ with --defer — failure if manifest is stale?</summary>
-        <p class="drill-say"><strong>Say:</strong> You defer to yesterday’s prod graph and miss broken upstream changes, or under-build and ship green CI that fails in prod. Manifest freshness is part of the pipeline contract — not an optional flag.</p>
+        <summary><strong>Q3.</strong> What still breaks Alex even with a green contract?</summary>
+        <p class="drill-say"><strong>Say:</strong> Same name/type, wrong meaning — or watermark stops updating. Contracts catch schema breaks; tests and ownership catch semantic breaks.</p>
       </details>
       <details class="drill">
-        <summary><strong>Q4.</strong> When do you refuse Slim CI and run a fuller build?</summary>
-        <p class="drill-say"><strong>Say:</strong> Cross-cutting macro changes, shared staging refactors, or release trains where modified+ is known-blind. Slim CI is PR cost control; release gates can still full-build critical marts.</p>
+        <summary><strong>Q4.</strong> Slim CI with a stale prod manifest — what goes wrong?</summary>
+        <p class="drill-say"><strong>Say:</strong> You under-build or defer to a ghost graph — green CI, red prod. Manifest freshness is part of the pipeline, not optional.</p>
       </details>
       <details class="drill">
-        <summary><strong>Q5.</strong> How do contracts interact with Lab 02 incremental?</summary>
-        <p class="drill-say"><strong>Say:</strong> If updated_at or order_id type drifts, incremental MERGE and Alex’s “last refresh” both break — contract makes that a CI failure. The watermark column belongs in enforced YAML, not a wiki comment.</p>
+        <summary><strong>Q5.</strong> When do you refuse Slim CI?</summary>
+        <p class="drill-say"><strong>Say:</strong> Cross-cutting macro changes or release trains where modified+ is known-blind. Slim CI is PR cost control; releases can still full-build critical marts.</p>
       </details>
     </section>
 
     <div class="soundbite">
       <strong>Elena’s wrap-up (say this out loud)</strong><br />
-      “Meridian’s mart broke because nobody enforced the published schema. I declared BRONZE_LANDING.TXN_EVENTS as a dbt source, enforced a contract on fct_orders_incremental, and described Slim CI so PRs only build state:modified+ with defer to prod manifest.
-      <em>Outcome:</em> Alex’s dashboards get stable columns; Jordan’s team ships faster without full-graph builds every time.”
+      “If a column on the published mart changes, Alex’s report must not silently break.
+      I enforced a dbt contract on fct_orders_incremental with on_schema_change=fail, so renames fail in CI before Looker.
+      Slim CI with state:modified+ and a fresh prod manifest is how we keep PR credits down — separate idea from the seatbelt.
+      <em>Outcome:</em> board tiles stay stable; Jordan still ships without rebuilding Meridian every PR.”
     </div>
 
     <div class="pager">
@@ -548,7 +382,7 @@ dbt deps</code></pre>
       <a class="btn primary" href="lab-13.html">Lab 13 →</a>
     </div>
   </div>
-  <footer class="footer">dbt_project/ · _sources.yml · teach-first contracts & Slim CI</footer>
+  <footer class="footer">dbt_project/models/marts · contract seatbelt · Slim CI bonus</footer>
   <script src="assets/course.js"></script>
 </body>
 </html>

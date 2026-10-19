@@ -1,16 +1,27 @@
 version: 2
 
 models:
+  # Lab 12 — published boundary Alex/Looker depend on.
+  # Incremental + contract requires on_schema_change = fail|append_new_columns (see fct_orders_incremental.sql).
   - name: fct_orders_incremental
-    description: "Incremental order fact (Lab 02) — lands in SILVER_CURATED via model schema override"
+    description: "Incremental order fact (Lab 02) — SILVER_CURATED · contract-enforced for Lab 12"
+    config:
+      contract:
+        enforced: true
     columns:
       - name: order_id
-        tests:
-          - unique
-          - not_null
+        data_type: number
+        tests: [unique, not_null]
+      - name: customer_id
+        data_type: number
+        tests: [not_null]
+      - name: status
+        data_type: varchar
+      - name: order_total
+        data_type: number
       - name: updated_at
-        tests:
-          - not_null
+        data_type: timestamp_ntz
+        tests: [not_null]
 
   - name: gold_client_summary
     description: "Medallion gold — client LTV / counts for Alex (GOLD_MART)"
